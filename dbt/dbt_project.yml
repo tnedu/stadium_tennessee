@@ -188,6 +188,8 @@ vars:
     cds_schools_additional_columns:
       grade_levels:
         where: grade_levels
+      school_number:
+        where: school_number
 
 seeds:
   +schema: seed
