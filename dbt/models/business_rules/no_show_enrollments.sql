@@ -7,8 +7,8 @@
 
 with instructional_days as (
     select cd.k_school_calendar, cd.tenant_code, cd.calendar_date
-    from {{ ref('stg_ef3__calendar_dates_orig') }} cd
-    join {{ ref('stg_ef3__calendar_dates__calendar_events_orig') }} cde
+    from {{ ref('stg_ef3__calendar_dates') }} cd
+    join {{ ref('stg_ef3__calendar_dates__calendar_events') }} cde
         on cde.k_school_calendar = cd.k_school_calendar
         and cde.k_calendar_date = cd.k_calendar_date
         and cde.tenant_code = cd.tenant_code

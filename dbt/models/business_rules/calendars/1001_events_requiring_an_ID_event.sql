@@ -17,7 +17,7 @@ with brule as (
 ),
 calendars as (
     select *
-    from {{ ref('stg_ef3__calendars_orig') }} c
+    from {{ ref('stg_ef3__calendars') }} c
     where exists (
         select 1
         from brule
@@ -28,9 +28,9 @@ calendar_events as (
     select c.k_school, c.k_school_calendar, cd.k_calendar_date, c.tenant_code, c.api_year, c.school_year,
         c.school_id, c.calendar_code, cd.calendar_date, ce.calendar_event
     from calendars c
-    left outer join {{ ref('stg_ef3__calendar_dates_orig') }} cd
+    left outer join {{ ref('stg_ef3__calendar_dates') }} cd
         on cd.k_school_calendar = c.k_school_calendar
-    left outer join {{ ref('stg_ef3__calendar_dates__calendar_events_orig') }} ce
+    left outer join {{ ref('stg_ef3__calendar_dates__calendar_events') }} ce
         on ce.k_school_calendar = cd.k_school_calendar
         and ce.k_calendar_date = cd.k_calendar_date
 ),
@@ -48,16 +48,23 @@ events_not_paired_as_instructional as (
                 and x.calendar_date = ce.calendar_date
                 and x.calendar_event = 'ID'
         )
+),
+errors as (
+    /* Some calendar events which are also instructional days must be marked as so. */
+    select c.k_school, c.k_school_calendar, c.school_year, c.school_id, c.calendar_code, 
+	    brule.tdoe_error_code as error_code,
+	    concat('Calendar ', c.calendar_code, ' has calendar Event \'', x.calendar_event, '\' on ', x.calendar_date, ' must also have an \'ID\' Calendar Event on the same date.') as error
+	from calendars c
+	join events_not_paired_as_instructional x
+	    on x.k_school = c.k_school
+	    and x.k_school_calendar = c.k_school_calendar
+	join brule
+	    on c.school_year between brule.error_school_year_start and brule.error_school_year_end
+    order by 3, 4, 5
 )
-/* Some calendar events which are also instructional days must be marked as so. */
-select c.k_school, c.k_school_calendar, c.school_year, c.school_id, c.calendar_code, 
-    brule.tdoe_error_code as error_code,
-    concat('Calendar ', c.calendar_code, ' has calendar Event \'', x.calendar_event, '\' on ', x.calendar_date, ' must also have an \'ID\' Calendar Event on the same date.') as error,
-    brule.tdoe_severity as severity
-from calendars c
-join events_not_paired_as_instructional x
-    on x.k_school = c.k_school
-    and x.k_school_calendar = c.k_school_calendar
+select errors.*,
+    {{ severity_to_severity_code_case_clause('rules.tdoe_severity') }},
+    rules.tdoe_severity
+from errors errors
 join brule
     on c.school_year between brule.error_school_year_start and brule.error_school_year_end
-order by 3, 4, 5
