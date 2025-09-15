@@ -49,10 +49,10 @@ student_enrolled_days as (
         on s.k_student = ssa.k_student
     join {{ ref('stg_ef3__schools') }} schools
         on schools.k_school = ssa.k_school
-    join {{ ref('stg_ef3__calendar_dates_orig') }} cd
+    join {{ ref('stg_ef3__calendar_dates') }} cd
         on cd.k_school_calendar = ssa.k_school_calendar
         and cd.tenant_code = ssa.tenant_code
-    join {{ ref('stg_ef3__calendar_dates__calendar_events_orig') }} cde
+    join {{ ref('stg_ef3__calendar_dates__calendar_events') }} cde
         on cde.k_school_calendar = cd.k_school_calendar
         and cde.k_calendar_date = cd.k_calendar_date
         and cde.tenant_code = cd.tenant_code

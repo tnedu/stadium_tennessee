@@ -70,12 +70,7 @@ models:
             +enabled: false
           stg_ef3__staff_section_associations:
             +enabled: false
-          stg_ef3__calendars:
-            +enabled: false
-          stg_ef3__calendar_dates:
-            +enabled: false
-          stg_ef3__calendar_dates__calendar_events:
-            +enabled: false
+
   edu_wh:
     +materialized: table
     build:
@@ -146,16 +141,16 @@ vars:
         where: stateStudentId
 
   #tdoe business rule vars
-  'edu:excluded_data:stg_ef3__bell_schedules':
-    exclude_data_table: bell_schedules_excludes
-    join_columns:
-      k_bell_schedule: k_bell_schedule
-
-  'edu:excluded_data:stg_ef3__calendars':
-    exclude_data_table: calendars_excludes
-    join_columns:
-      k_school: k_school
-      k_school_calendar: k_school_calendar
+  'tdoe:status_columns_config':
+    columns:
+      tdoe_severity_code: 0
+      tdoe_severity: "'good'"
+    statuses:
+      good: 0
+      info: 1
+      warning: 2
+      error: 3
+      critical: 4
 
   # source config
   extensions:
@@ -177,20 +172,6 @@ vars:
   'src:program:homeless:enabled': True
   'src:program:language_instruction:enabled': True
   'src:program:title_i:enabled': False
-
-  # custom data sources for calendar dates
-  'edu:calendar_date:custom_data_sources':
-    cds_calendar_date_report_periods:
-      report_period:
-        where: report_period
-      day_of_report_period:
-        where: day_of_report_period
-      report_period_begin_date:
-        where: report_period_begin_date
-      report_period_end_date:
-        where: report_period_end_date
-      days_in_report_period:
-        where: days_in_report_period
   
   # custom data sources for staff
   'edu:staff:custom_data_sources':
@@ -219,6 +200,28 @@ vars:
     cds_student_discipline_action_additional_columns:
       discipline_end_date:
         where: discipline_end_date
+  
+    # custom data sources for calendar dates
+  'edu:calendar_date:custom_data_sources':
+    cds_calendar_date_report_periods:
+      report_period:
+        where: report_period
+      day_of_report_period:
+        where: day_of_report_period
+      report_period_begin_date:
+        where: report_period_begin_date
+      report_period_end_date:
+        where: report_period_end_date
+      days_in_report_period:
+        where: days_in_report_period
+  
+  'tdoe:school_grade_levels:custom_data_sources':
+    cds_default_severity_columns:
+      joins:
+        - 1 = 1
+      cds_additional_cols:
+        tdoe_severity_code: tdoe_severity_code
+        tdoe_severity: tdoe_severity
 
 seeds:
   +schema: seed
