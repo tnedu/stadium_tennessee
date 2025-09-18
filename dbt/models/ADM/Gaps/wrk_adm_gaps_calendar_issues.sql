@@ -10,7 +10,7 @@ with bad_cals as (
         count(*) as reason_count,
         concat_ws('\n', collect_list(concat('\t', error))) as errors
     from {{ ref('calendars') }} x
-    where severity = 'critical'
+    where tdoe_severity = 'critical'
     group by school_year, k_school, k_school_calendar
 )
 select school_year, null as k_student, k_school, null as is_primary_school,

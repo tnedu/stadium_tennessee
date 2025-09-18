@@ -18,7 +18,7 @@ with brule as (
 ),
 stg_student_edorgs as (
     select *
-    from {{ ref('stg_ef3__student_education_organization_associations_orig') }} seoa
+    from {{ ref('stg_ef3__student_education_organization_associations') }} seoa
     where k_lea is not null
         and exists (
         select 1
@@ -28,33 +28,40 @@ stg_student_edorgs as (
 ),
 valid_enrollments as (
     select * from {{ ref('valid_enrollments') }} 
+),
+errors as (
+    select se.k_student, se.k_lea, se.k_school, se.school_year, se.ed_org_id, se.student_unique_id,
+        s.state_student_id as legacy_state_student_id,
+        brule.tdoe_error_code as error_code,
+        concat('A single value of Cohort Year is required on District level Student/EdOrg Associations for Student ', 
+            se.student_unique_id, ' (', coalesce(s.state_student_id, '[no value]'), ') ',
+            'with instructional grade greater than 8th. Values Received: ', 
+            cast(se.v_cohort_years as String), ', Student Grade: ', ssa.entry_grade_level) as error
+    from stg_student_edorgs se
+    join {{ ref('edu_edfi_source', 'stg_ef3__students') }} s
+        on se.k_student = s.k_student
+    join {{ ref('edu_edfi_source', 'stg_ef3__schools') }} s
+        on s.k_lea = se.k_lea
+    join {{ ref('stg_ef3__student_school_associations') }} ssa
+        on ssa.k_student = se.k_student
+        and ssa.k_school = s.k_school
+    join {{ ref('xwalk_grade_levels') }} gl
+        on gl.grade_level = ssa.entry_grade_level
+        and gl.grade_level_integer between 9 and 12
+    join brule
+        on se.school_year between brule.error_school_year_start and brule.error_school_year_end
+    where size(cast(se.v_cohort_years as array<string>)) != 1
+        and exists (
+            select 1
+            from valid_enrollments ve
+            where ve.k_student = se.k_student
+                and ve.school_year = se.school_year
+                and ve.k_lea = se.k_lea
+            )
 )
-select se.k_student, se.k_lea, se.k_school, se.school_year, se.ed_org_id, se.student_unique_id,
-    s.state_student_id as legacy_state_student_id,
-    brule.tdoe_error_code as error_code,
-    concat('A single value of Cohort Year is required on District level Student/EdOrg Associations for Student ', 
-        se.student_unique_id, ' (', coalesce(s.state_student_id, '[no value]'), ') ',
-        'with instructional grade greater than 8th. Values Received: ', 
-        cast(se.v_cohort_years as String), ', Student Grade: ', ssa.entry_grade_level) as error,
-    brule.tdoe_severity as severity
-from stg_student_edorgs se
-join {{ ref('edu_edfi_source', 'stg_ef3__students') }} s
-    on se.k_student = s.k_student
-join {{ ref('edu_edfi_source', 'stg_ef3__schools') }} s
-    on s.k_lea = se.k_lea
-join {{ ref('stg_ef3__student_school_associations_orig') }} ssa
-    on ssa.k_student = se.k_student
-    and ssa.k_school = s.k_school
-join {{ ref('xwalk_grade_levels') }} gl
-    on gl.grade_level = ssa.entry_grade_level
-    and gl.grade_level_integer between 9 and 12
+select errors.*,
+    {{ severity_to_severity_code_case_clause('brule.tdoe_severity') }},
+    brule.tdoe_severity
+from errors errors
 join brule
-    on se.school_year between brule.error_school_year_start and brule.error_school_year_end
-where size(cast(se.v_cohort_years as array<string>)) != 1
-    and exists (
-        select 1
-        from valid_enrollments ve
-        where ve.k_student = se.k_student
-            and ve.school_year = se.school_year
-            and ve.k_lea = se.k_lea
-    )
+    on errors.school_year between brule.error_school_year_start and brule.error_school_year_end

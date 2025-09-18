@@ -16,7 +16,7 @@ with brule as (
     where br.tdoe_error_code = {{ error_code }}
 ),
 stg_class_periods as (
-    select * from {{ ref('stg_ef3__class_periods_orig') }} cp
+    select * from {{ ref('stg_ef3__class_periods') }} cp
     where exists (
         select 1
         from brule
@@ -29,14 +29,21 @@ tooManyClassPeriods as (
         size(cast(v_meeting_times as array<string>)) meetingTimesCount
     from stg_class_periods cp
     where size(cast(v_meeting_times as array<string>)) > 1
-)
-/* Class Periods cannot have more than one meeting time. */
-select cp.k_class_period, cast(cp.school_year as int) as school_year, cp.class_period_name, cp.school_id,
+),
+errors as (
+    /* Class Periods cannot have more than one meeting time. */
+    select cp.k_class_period, cast(cp.school_year as int) as school_year, cp.class_period_name, cp.school_id,
     brule.tdoe_error_code as error_code,
-    concat('Class Period ', cp.class_period_name, ' has more than one meeting time. Meeting Times: ', cast(cp.v_meeting_times as String)) as error,
-    brule.tdoe_severity as severity
-from stg_class_periods cp
-join tooManyClassPeriods x
-    on x.k_class_period = cp.k_class_period
+        concat('Class Period ', cp.class_period_name, ' has more than one meeting time. Meeting Times: ', cast(cp.v_meeting_times as String)) as error
+    from stg_class_periods cp
+    join tooManyClassPeriods x
+        on x.k_class_period = cp.k_class_period
+    join brule
+        on cp.school_year between brule.error_school_year_start and brule.error_school_year_end
+)
+select errors.*,
+    {{ severity_to_severity_code_case_clause('brule.tdoe_severity') }},
+    brule.tdoe_severity
+from errors errors
 join brule
     on cp.school_year between brule.error_school_year_start and brule.error_school_year_end

@@ -16,29 +16,37 @@ with brule as (
     where br.tdoe_error_code = {{ error_code }}
 ),
 stg_student_school_associations as (
-    select * from {{ ref('stg_ef3__student_school_associations_orig') }} ssa
+    select * from {{ ref('stg_ef3__student_school_associations') }} ssa
     where exists (
         select 1
         from brule
         where cast(ssa.school_year as int) between brule.error_school_year_start and brule.error_school_year_end
     )
 )
-/* Withdrawal Date must be within the school year begin and end date. */
-select ssa.k_student, ssa.k_school, ssa.k_school_calendar, ssa.school_id, ssa.student_unique_id, ssa.school_year, 
-    ssa.entry_date, ssa.entry_grade_level,
-    s.state_student_id as legacy_state_student_id,
-    brule.tdoe_error_code as error_code,
-    concat('Student School Association Exit Withdrawal Date for Student ', 
-        ssa.student_unique_id, ' (', coalesce(s.state_student_id, '[no value]'), ') ',
-        'does not fall within the school year. Value Received: ', ssa.exit_withdraw_date, 
-        '. The state school year starts ',
-        concat((ssa.school_year-1), '-07-01'), ' and ends ', concat(ssa.school_year, '-06-30'), '.') as error,
-    brule.tdoe_severity as severity
-from stg_student_school_associations ssa
-join {{ ref('stg_ef3__students') }} s
-    on s.k_student = ssa.k_student
+), 
+errors as (
+    /* Withdrawal Date must be within the school year begin and end date. */
+    select ssa.k_student, ssa.k_school, ssa.k_school_calendar, ssa.school_id, ssa.student_unique_id, ssa.school_year, 
+        ssa.entry_date, ssa.entry_grade_level,
+        s.state_student_id as legacy_state_student_id,
+        brule.tdoe_error_code as error_code,
+        concat('Student School Association Exit Withdrawal Date for Student ', 
+            ssa.student_unique_id, ' (', coalesce(s.state_student_id, '[no value]'), ') ',
+            'does not fall within the school year. Value Received: ', ssa.exit_withdraw_date, 
+            '. The state school year starts ',
+            concat((ssa.school_year-1), '-07-01'), ' and ends ', concat(ssa.school_year, '-06-30'), '.') as error
+    from stg_student_school_associations ssa
+    join {{ ref('stg_ef3__students') }} s
+        on s.k_student = ssa.k_student
+    join brule
+        on ssa.school_year between brule.error_school_year_start and brule.error_school_year_end
+    where ssa.exit_withdraw_date is not null
+        and not(ssa.exit_withdraw_date between to_date(concat((ssa.school_year-1), '-07-01'), 'yyyy-MM-dd') 
+            and to_date(concat(ssa.school_year, '-06-30'), 'yyyy-MM-dd'))
+    )
+select errors.*,
+    {{ severity_to_severity_code_case_clause('brule.tdoe_severity') }},
+    brule.tdoe_severity
+from errors errors
 join brule
-    on ssa.school_year between brule.error_school_year_start and brule.error_school_year_end
-where ssa.exit_withdraw_date is not null
-    and not(ssa.exit_withdraw_date between to_date(concat((ssa.school_year-1), '-07-01'), 'yyyy-MM-dd') 
-        and to_date(concat(ssa.school_year, '-06-30'), 'yyyy-MM-dd'))
+    on errors.school_year between brule.error_school_year_start and brule.error_school_year_end

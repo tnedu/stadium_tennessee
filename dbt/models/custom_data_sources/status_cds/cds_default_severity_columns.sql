@@ -14,5 +14,4 @@
     {%- do status_cols.append(col) -%}
 {%- endfor %}
 select 
-    1 as fake_key, 
     {{ status_cols | join(', ') }}

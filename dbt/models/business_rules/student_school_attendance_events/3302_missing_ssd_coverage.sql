@@ -18,7 +18,7 @@ with brule as (
 ),
 attendance_events as (
     select *
-    from {{ ref('stg_ef3__student_school_attendance_events_orig') }} ssae
+    from {{ ref('stg_ef3__student_school_attendance_events') }} ssae
     where ssae.attendance_event_category = 'Student Standard Day'
         and exists (
         select 1
@@ -61,7 +61,7 @@ enrollments_and_ssd_date as (
             when fssd.attendance_event_date > ssa.entry_date then 0
             else 1
         end as ssd_good
-    from {{ ref('stg_ef3__student_school_associations_orig') }} ssa
+    from {{ ref('stg_ef3__student_school_associations') }} ssa
     left outer join first_ssd_per_student fssd
         on fssd.k_school = ssa.k_school
         and fssd.k_student = ssa.k_student
@@ -76,22 +76,29 @@ enrollments_and_ssd_date as (
                 and cd.calendar_date >= ssa.entry_date
                 and (ssa.exit_withdraw_date is null or cd.calendar_date < ssa.exit_withdraw_date)
         )
+),
+errors as (
+    select x.k_student, x.k_school, cast(null as string) as k_session, x.school_year,
+        cast(x.school_id as int) as school_id, x.student_unique_id, 
+        cast(null as date) as attendance_event_date, 'SSD' as attendance_event_category,
+        s.state_student_id as legacy_state_student_id,
+        brule.tdoe_error_code as error_code,
+        concat('Student Standard Day missing for Student: ', x.student_unique_id, ' (', coalesce(s.state_student_id, '[no value]') ,'), ',
+            'District: ', {{ get_district_from_school_id('x.school_id') }}, ', ',
+            'School: ', x.school_id, ', ',
+            'Enrollment Entry Date: ', x.entry_date, ', ',
+            'Enrollment End Date: ', coalesce(x.exit_withdraw_date, '[null]'), ', ',
+            'First SSD Date: ', coalesce(x.attendance_event_date, '[null]'), '.') as error
+    from enrollments_and_ssd_date x
+    join {{ ref('stg_ef3__students') }} s
+        on s.k_student = x.k_student
+    join brule
+        on x.school_year between brule.error_school_year_start and brule.error_school_year_end
+    where x.ssd_good = 0
 )
-select x.k_student, x.k_school, cast(null as string) as k_session, x.school_year,
-    cast(x.school_id as int) as school_id, x.student_unique_id, 
-    cast(null as date) as attendance_event_date, 'SSD' as attendance_event_category,
-    s.state_student_id as legacy_state_student_id,
-    brule.tdoe_error_code as error_code,
-    concat('Student Standard Day missing for Student: ', x.student_unique_id, ' (', coalesce(s.state_student_id, '[no value]') ,'), ',
-        'District: ', {{ get_district_from_school_id('x.school_id') }}, ', ',
-        'School: ', x.school_id, ', ',
-        'Enrollment Entry Date: ', x.entry_date, ', ',
-        'Enrollment End Date: ', coalesce(x.exit_withdraw_date, '[null]'), ', ',
-        'First SSD Date: ', coalesce(x.attendance_event_date, '[null]'), '.') as error,
-    brule.tdoe_severity as severity
-from enrollments_and_ssd_date x
-join {{ ref('stg_ef3__students') }} s
-    on s.k_student = x.k_student
+select errors.*,
+    {{ severity_to_severity_code_case_clause('brule.tdoe_severity') }},
+    brule.tdoe_severity
+from errors errors
 join brule
-    on x.school_year between brule.error_school_year_start and brule.error_school_year_end
-where x.ssd_good = 0
+    on errors.school_year between brule.error_school_year_start and brule.error_school_year_end
