@@ -16,7 +16,7 @@ join (
             concat_ws('\n', collect_list(concat('\t', error))) as errors
         from {{ ref('student_school_attendance_events') }} x
         where attendance_event_category = 'Student Standard Day'
-            and severity = 'critical'
+            and tdoe_severity = 'critical'
         group by school_year, k_student, k_school
     ) x
     on x.school_year = e.school_year

@@ -15,7 +15,7 @@ join (
             count(*) as reason_count,
             concat_ws('\n', collect_list(concat('\t', error))) as errors
         from {{ ref('student_education_organization_associations')}}
-        where severity = 'critical'
+        where tdoe_severity = 'critical'
         group by school_year, k_student, k_lea
     ) x
     on x.school_year = e.school_year

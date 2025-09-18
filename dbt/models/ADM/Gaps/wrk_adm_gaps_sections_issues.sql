@@ -10,7 +10,7 @@ with bad as (
         count(*) as reason_count, 
         concat_ws('\n', collect_list(concat('\t', error))) as errors
     from {{ ref('sections') }} x
-    where severity = 'critical'
+    where tdoe_severity = 'critical'
     group by school_year, k_school
 )
 select school_year, null as k_student, k_school, null as is_primary_school,
@@ -25,12 +25,12 @@ select e.school_year, e.k_student, e.k_school, e.is_primary_school,
     concat('Student tied to Sections with the following errors:\n', 
         concat_ws('\n', collect_list(concat('\t', x.error)))) as possible_reason
 from {{ ref('adm_gaps_enrollments') }} e
-join {{ ref('stg_ef3__student_section_associations_orig')}} sections
+join {{ ref('stg_ef3__student_section_associations')}} sections
     on sections.school_year = e.school_year
     and sections.k_student = e.k_student
 join {{ ref('sections') }} x
     on x.k_course_section = sections.k_course_section
-    and x.severity = 'critical'
+    and x.tdoe_severity = 'critical'
 group by e.school_year, e.k_student, e.k_school, e.is_primary_school
 union all
 select e.school_year, e.k_student, e.k_school, e.is_primary_school,
@@ -43,7 +43,7 @@ join (
             count(*) as reason_count,
             concat_ws('\n', collect_list(concat('\t', error))) as errors
         from {{ ref('student_section_associations')}}
-        where severity = 'critical'
+        where tdoe_severity = 'critical'
         group by school_year, k_student, school_id
     ) sections
     on sections.school_year = e.school_year
@@ -57,7 +57,7 @@ select e.school_year, e.k_student, e.k_school, e.is_primary_school,
 from {{ ref('adm_gaps_enrollments') }} e
 where not exists (
     select 1
-    from {{ ref('stg_ef3__student_section_associations_orig')}} sections
+    from {{ ref('stg_ef3__student_section_associations')}} sections
     where sections.school_year = e.school_year
         and sections.k_student = e.k_student
 )

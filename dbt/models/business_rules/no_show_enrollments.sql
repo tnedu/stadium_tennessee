@@ -18,7 +18,7 @@ select ssa.k_student, ssa.k_school, ssa.k_school_calendar,
     ssa.tenant_code, ssa.api_year, ssa.school_id, ssa.student_unique_id,
     ssa.school_year, ssa.is_primary_school, ssa.entry_date, ssa.exit_withdraw_date,
     ssa.calendar_code, ssa.entry_type, ssa.exit_withdraw_type
-from {{ ref('stg_ef3__student_school_associations_orig') }} ssa
+from {{ ref('stg_ef3__student_school_associations') }} ssa
 where 
     not exists (
         select 1

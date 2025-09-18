@@ -10,7 +10,7 @@
 with bs_class_periods as (
     select bs.k_bell_schedule, bs.k_bell_schedule, bs.k_school, bs.school_year, bs.tenant_code,
         cp.k_class_period, cp.class_period_name, cp.class_period_school_id
-    from {{ ref('stg_ef3__bell_schedules_orig') }} bs
+    from {{ ref('stg_ef3__bell_schedules') }} bs
     join {{ ref('stg_ef3__bell_schedules__class_periods') }} cp
         on cp.k_bell_schedule = bs.k_bell_schedule
         and cp.k_school = bs.k_school
@@ -19,7 +19,7 @@ with bs_class_periods as (
 ),
 cp_no_bs as (
     select *
-    from {{ ref('stg_ef3__class_periods_orig') }} cp
+    from {{ ref('stg_ef3__class_periods') }} cp
     where not exists (
         select 1
         from bs_class_periods bs
@@ -27,11 +27,18 @@ cp_no_bs as (
             and bs.k_school = cp.k_school
             and bs.tenant_code = cp.tenant_code
     )
+),
+errors as (
+    /* Class Periods must be tied to a Bell Schedule. */
+    select cp.k_class_period, cast(cp.school_year as int) as school_year, cp.class_period_name, cp.school_id,
+        {{ error_code }} as error_code,
+        concat('Class Period ', cp.class_period_name, ' must be tied to a Bell Schedule.') as error
+    from cp_no_bs cp
 )
-/* Class Periods must be tied to a Bell Schedule. */
-select cp.k_class_period, cast(cp.school_year as int) as school_year, cp.class_period_name, cp.school_id,
-    {{ error_code }} as error_code,
-    concat('Class Period ', cp.class_period_name, ' must be tied to a Bell Schedule.') as error,
-    {{ error_severity_column(error_code, 'cp') }}
-from cp_no_bs cp
+select errors.*,
+    {{ severity_to_severity_code_case_clause('rules.tdoe_severity') }},
+    rules.tdoe_severity
+from errors errors
+join {{ ref('business_rules_year_ranges') }} rules
+    on rules.tdoe_error_code = {{ error_code }}
 
