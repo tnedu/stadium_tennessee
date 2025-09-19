@@ -53,7 +53,9 @@ select sm.k_student, sm.k_lea, sm.k_school, sm.k_school_calendar, sm.school_year
                             cast(least(sm.days_in_report_period,20) as decimal(12,8)), 1.0)
             end) * 100000) / 100000)
         as decimal(8,5)
-    ) as normalized_voc_adm
+    ) as normalized_voc_adm,
+    max(sm.tdoe_severity_code) as tdoe_severity_code,
+    {{ severity_code_to_severity_case_clause('max(sm.tdoe_severity_code)') }}
 from {{ ref('student_voc_membership') }} sm
 join {{ ref('dim_student') }} s
     on s.k_student = sm.k_student
