@@ -14,6 +14,9 @@
   )
 }}
 
+{{ edu_wh.cds_depends_on('tdoe:student_standard_day:custom_data_sources') }}
+{% set custom_data_sources = var('tdoe:student_standard_day:custom_data_sources', []) %}
+
 select ssae.k_student, ssae.k_student_xyear, ssae.k_school,
     ssae.k_session,
     ssae.tenant_code,
@@ -28,6 +31,10 @@ select ssae.k_student, ssae.k_student_xyear, ssae.k_school,
         -1)
       , to_date(concat(ssae.school_year, '-06-30'), 'yyyy-MM-dd')) as ssd_date_end, 
     ssae.school_attendance_duration as ssd_duration
+    -- custom indicators
+    {{ edu_wh.add_cds_columns(custom_data_sources=custom_data_sources) }}
 from {{ ref('stg_ef3__student_school_attendance_events') }} ssae
+-- custom data sources
+{{ edu_wh.add_cds_joins_v2(custom_data_sources=custom_data_sources) }}
 where ssae.attendance_event_category = 'Student Standard Day'
 order by ssae.k_school, ssae.k_student, ssae.attendance_event_date

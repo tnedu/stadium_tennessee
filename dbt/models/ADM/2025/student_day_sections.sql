@@ -24,7 +24,9 @@ with student_classes as (
         case
             when si.is_cte then 1
             else 0
-        end as is_vocational_course
+        end as is_vocational_course,
+        greatest(coalesce(sm.tdoe_severity_code,0), coalesce(fssa.tdoe_severity_code,0), coalesce(si.tdoe_severity_code,0)) as tdoe_severity_code,
+        {{ severity_code_to_severity_case_clause('greatest(coalesce(sm.tdoe_severity_code,0), coalesce(fssa.tdoe_severity_code,0), coalesce(si.tdoe_severity_code,0))') }}
     from {{ ref('student_days') }} sm
     join {{ ref('fct_student_section_association') }} fssa
         on fssa.school_year = sm.school_year
@@ -53,7 +55,9 @@ aggregated_courses as (
         days_in_report_period,
         concat_ws(', ', collect_list(course_code)) as course_code, 
         sum(coalesce(period_duration,0)) as period_duration,
-        is_vocational_course
+        is_vocational_course,
+        max(tdoe_severity_code) as tdoe_severity_code,
+        {{ severity_code_to_severity_case_clause('max(tdoe_severity_code)') }}
     from student_classes
     where is_vocational_course = 0
     group by k_student, k_lea, k_school, k_school_calendar, school_year,
@@ -77,7 +81,9 @@ non_aggregated_courses as (
         days_in_report_period,
         course_code, 
         coalesce(period_duration,0) as period_duration,
-        is_vocational_course
+        is_vocational_course,
+        tdoe_severity_code,
+        tdoe_severity
     from student_classes
     where is_vocational_course = 1
 )
@@ -90,7 +96,9 @@ select sm.k_student, sm.k_lea, sm.k_school, sm.k_school_calendar, sm.school_year
     sm.ssd_duration,
     sm.report_period, sm.report_period_begin_date, sm.report_period_end_date,
     sm.days_in_report_period,
-    null as course_code, null as period_duration, null as is_vocational_course
+    null as course_code, null as period_duration, null as is_vocational_course,
+    tdoe_severity_code,
+    tdoe_severity
 from {{ ref('student_days') }} sm
 where sm.is_early_grad_date = 1
 union all

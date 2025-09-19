@@ -33,6 +33,8 @@ select k_student, k_lea, k_school, k_school_calendar, school_year, is_primary_sc
                 else 0
             end) * 100000.0) / 100000.0)
         as decimal(8,5)
-    ) as voc_membership
+    ) as voc_membership,
+    tdoe_severity_code as tdoe_severity_code,
+    tdoe_severity
 from {{ ref('student_day_sections') }}
 where is_vocational_course = 1

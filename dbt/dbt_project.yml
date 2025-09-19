@@ -135,15 +135,37 @@ vars:
   # custom data sources  
   'tdoe:school_grade_levels:custom_data_sources':
     cds_default_severity_columns:
-      joins:
-        - true
+      joins: [true]
       cds_additional_cols:
-        tdoe_severity_code: 
-          as: tdoe_severity_code
-          default: 0
-        tdoe_severity: 
-          as: tdoe_severity
-          default: "'good'"
+        tdoe_severity_code: { as: tdoe_severity_code, default: 0 }
+        tdoe_severity: { as: tdoe_severity, default: "'good'" }
+
+  'tdoe:section_class_period_dates:custom_data_sources':
+    cds_section_class_period_dates_statuses:
+      joins: 
+        - cds_section_class_period_dates_statuses.k_course_section = scp.k_course_section
+        - cds_section_class_period_dates_statuses.k_class_period = cp.k_class_period
+        - cds_section_class_period_dates_statuses.k_bell_schedule = bs.k_bell_schedule
+        - cds_section_class_period_dates_statuses.calendar_date = bs.calendar_date
+      cds_additional_cols:
+        tdoe_severity_code: { as: tdoe_severity_code, default: 0 }
+        tdoe_severity: { as: tdoe_severity, default: "'good'" }
+
+  'tdoe:student_characteristics:custom_data_sources':
+    cds_default_severity_columns:
+      joins: [true]
+      cds_additional_cols:
+        tdoe_severity_code: { as: tdoe_severity_code, default: 0 }
+        tdoe_severity: { as: tdoe_severity, default: "'good'" }
+
+  'tdoe:student_standard_day:custom_data_sources':
+    cds_ssd_statuses:
+      joins: 
+        - cds_ssd_statuses.k_student = ssae.k_student
+        - cds_ssd_statuses.k_school = ssae.k_school
+      cds_additional_cols:
+        tdoe_severity_code: { as: tdoe_severity_code, default: 0 }
+        tdoe_severity: { as: tdoe_severity, default: "'good'" }
 
   'edu:assessment:custom_data_sources':
     cds_default_severity_columns:
@@ -429,14 +451,14 @@ vars:
         tdoe_severity_code: { as: tdoe_severity_code, default: 0 }
         tdoe_severity: { as: tdoe_severity, default: "'good'" }
   
-  'edu:student_dicipline_incident_behaviors:custom_data_sources':
+  'edu:student_discipline_incident_behaviors:custom_data_sources':
     cds_default_severity_columns:
       joins: [true]
       cds_additional_cols:
         tdoe_severity_code: { as: tdoe_severity_code, default: 0 }
         tdoe_severity: { as: tdoe_severity, default: "'good'" }
   
-  'edu:student_dicipline_incident_non_offenders:custom_data_sources':
+  'edu:student_discipline_incident_non_offenders:custom_data_sources':
     cds_default_severity_columns:
       joins: [true]
       cds_additional_cols:

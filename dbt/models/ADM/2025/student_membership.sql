@@ -13,6 +13,7 @@ which is their average membership over any given report period.
 
 select k_student, k_lea, k_school, k_school_calendar, school_year, is_primary_school, entry_date,
     exit_withdraw_date, grade_level, grade_level_adm, is_early_graduate, 
+
     calendar_date, isa_member, is_sped, is_funding_ineligible, is_expelled, is_EconDis, is_EL, is_Dyslexic,
     is_early_grad_date,
     ssd_duration, report_period, report_period_begin_date, report_period_end_date,
@@ -88,7 +89,9 @@ select k_student, k_lea, k_school, k_school_calendar, school_year, is_primary_sc
             end) * 100000.0) / 100000.0)
         as decimal(8,5)
     ) as dyslexic_membership,
-    max(is_vocational_course) as has_vocational_courses
+    max(is_vocational_course) as has_vocational_courses,
+    max(tdoe_severity_code) as tdoe_severity_code,
+    {{ severity_code_to_severity_case_clause('max(tdoe_severity_code)') }}
 from {{ ref('student_day_sections') }}
 group by k_student, k_lea, k_school, k_school_calendar, school_year, is_primary_school, entry_date,
     exit_withdraw_date, grade_level, grade_level_adm, is_early_graduate, 
