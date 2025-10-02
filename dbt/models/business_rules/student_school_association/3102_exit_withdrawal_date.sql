@@ -15,7 +15,7 @@ with stg_student_school_associations as (
 errors as (
     /* Withdrawal Date must be within the school year begin and end date. */
     select ssa.k_student, ssa.k_school, ssa.k_school_calendar, ssa.school_id, ssa.student_unique_id, ssa.school_year, 
-        ssa.entry_date, ssa.entry_grade_level,ssa.entry_type,
+        ssa.entry_date, ssa.entry_grade_level, ssa.entry_type,
         s.state_student_id as legacy_state_student_id,
         {{ error_code }} as error_code,
         concat('Student School Association Exit Withdrawal Date for Student ', 
