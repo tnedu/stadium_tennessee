@@ -25,3 +25,6 @@ from {{ ref('3006_student_characteristics_end_date') }}
 union
 select *
 from {{ ref('3007_student_characteristics_overlaps') }}
+union
+select *
+from {{ ref('3008_no_student_ed_org_association') }}
