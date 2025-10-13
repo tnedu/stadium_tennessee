@@ -26,16 +26,14 @@ stg_student_school_associations as (
         from brule
         where cast(ssa.school_year as int) between brule.error_school_year_start and brule.error_school_year_end
     )
-    and (ssa.exit_withdraw_date is null
-    or ssa.entry_date < ssa.exit_withdraw_date)
 )
 /* Student Enrollments that does not exist in Student/EdOrg Associations. */
-select distinct ssa.k_student, lea.k_lea, ssa.k_school, ssa.school_year, ssa.ed_org_id, s.student_unique_id,
+select distinct ssa.k_student, cast( null as int ) as k_school, ssa.school_year, ssa.ed_org_id, s.student_unique_id,
     s.state_student_id as legacy_state_student_id,
     brule.tdoe_error_code as error_code,
-       concat('Immigrant Student ', 
+       concat('Student ', 
         s.student_unique_id, ' (', coalesce(s.state_student_id, '[no value]'), ') ',
-        'requires Student/EdOrg Associations on District level when Student School Association exists.') as error,
+        ' has an enrollment in District ',ssa.ed_org_id , ' but is missing a Student/EdOrg Association for this District.') as error,
     brule.tdoe_severity as severity
 from stg_student_school_associations ssa
 join {{ ref('edu_edfi_source', 'stg_ef3__students') }} s
@@ -45,8 +43,9 @@ join {{ ref('edu_edfi_source', 'stg_ef3__local_education_agencies') }} lea
 join brule
     on cast(ssa.school_year as int) between brule.error_school_year_start and brule.error_school_year_end
 where not exists (
-            select 1 from {{ ref('stg_ef3__student_education_organization_associations_orig') }} se
+            select 1 
+            from {{ ref('stg_ef3__student_education_organization_associations_orig') }} se
             where se.k_student = ssa.k_student
-            and se.school_year = ssa.school_year
+            and cast(se.school_year as int)  = cast(ssa.school_year as int) 
             and se.ed_org_id = ssa.ed_org_id
         )
