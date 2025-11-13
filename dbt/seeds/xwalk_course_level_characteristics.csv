@@ -1,12 +1,12 @@
 characteristic_descriptor,indicator_name
-Advanced Placement,is_ap
-CIE,is_cie
-DE,is_de
-H,is_h
+Advanced Placement,is_advanced_placement
+CIE,is_cambridge_int_exam
+DE,is_dual_enrollment
+H,is_honors
 IGCSE,is_igcse
 International Baccalaureate,is_ib
-LDC,is_ldc
-SDC,is_sdc
+LDC,is_local_dual_credit
+SDC,is_statewide_dual_credit
 General,is_general
 Fall Block,is_fall_block
 Spring Block,is_spring_block
