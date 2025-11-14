@@ -1,6 +1,6 @@
 packages:
-  - package: edanalytics/edu_wh
-    version: [">=0.4.0", "<0.5.2"]
+  - git: https://github.com/tnedu/edu_wh.git
+    revision: tdoe_on_latest_ea_w_extras
   - package: brooklyn-data/dbt_artifacts
     version: [">=2.2.2", "<3.0.0"]
   - git: https://github.com/tnedu/edu_ext_oneroster.git
