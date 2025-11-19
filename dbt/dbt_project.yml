@@ -87,10 +87,11 @@ models:
     +tags: ['bypass_rls']
 
 vars:
-
-  'oneroster:active_school_year': 2026
-
+  # todo: we need to get rid of this
   'edu:class_period:attempt_military_whatever': false
+
+  # one roster configs
+  'oneroster:active_school_year': 2026
 
   # labels for generated race/ethnicity groups
   'edu:stu_demos:multiple_races_code': Multiple
@@ -139,14 +140,6 @@ vars:
   # custom intersections of other demographic groupings
   'edu:stu_demos:intersection_groups': Null
 
-  # custom data sources for student characteristics. must contain and be unique by `k_student`
-  'edu:stu_demos:custom_data_sources': 
-    cds_student_additional_columns:
-      state_student_id:
-        where: stateStudentId
-      date_entered_us:
-        where: dateenteredus
-
   #tdoe business rule vars
   'edu:excluded_data:stg_ef3__bell_schedules':
     exclude_data_table: bell_schedules_excludes
@@ -158,6 +151,18 @@ vars:
     join_columns:
       k_school: k_school
       k_school_calendar: k_school_calendar
+
+  #tdoe business rule vars
+  'tdoe:status_columns_config':
+    columns:
+      tdoe_severity_code: 0
+      tdoe_severity: "'good'"
+    statuses:
+      good: 0
+      info: 1
+      warning: 2
+      error: 3
+      critical: 4
 
   # source config
   extensions:
@@ -183,6 +188,61 @@ vars:
   'src:program:cte:enabled': False
   'src:program:food_service:enabled': False
 
+  'edu:discipline_actions:custom_data_sources':
+    cds_student_discipline_action_additional_columns:
+      discipline_end_date:
+        where: discipline_end_date
+    cds_student_discipline_actions_statuses:
+      joins: 
+        - cds_student_discipline_actions_statuses.k_student = stg_discipline_actions.k_student
+        - cds_student_discipline_actions_statuses.k_school__responsibility = stg_discipline_actions.k_school__responsibility
+        - cds_student_discipline_actions_statuses.discipline_action_id = stg_discipline_actions.discipline_action_id
+      cds_additional_cols:
+        tdoe_severity_code: { as: tdoe_severity_code, default: 0 }
+        tdoe_severity: { as: tdoe_severity, default: "'good'" }
+  
+  # custom data sources  
+  'tdoe:school_grade_levels:custom_data_sources':
+    cds_default_severity_columns:
+      joins: [true]
+      cds_additional_cols:
+        tdoe_severity_code: { as: tdoe_severity_code, default: 0 }
+        tdoe_severity: { as: tdoe_severity, default: "'good'" }
+
+  'tdoe:section_class_period_dates:custom_data_sources':
+    cds_section_class_period_dates_statuses:
+      joins: 
+        - cds_section_class_period_dates_statuses.k_course_section = scp.k_course_section
+        - cds_section_class_period_dates_statuses.k_class_period = cp.k_class_period
+        - cds_section_class_period_dates_statuses.k_bell_schedule = bs.k_bell_schedule
+        - cds_section_class_period_dates_statuses.calendar_date = bs.calendar_date
+      cds_additional_cols:
+        tdoe_severity_code: { as: tdoe_severity_code, default: 0 }
+        tdoe_severity: { as: tdoe_severity, default: "'good'" }
+
+  'tdoe:student_characteristics:custom_data_sources':
+    cds_default_severity_columns:
+      joins: [true]
+      cds_additional_cols:
+        tdoe_severity_code: { as: tdoe_severity_code, default: 0 }
+        tdoe_severity: { as: tdoe_severity, default: "'good'" }
+
+  'tdoe:student_standard_day:custom_data_sources':
+    cds_ssd_statuses:
+      joins: 
+        - cds_ssd_statuses.k_student = ssae.k_student
+        - cds_ssd_statuses.k_school = ssae.k_school
+      cds_additional_cols:
+        tdoe_severity_code: { as: tdoe_severity_code, default: 0 }
+        tdoe_severity: { as: tdoe_severity, default: "'good'" }
+
+  'edu:assessment:custom_data_sources':
+    cds_default_severity_columns:
+      joins: [true]
+      cds_additional_cols:
+        tdoe_severity_code: { as: tdoe_severity_code, default: 0 }
+        tdoe_severity: { as: tdoe_severity, default: "'good'" }
+
   # custom data sources for calendar dates
   'edu:calendar_date:custom_data_sources':
     cds_calendar_date_report_periods:
@@ -196,6 +256,148 @@ vars:
         where: report_period_end_date
       days_in_report_period:
         where: days_in_report_period
+    cds_calendar_statuses:
+      joins: 
+        - cds_calendar_statuses.k_school_calendar = augmented.k_school_calendar
+      cds_additional_cols:
+        tdoe_severity_code: { as: tdoe_severity_code, default: 0 }
+        tdoe_severity: { as: tdoe_severity, default: "'good'" }
+  
+  'edu:class_period:custom_data_sources':
+    cds_class_period_statuses:
+      joins: 
+        - cds_class_period_statuses.k_class_period = class_periods.k_class_period
+      cds_additional_cols:
+        tdoe_severity_code: { as: tdoe_severity_code, default: 0 }
+        tdoe_severity: { as: tdoe_severity, default: "'good'" }
+
+  'edu:classroom:custom_data_sources':
+    cds_default_severity_columns:
+      joins: [true]
+      cds_additional_cols:
+        tdoe_severity_code: { as: tdoe_severity_code, default: 0 }
+        tdoe_severity: { as: tdoe_severity, default: "'good'" }
+
+  'edu:cohort:custom_data_sources':
+    cds_default_severity_columns:
+      joins: [true]
+      cds_additional_cols:
+        tdoe_severity_code: { as: tdoe_severity_code, default: 0 }
+        tdoe_severity: { as: tdoe_severity, default: "'good'" }
+  
+  'edu:course_section:custom_data_sources':
+    cds_sections_statuses:
+      joins: 
+        - cds_sections_statuses.k_course_section = stg_ef3__sections.k_course_section
+      cds_additional_cols:
+        tdoe_severity_code: { as: tdoe_severity_code, default: 0 }
+        tdoe_severity: { as: tdoe_severity, default: "'good'" }
+
+  'edu:course:custom_data_sources':
+    cds_default_severity_columns:
+      joins: [true]
+      cds_additional_cols:
+        tdoe_severity_code: { as: tdoe_severity_code, default: 0 }
+        tdoe_severity: { as: tdoe_severity, default: "'good'" }
+  
+  'edu:discipline_incident:custom_data_sources':
+    cds_default_severity_columns:
+      joins: [true]
+      cds_additional_cols:
+        tdoe_severity_code: { as: tdoe_severity_code, default: 0 }
+        tdoe_severity: { as: tdoe_severity, default: "'good'" }
+  
+  'edu:esc:custom_data_sources':
+    cds_default_severity_columns:
+      joins: [true]
+      cds_additional_cols:
+        tdoe_severity_code: { as: tdoe_severity_code, default: 0 }
+        tdoe_severity: { as: tdoe_severity, default: "'good'" }
+  
+  'edu:grading_period:custom_data_sources':
+    cds_default_severity_columns:
+      joins: [true]
+      cds_additional_cols:
+        tdoe_severity_code: { as: tdoe_severity_code, default: 0 }
+        tdoe_severity: { as: tdoe_severity, default: "'good'" }
+  
+  'edu:graduation_plan:custom_data_sources':
+    cds_default_severity_columns:
+      joins: [true]
+      cds_additional_cols:
+        tdoe_severity_code: { as: tdoe_severity_code, default: 0 }
+        tdoe_severity: { as: tdoe_severity, default: "'good'" }
+  
+  'edu:lea:custom_data_sources':
+    cds_default_severity_columns:
+      joins: [true]
+      cds_additional_cols:
+        tdoe_severity_code: { as: tdoe_severity_code, default: 0 }
+        tdoe_severity: { as: tdoe_severity, default: "'good'" }
+  
+  'edu:learning_standard:custom_data_sources':
+    cds_default_severity_columns:
+      joins: [true]
+      cds_additional_cols:
+        tdoe_severity_code: { as: tdoe_severity_code, default: 0 }
+        tdoe_severity: { as: tdoe_severity, default: "'good'" }
+  
+  'edu:network:custom_data_sources':
+    cds_default_severity_columns:
+      joins: [true]
+      cds_additional_cols:
+        tdoe_severity_code: { as: tdoe_severity_code, default: 0 }
+        tdoe_severity: { as: tdoe_severity, default: "'good'" }
+  
+  'edu:objective_assessment:custom_data_sources':
+    cds_default_severity_columns:
+      joins: [true]
+      cds_additional_cols:
+        tdoe_severity_code: { as: tdoe_severity_code, default: 0 }
+        tdoe_severity: { as: tdoe_severity, default: "'good'" }
+  
+  'edu:parent:custom_data_sources':
+    cds_default_severity_columns:
+      joins: [true]
+      cds_additional_cols:
+        tdoe_severity_code: { as: tdoe_severity_code, default: 0 }
+        tdoe_severity: { as: tdoe_severity, default: "'good'" }
+  
+  'edu:program:custom_data_sources':
+    cds_default_severity_columns:
+      joins: [true]
+      cds_additional_cols:
+        tdoe_severity_code: { as: tdoe_severity_code, default: 0 }
+        tdoe_severity: { as: tdoe_severity, default: "'good'" }
+  
+  'edu:school_calendar:custom_data_sources':
+    cds_calendar_statuses:
+      joins: 
+        - cds_calendar_statuses.k_school_calendar = stg_calendar.k_school_calendar
+      cds_additional_cols:
+        tdoe_severity_code: { as: tdoe_severity_code, default: 0 }
+        tdoe_severity: { as: tdoe_severity, default: "'good'" }
+
+  # custom data sources for schools
+  'edu:schools:custom_data_sources':
+    cds_schools_additional_columns:
+      grade_levels:
+        where: grade_levels
+      school_number:
+        where: school_number
+    cds_default_severity_columns:
+      joins: [true]
+      cds_additional_cols:
+        tdoe_severity_code: { as: tdoe_severity_code, default: 0 }
+        tdoe_severity: { as: tdoe_severity, default: "'good'" }
+
+  'edu:session:custom_data_sources':
+    cds_sessions_statuses:
+      joins: 
+        - cds_sessions_statuses.k_session = stg_sessions.k_session
+      cds_additional_cols:
+        tdoe_severity_code: { as: tdoe_severity_code, default: 0 }
+        tdoe_severity: { as: tdoe_severity, default: "'good'" }
   
   # custom data sources for staff
   'edu:staff:custom_data_sources':
@@ -210,20 +412,260 @@ vars:
         where: TeacherLicenseExpirationDate
       TeacherLicenseIssuanceDate:
         where: TeacherLicenseIssuanceDate
+    cds_default_severity_columns:
+      joins: [true]
+      cds_additional_cols:
+        tdoe_severity_code: { as: tdoe_severity_code, default: 0 }
+        tdoe_severity: { as: tdoe_severity, default: "'good'" }
+
+  # custom data sources for student characteristics. must contain and be unique by `k_student`
+  'edu:stu_demos:custom_data_sources': 
+    cds_student_additional_columns:
+      state_student_id:
+        where: stateStudentId
+      date_entered_us:
+        where: dateenteredus
+    cds_student_statuses:
+      joins: 
+        - cds_student_statuses.k_student = stg_student.k_student
+      cds_additional_cols:
+        tdoe_severity_code: { as: tdoe_severity_code, default: 0 }
+        tdoe_severity: { as: tdoe_severity, default: "'good'" }
   
-  # custom data sources for schools
-  'edu:schools:custom_data_sources':
-    cds_schools_additional_columns:
-      grade_levels:
-        where: grade_levels
-      school_number:
-        where: school_number
+  'edu:subgroup:custom_data_sources':
+    cds_default_severity_columns:
+      joins: [true]
+      cds_additional_cols:
+        tdoe_severity_code: { as: tdoe_severity_code, default: 0 }
+        tdoe_severity: { as: tdoe_severity, default: "'good'" }
+
+  'edu:course_transcripts:custom_data_sources': 
+    cds_course_transcripts_statuses:
+      joins: 
+        - cds_course_transcripts_statuses.k_course = course_transcripts.k_course
+        - cds_course_transcripts_statuses.k_student_academic_record = fct_student_academic_record.k_student_academic_record
+      cds_additional_cols:
+        tdoe_severity_code: { as: tdoe_severity_code, default: 0 }
+        tdoe_severity: { as: tdoe_severity, default: "'good'" }
+
+  'edu:staff_school_association:custom_data_sources': 
+    cds_staff_school_assoc_statuses:
+      joins: 
+        - cds_staff_school_assoc_statuses.k_staff = dim_staff.k_staff
+      cds_additional_cols:
+        tdoe_severity_code: { as: tdoe_severity_code, default: 0 }
+        tdoe_severity: { as: tdoe_severity, default: "'good'" }
+
+  'edu:staff_section_association:custom_data_sources': 
+    cds_staff_section_assoc_statuses:
+      joins: 
+        - cds_staff_section_assoc_statuses.k_staff = dim_staff.k_staff
+        - cds_staff_section_assoc_statuses.k_school = dim_course_section.k_school
+        - cds_staff_section_assoc_statuses.k_course_section = dim_course_section.k_course_section
+      cds_additional_cols:
+        tdoe_severity_code: { as: tdoe_severity_code, default: 0 }
+        tdoe_severity: { as: tdoe_severity, default: "'good'" }
+
+  'edu:student_academic_record:custom_data_sources': 
+    cds_student_academic_records_statuses:
+      joins: 
+        - cds_student_academic_records_statuses.k_student_academic_record = stg_academic_record.k_student_academic_record
+      cds_additional_cols:
+        tdoe_severity_code: { as: tdoe_severity_code, default: 0 }
+        tdoe_severity: { as: tdoe_severity, default: "'good'" }
   
-  # custom data sources for discipline actions
-  'edu:discipline_actions:custom_data_sources':
-    cds_student_discipline_action_additional_columns:
-      discipline_end_date:
-        where: discipline_end_date
+  'edu:student_assessment:custom_data_sources':
+    cds_default_severity_columns:
+      joins: [true]
+      cds_additional_cols:
+        tdoe_severity_code: { as: tdoe_severity_code, default: 0 }
+        tdoe_severity: { as: tdoe_severity, default: "'good'" }
+  
+  'edu:student_cohort_association:custom_data_sources':
+    cds_default_severity_columns:
+      joins: [true]
+      cds_additional_cols:
+        tdoe_severity_code: { as: tdoe_severity_code, default: 0 }
+        tdoe_severity: { as: tdoe_severity, default: "'good'" }
+
+  'edu:student_daily_attendance:custom_data_sources': 
+    cds_student_attendance_event_statuses:
+      joins: 
+        - cds_student_attendance_event_statuses.k_student = cumulatives.k_student
+        - cds_student_attendance_event_statuses.k_school = cumulatives.k_school
+        - cds_student_attendance_event_statuses.k_session = cumulatives.k_session
+        - cds_student_attendance_event_statuses.attendance_event_date = cumulatives.calendar_date
+      cds_additional_cols:
+        tdoe_severity_code: { as: tdoe_severity_code, default: 0 }
+        tdoe_severity: { as: tdoe_severity, default: "'good'" }
+  
+  'edu:student_diploma:custom_data_sources':
+    cds_default_severity_columns:
+      joins: [true]
+      cds_additional_cols:
+        tdoe_severity_code: { as: tdoe_severity_code, default: 0 }
+        tdoe_severity: { as: tdoe_severity, default: "'good'" }
+  
+  'edu:student_discipline_actions_summary:custom_data_sources':
+    cds_default_severity_columns:
+      joins: [true]
+      cds_additional_cols:
+        tdoe_severity_code: { as: tdoe_severity_code, default: 0 }
+        tdoe_severity: { as: tdoe_severity, default: "'good'" }
+
+  'edu:student_discipline_incident_behaviors:custom_data_sources':
+    cds_default_severity_columns:
+      joins: [true]
+      cds_additional_cols:
+        tdoe_severity_code: { as: tdoe_severity_code, default: 0 }
+        tdoe_severity: { as: tdoe_severity, default: "'good'" }
+  
+  'edu:student_discipline_incident_non_offenders:custom_data_sources':
+    cds_default_severity_columns:
+      joins: [true]
+      cds_additional_cols:
+        tdoe_severity_code: { as: tdoe_severity_code, default: 0 }
+        tdoe_severity: { as: tdoe_severity, default: "'good'" }
+  
+  'edu:student_discipline_incident_summary:custom_data_sources':
+    cds_default_severity_columns:
+      joins: [true]
+      cds_additional_cols:
+        tdoe_severity_code: { as: tdoe_severity_code, default: 0 }
+        tdoe_severity: { as: tdoe_severity, default: "'good'" }
+
+  'edu:student_gpa:custom_data_sources': 
+    cds_student_academic_records_statuses:
+      joins: 
+        - cds_student_academic_records_statuses.k_student_academic_record = academic_record.k_student_academic_record
+      cds_additional_cols:
+        tdoe_severity_code: { as: tdoe_severity_code, default: 0 }
+        tdoe_severity: { as: tdoe_severity, default: "'good'" }
+  
+  'edu:student_grades:custom_data_sources':
+    cds_default_severity_columns:
+      joins: [true]
+      cds_additional_cols:
+        tdoe_severity_code: { as: tdoe_severity_code, default: 0 }
+        tdoe_severity: { as: tdoe_severity, default: "'good'" }
+
+  'edu:student_homeless_program_association:custom_data_sources': 
+    cds_student_homeless_program_assoc_statuses:
+      joins: 
+        - cds_student_homeless_program_assoc_statuses.k_student = dim_student.k_student
+        - cds_student_homeless_program_assoc_statuses.k_program = dim_program.k_program
+        - cds_student_homeless_program_assoc_statuses.k_lea = dim_program.k_lea
+      cds_additional_cols:
+        tdoe_severity_code: { as: tdoe_severity_code, default: 0 }
+        tdoe_severity: { as: tdoe_severity, default: "'good'" }
+  
+  'edu:student_language_instruction_program_association:custom_data_sources':
+    cds_default_severity_columns:
+      joins: [true]
+      cds_additional_cols:
+        tdoe_severity_code: { as: tdoe_severity_code, default: 0 }
+        tdoe_severity: { as: tdoe_severity, default: "'good'" }
+  
+  'edu:student_learning_standard_grades:custom_data_sources':
+    cds_default_severity_columns:
+      joins: [true]
+      cds_additional_cols:
+        tdoe_severity_code: { as: tdoe_severity_code, default: 0 }
+        tdoe_severity: { as: tdoe_severity, default: "'good'" }
+  
+  'edu:student_objective_assessment:custom_data_sources':
+    cds_default_severity_columns:
+      joins: [true]
+      cds_additional_cols:
+        tdoe_severity_code: { as: tdoe_severity_code, default: 0 }
+        tdoe_severity: { as: tdoe_severity, default: "'good'" }
+  
+  'edu:student_parent_association:custom_data_sources':
+    cds_default_severity_columns:
+      joins: [true]
+      cds_additional_cols:
+        tdoe_severity_code: { as: tdoe_severity_code, default: 0 }
+        tdoe_severity: { as: tdoe_severity, default: "'good'" }
+  
+  'edu:student_program_association:custom_data_sources':
+    cds_default_severity_columns:
+      joins: [true]
+      cds_additional_cols:
+        tdoe_severity_code: { as: tdoe_severity_code, default: 0 }
+        tdoe_severity: { as: tdoe_severity, default: "'good'" }
+  
+  'edu:student_program_service:custom_data_sources':
+    cds_default_severity_columns:
+      joins: [true]
+      cds_additional_cols:
+        tdoe_severity_code: { as: tdoe_severity_code, default: 0 }
+        tdoe_severity: { as: tdoe_severity, default: "'good'" }
+
+  'edu:student_school_association:custom_data_sources':
+    cds_student_school_assoc_statuses:
+      joins:
+        - cds_student_school_assoc_statuses.k_student = stg_stu_school.k_student
+        - cds_student_school_assoc_statuses.k_school = stg_stu_school.k_school
+        - cds_student_school_assoc_statuses.k_school_calendar = stg_stu_school.k_school_calendar
+      cds_additional_cols:
+        tdoe_severity_code: { as: tdoe_severity_code, default: 0 }
+        tdoe_severity: { as: tdoe_severity, default: "'good'" }
+
+  'edu:student_school_attendance_event:custom_data_sources': 
+    cds_student_school_attendance_event_statuses:
+      joins: 
+        - cds_student_school_attendance_event_statuses.k_student = dim_student.k_student
+        - cds_student_school_attendance_event_statuses.k_school = dim_school.k_school
+        - cds_student_school_attendance_event_statuses.k_session = dim_session.k_session
+        - cds_student_school_attendance_event_statuses.k_calendar_date = dim_calendar_date.k_calendar_date
+      cds_additional_cols:
+        tdoe_severity_code: { as: tdoe_severity_code, default: 0 }
+        tdoe_severity: { as: tdoe_severity, default: "'good'" }
+
+  'edu:student_section_association:custom_data_sources': 
+    cds_student_section_assoc_statuses:
+      joins: 
+        - cds_student_section_assoc_statuses.k_student = dim_student.k_student
+        - cds_student_section_assoc_statuses.k_school = dim_course_section.k_school
+        - cds_student_section_assoc_statuses.k_course_section = dim_course_section.k_course_section
+      cds_additional_cols:
+        tdoe_severity_code: { as: tdoe_severity_code, default: 0 }
+        tdoe_severity: { as: tdoe_severity, default: "'good'" }
+
+  'edu:student_section_attendance_event:custom_data_sources':
+    cds_default_severity_columns:
+      joins: [true]
+      cds_additional_cols:
+        tdoe_severity_code: { as: tdoe_severity_code, default: 0 }
+        tdoe_severity: { as: tdoe_severity, default: "'good'" }
+
+  'edu:student_special_education_program_association:custom_data_sources':
+    cds_default_severity_columns:
+      joins: [true]
+      cds_additional_cols:
+        tdoe_severity_code: { as: tdoe_severity_code, default: 0 }
+        tdoe_severity: { as: tdoe_severity, default: "'good'" }
+
+  'edu:student_subgroup:custom_data_sources':
+    cds_default_severity_columns:
+      joins: [true]
+      cds_additional_cols:
+        tdoe_severity_code: { as: tdoe_severity_code, default: 0 }
+        tdoe_severity: { as: tdoe_severity, default: "'good'" }
+
+  'edu:student_title_i_part_a_program_association:custom_data_sources':
+    cds_default_severity_columns:
+      joins: [true]
+      cds_additional_cols:
+        tdoe_severity_code: { as: tdoe_severity_code, default: 0 }
+        tdoe_severity: { as: tdoe_severity, default: "'good'" }
+
+  'edu:student_cumulative_attendance:custom_data_sources':
+    cds_default_severity_columns:
+      joins: [true]
+      cds_additional_cols:
+        tdoe_severity_code: { as: tdoe_severity_code, default: 0 }
+        tdoe_severity: { as: tdoe_severity, default: "'good'" }
 
 seeds:
   +schema: seed

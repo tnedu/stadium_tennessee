@@ -15,12 +15,17 @@
   )
 }}
 
+{{ edu_wh.cds_depends_on('tdoe:section_class_period_dates:custom_data_sources') }}
+{% set custom_data_sources = var('tdoe:section_class_period_dates:custom_data_sources', []) %}
+
 select scp.k_course_section, cp.k_class_period, cp.k_school, sec.k_course,
     cp.tenant_code, cp.school_year, 
     sec.educational_environment_type, sec.course_code, sec.is_cte,
     cp.class_period_name, cp.start_time, cp.end_time, cp.period_duration, 
     bs.k_bell_schedule, 
     bs.bell_schedule_name, bs.alternate_day_name, bs.calendar_date
+    -- custom indicators
+    {{ edu_wh.add_cds_columns(custom_data_sources=custom_data_sources) }}
 from {{ ref('edu_wh', 'dim_class_period') }} cp
 join (
         select bs.k_bell_schedule, bs.k_school, bs.school_year, bs.tenant_code, bs.api_year,
@@ -44,3 +49,5 @@ join {{ ref('stg_ef3__sections__class_periods') }} scp
     on scp.k_class_period = cp.k_class_period
 join {{ ref('dim_course_section') }} sec
     on sec.k_course_section = scp.k_course_section
+-- custom data sources
+{{ edu_wh.add_cds_joins_v2(custom_data_sources=custom_data_sources) }}

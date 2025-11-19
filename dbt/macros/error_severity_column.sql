@@ -13,5 +13,5 @@
             end
         ) desc
         limit 1
-    ) as severity
+    ) as tdoe_severity
 {%- endmacro -%}

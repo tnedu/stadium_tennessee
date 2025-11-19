@@ -22,7 +22,6 @@ from (
             report_period, calendar_date, ssd_duration, 
             sum(period_duration) as sum_period_duration
         from {{ ref('student_day_sections') }}
-        where k_student = '95951531f447c169ac5a99bec36e9225'
         group by school_year, k_student, k_school, is_primary_school,
             report_period, calendar_date, ssd_duration
     )

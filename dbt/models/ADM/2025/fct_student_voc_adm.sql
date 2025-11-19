@@ -18,26 +18,7 @@
 }}
 
 /* This model calculates the Vocational ADM. */
-with course_sum as (
-    /* A student can be over-scheduled for the same course, so we have to first sum up their membership by course. */
-    select sm.k_student, sm.k_lea, sm.k_school, sm.k_school_calendar, sm.school_year, 
-        sm.is_primary_school, sm.entry_date,
-        sm.exit_withdraw_date, sm.grade_level, sm.grade_level_adm, sm.is_early_graduate, 
-        sm.calendar_date,
-        sm.report_period, sm.report_period_begin_date, sm.report_period_end_date, sm.days_in_report_period,
-        sm.is_sped, sm.is_funding_ineligible, sm.is_expelled, sm.is_EconDis, sm.ssd_duration,
-        sum(sm.voc_membership) as voc_membership,
-        sum(sm.voc_class_duration) as voc_class_duration,
-        sm.course_code
-    from {{ ref('student_voc_membership') }} sm
-    group by sm.k_student, sm.k_lea, sm.k_school, sm.k_school_calendar, sm.school_year, 
-        sm.is_primary_school, sm.entry_date,
-        sm.exit_withdraw_date, sm.grade_level, sm.grade_level_adm, sm.is_early_graduate, 
-        sm.calendar_date,
-        sm.report_period, sm.report_period_begin_date, sm.report_period_end_date, sm.days_in_report_period,
-        sm.is_sped, sm.is_funding_ineligible, sm.is_expelled, sm.is_EconDis, sm.ssd_duration,
-        sm.course_code
-)
+
 select sm.k_student, sm.k_lea, sm.k_school, sm.k_school_calendar, sm.school_year, 
     l.lea_id as district_id, l.lea_name as district_name, 
     cast(right(cast(school.school_id as string), 4) as int) as school_id, school.school_name,
@@ -45,9 +26,9 @@ select sm.k_student, sm.k_lea, sm.k_school, sm.k_school_calendar, sm.school_year
     sm.is_primary_school, sm.entry_date,
     sm.exit_withdraw_date, sm.grade_level, sm.grade_level_adm, sm.is_early_graduate, 
     sm.report_period, sm.report_period_begin_date, sm.report_period_end_date, sm.days_in_report_period,
-    sum(sm.is_sped) as days_sped,
     sum(sm.is_funding_ineligible) as days_funding_ineligible,
     sum(sm.is_expelled) as days_expelled,
+    -1 as days_sped,
     sum(sm.is_EconDis) as days_EconDis,
     sum(sm.voc_membership) as sum_voc_membership,
     sum(sm.ssd_duration) as sum_student_standard_day,
@@ -72,8 +53,10 @@ select sm.k_student, sm.k_lea, sm.k_school, sm.k_school_calendar, sm.school_year
                             cast(least(sm.days_in_report_period,20) as decimal(12,8)), 1.0)
             end) * 100000) / 100000)
         as decimal(8,5)
-    ) as normalized_voc_adm
-from course_sum sm
+    ) as normalized_voc_adm,
+    max(sm.tdoe_severity_code) as tdoe_severity_code,
+    {{ severity_code_to_severity_case_clause('max(sm.tdoe_severity_code)') }}
+from {{ ref('student_voc_membership') }} sm
 join {{ ref('dim_student') }} s
     on s.k_student = sm.k_student
 join {{ ref('dim_lea') }} l
