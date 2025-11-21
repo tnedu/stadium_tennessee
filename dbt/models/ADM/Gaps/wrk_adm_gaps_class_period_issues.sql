@@ -12,7 +12,7 @@ with q as (
     from {{ ref('class_periods') }} sess
     join {{ ref('stg_ef3__schools') }} sch
         on sch.school_id = sess.school_id
-    where severity = 'critical'
+    where tdoe_severity = 'critical'
     group by sess.school_year, sch.k_school
 )
 select school_year, null as k_student, k_school, null as is_primary_school,
