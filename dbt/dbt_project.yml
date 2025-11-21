@@ -28,54 +28,7 @@ flags:
 
 models:
   # We have to disable some edu_edfi_source models because we are replacing them.
-  edu_edfi_source:
-    staging:
-      edfi_3:
-        stage:
-          stg_ef3__student_education_organization_associations:
-            +enabled: false
-          stg_ef3__stu_ed_org__characteristics:
-            +enabled: false
-          stg_ef3__stu_ed_org__languages:
-            +enabled: false
-          stg_ef3__stu_ed_org__races:
-            +enabled: false
-          stg_ef3__student_school_associations:
-            +enabled: false
-          stg_ef3__student_homeless_program_associations:
-            +enabled: false
-          stg_ef3__sessions:
-            +enabled: false
-          stg_ef3__sections:
-            +enabled: false
-          stg_ef3__sections__class_periods:
-            +enabled: false
-          stg_ef3__class_periods:
-            +enabled: false
-          stg_ef3__bell_schedules:
-            +enabled: false
-          stg_ef3__student_school_attendance_events:
-            +enabled: false
-          stg_ef3__discipline_actions:
-            +enabled: false
-          stg_ef3__student_section_associations:
-            +enabled: false
-          stg_ef3__course_transcripts:
-            +enabled: false
-          stg_ef3__student_academic_records:
-            +enabled: false
-          stg_ef3__student_academic_records__diplomas:
-            +enabled: false
-          stg_ef3__staff_education_organization_assignment_associations:
-            +enabled: false
-          stg_ef3__staff_section_associations:
-            +enabled: false
-          stg_ef3__calendars:
-            +enabled: false
-          stg_ef3__calendar_dates:
-            +enabled: false
-          stg_ef3__calendar_dates__calendar_events:
-            +enabled: false
+
   edu_wh:
     +materialized: table
     build:

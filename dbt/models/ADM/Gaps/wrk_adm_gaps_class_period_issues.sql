@@ -27,7 +27,7 @@ select e.school_year, e.k_student, e.k_school, e.is_primary_school,
     concat('Student is tied to Class Periods with the following errors:\n', 
         concat_ws('\n', collect_list(concat('\t', x.error)))) as possible_reason
 from {{ ref('adm_gaps_enrollments') }} e
-join {{ ref('stg_ef3__student_section_associations_orig')}} sections
+join {{ ref('stg_ef3__student_section_associations')}} sections
     on sections.school_year = e.school_year
     and sections.k_student = e.k_student
     and sections.school_id = e.school_id
