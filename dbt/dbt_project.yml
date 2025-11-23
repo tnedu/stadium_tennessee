@@ -567,10 +567,10 @@ vars:
   'edu:student_school_attendance_event:custom_data_sources': 
     cds_student_school_attendance_event_statuses:
       joins: 
-        - cds_student_school_attendance_event_statuses.k_student = dim_student.k_student
-        - cds_student_school_attendance_event_statuses.k_school = dim_school.k_school
-        - cds_student_school_attendance_event_statuses.k_session = dim_session.k_session
-        - cds_student_school_attendance_event_statuses.k_calendar_date = dim_calendar_date.k_calendar_date
+        - cds_student_school_attendance_event_statuses.k_student = deduped.k_student
+        - cds_student_school_attendance_event_statuses.k_school = deduped.k_school
+        - cds_student_school_attendance_event_statuses.k_session = deduped.k_session
+        - cds_student_school_attendance_event_statuses.k_calendar_date = deduped.k_calendar_date
       cds_additional_cols:
         tdoe_severity_code: { as: tdoe_severity_code, default: 0 }
         tdoe_severity: { as: tdoe_severity, default: "'good'" }
