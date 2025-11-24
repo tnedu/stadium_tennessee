@@ -30,7 +30,7 @@ errors as (
                 from {{ ref('stg_ef3__stu_ed_org__characteristics') }} sc
                 where sc.k_lea = se.k_lea
                     and sc.k_student = se.k_student
-                    and sc.student_characteristic = 'IMMIG'
+                    and sc.student_characteristic = 'IMMG'
             )
 )
 select errors.*,
