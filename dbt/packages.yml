@@ -1,6 +1,6 @@
 packages:
   - git: https://github.com/tnedu/edu_wh.git
-    revision: teds1228/re_arch_brs_ea_latest
+    revision: teds1211/exposing_section_programs
   - package: brooklyn-data/dbt_artifacts
     version: [">=2.2.2", "<3.0.0"]
   - git: https://github.com/tnedu/edu_ext_oneroster.git
