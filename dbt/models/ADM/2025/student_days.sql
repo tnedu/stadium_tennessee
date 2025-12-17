@@ -126,13 +126,21 @@ select k_student, k_lea, k_school, k_school_calendar,
         else 0
     end as is_early_grad_date,
     case
-        when is_expelled = 1 and coalesce(is_sped,0) = 0 then 0 
-        when is_funding_ineligible = 1 then 0
-        when calendar_date >= exit_withdraw_date 
-            and is_early_graduate = 1 then 1
-        when calendar_date >= entry_date
-            and (exit_withdraw_date is null
-                or calendar_date < exit_withdraw_date) then 1
+        /* Early Grads get membership after their enrollment window. */
+        when is_early_graduate = 1 and calendar_date >= exit_withdraw_date then 1
+        /* All other calculations need to make sure the calendar date is within the enrollment window. */
+        when calendar_date >= entry_date and (exit_withdraw_date is null or calendar_date < exit_withdraw_date) then
+            case
+                /* Expelled SPED kids still get membership. */
+                when is_expelled = 1 and coalesce(is_sped,0) = 1 then 1
+                /* Otherwise, Expelled kids don't get membership. */
+                when is_expelled = 1 then 0
+                /* Funding ineligible kids don't get membership. */
+                when is_funding_ineligible = 1 then 0
+                /* Otherwise, the kid gets membership. */
+                else 1
+            end
+        /* Calendar date is outside of the enrollment window, so no membership. */
         else 0
     end as isa_member,
     tdoe_severity_code,
