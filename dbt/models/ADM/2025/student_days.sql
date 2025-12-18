@@ -124,7 +124,10 @@ select k_student, k_lea, k_school, k_school_calendar,
         else 0
     end as is_early_grad_date,
     case
-        when is_expelled = 1 and coalesce(is_sped,0) = 1 then 1 
+        when is_expelled = 1 and coalesce(is_sped,0) = 1 
+             and calendar_date >= entry_date
+             and (exit_withdraw_date is null
+                  or calendar_date < exit_withdraw_date) then 1 
         when is_expelled = 1 then 0
         when is_funding_ineligible = 1 then 0
         when calendar_date >= exit_withdraw_date 
