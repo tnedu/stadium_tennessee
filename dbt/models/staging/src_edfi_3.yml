@@ -304,6 +304,11 @@ sources:
       An organization that provides educational programs for individuals who have completed or otherwise left educational programs in secondary school(s).
     enabled: true
     columns: *column_defaults
+  - name: program_evaluations
+    description: >
+      An evaluation instrument applied to evaluate a student in the context of a program. Student evaluations are typically applied by a staff member based upon a rubric.
+    enabled: true
+    columns: *column_defaults
   - name: programs
     description: >
       This entity represents any program designed to work in conjunction with, or as a supplement to, the main academic program. Programs may provide instruction, training, services, or benefits through federal, state, or local agencies. Programs may also include organized extracurricular activities for students.
@@ -514,6 +519,11 @@ sources:
       This event entity represents the recording of whether a student is in attendance to receive or participate in program services.
     enabled: true
     columns: *column_defaults
+  - name: student_program_evaluations
+    description: >
+      The evaluation results for a student as evaluated in the context of a program.
+    enabled: true
+    columns: *column_defaults
   - name: student_school_associations
     description: >
       This association represents the School in which a student is enrolled. The semantics of enrollment may differ slightly by state. Non-enrollment relationships between a student and an education organization may be described using the StudentEducationOrganizationAssociation.
@@ -542,6 +552,11 @@ sources:
   - name: student_special_education_program_associations
     description: >
       This association represents the special education program(s) that a student participates in or receives services from. The association is an extension of the StudentProgramAssociation particular for special education programs.
+    enabled: true
+    columns: *column_defaults
+  - name: student_special_education_program_eligibility_associations
+    description: >
+      Captures details regarding the evaluation process for eligibility of students for special education services under IDEA Part C or Part B.
     enabled: true
     columns: *column_defaults
   - name: student_title_i_part_a_program_associations
