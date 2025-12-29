@@ -45,7 +45,7 @@ errors as (
     select c.k_school, c.k_school_calendar, c.school_year, c.school_id, c.calendar_code, 
         brule.tdoe_error_code as error_code,
         concat('Calendar ', c.calendar_code, ' has calculated total instructional days is less than the minimum of 180. Total days calculated: ',
-            ifnull(x.instructional_days,0), '.') as error,
+            ifnull(x.instructional_days,0), '.') as error
     from calendars c
     left outer join not_enough_dates x
         on x.k_school = c.k_school
@@ -56,8 +56,8 @@ errors as (
     order by 3, 4, 5
 )
 select errors.*,
-    {{ severity_to_severity_code_case_clause('rules.tdoe_severity') }},
-    rules.tdoe_severity
+    {{ severity_to_severity_code_case_clause('brule.tdoe_severity') }},
+    brule.tdoe_severity
 from errors errors
 join brule
     on c.school_year between brule.error_school_year_start and brule.error_school_year_end

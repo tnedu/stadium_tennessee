@@ -49,8 +49,8 @@ errors as (
     order by 3, 4, 5
 )
 select errors.*,
-    {{ severity_to_severity_code_case_clause('rules.tdoe_severity') }},
-    rules.tdoe_severity
+    {{ severity_to_severity_code_case_clause('brule.tdoe_severity') }},
+    brule.tdoe_severity
 from errors errors
 join brule
     on c.school_year between brule.error_school_year_start and brule.error_school_year_end
