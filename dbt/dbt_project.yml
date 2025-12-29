@@ -91,14 +91,6 @@ vars:
   # custom intersections of other demographic groupings
   'edu:stu_demos:intersection_groups': Null
 
-  # custom data sources for student characteristics. must contain and be unique by `k_student`
-  'edu:stu_demos:custom_data_sources': 
-    cds_student_additional_columns:
-      state_student_id:
-        where: stateStudentId
-      date_entered_us:
-        where: dateenteredus
-
   #tdoe business rule vars
   'tdoe:status_columns_config':
     columns:
@@ -346,10 +338,13 @@ vars:
         tdoe_severity_code: { as: tdoe_severity_code, default: 0 }
         tdoe_severity: { as: tdoe_severity, default: "'good'" }
 
+  # custom data sources for student characteristics. must contain and be unique by `k_student`
   'edu:stu_demos:custom_data_sources': 
     cds_student_additional_columns:
       state_student_id:
         where: stateStudentId
+      date_entered_us:
+        where: dateenteredus
     cds_student_statuses:
       joins: 
         - cds_student_statuses.k_student = stg_student.k_student
@@ -552,10 +547,10 @@ vars:
   'edu:student_school_attendance_event:custom_data_sources': 
     cds_student_school_attendance_event_statuses:
       joins: 
-        - cds_student_school_attendance_event_statuses.k_student = dim_student.k_student
-        - cds_student_school_attendance_event_statuses.k_school = dim_school.k_school
-        - cds_student_school_attendance_event_statuses.k_session = dim_session.k_session
-        - cds_student_school_attendance_event_statuses.k_calendar_date = dim_calendar_date.k_calendar_date
+        - cds_student_school_attendance_event_statuses.k_student = deduped.k_student
+        - cds_student_school_attendance_event_statuses.k_school = deduped.k_school
+        - cds_student_school_attendance_event_statuses.k_session = deduped.k_session
+        - cds_student_school_attendance_event_statuses.k_calendar_date = deduped.k_calendar_date
       cds_additional_cols:
         tdoe_severity_code: { as: tdoe_severity_code, default: 0 }
         tdoe_severity: { as: tdoe_severity, default: "'good'" }

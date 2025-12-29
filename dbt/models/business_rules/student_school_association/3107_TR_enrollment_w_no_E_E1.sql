@@ -59,4 +59,4 @@ select errors.*,
     brule.tdoe_severity
 from errors errors
 join brule
-    on errors.school_year between bre.error_school_year_start and brule.error_school_year_end
+    on errors.school_year between brule.error_school_year_start and brule.error_school_year_end

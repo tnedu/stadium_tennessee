@@ -44,7 +44,7 @@ errors as (
             and to_date(concat(ssa.school_year, '-06-30'), 'yyyy-MM-dd'))
 )
 select errors.*,
-    {{ severity_to_severity_code_case_clause('bruleules.tdoe_severity') }},
+    {{ severity_to_severity_code_case_clause('brule.tdoe_severity') }},
     brule.tdoe_severity
 from errors errors
 join brule

@@ -22,7 +22,6 @@ stg_student_school_associations as (
         from brule
         where cast(ssa.school_year as int) between brule.error_school_year_start and brule.error_school_year_end
     )
-)
 ),
 errors as (
     /* Secondary enrollments require an open Primary enrollment. */

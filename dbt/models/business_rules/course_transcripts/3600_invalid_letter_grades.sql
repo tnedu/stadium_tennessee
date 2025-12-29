@@ -38,8 +38,8 @@ errors as (
         and ct.final_letter_grade_earned not in ('A-', 'A', 'A+', 'B-', 'B', 'B+', 'C-', 'C', 'C+', 'D-', 'D', 'D+', 'F', 'I', 'P')
 )
 select errors.*,
-    {{ severity_to_severity_code_case_clause('rules.tdoe_severity') }},
-    rules.tdoe_severity
+    {{ severity_to_severity_code_case_clause('brule.tdoe_severity') }},
+    brule.tdoe_severity
 from errors errors
 join brule
     on errors.school_year between brule.error_school_year_start and brule.error_school_year_end
