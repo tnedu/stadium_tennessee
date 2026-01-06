@@ -18,7 +18,7 @@ with brule as (
 ),
 stg_student_edorgs as (
     select *
-    from {{ ref('stg_ef3__student_education_organization_associations_orig') }} seoa
+    from {{ ref('stg_ef3__student_education_organization_associations') }} seoa
     where k_lea is not null
         and exists (
         select 1
@@ -44,25 +44,32 @@ characteristics_to_compare as (
                 or sc.begin_date <= sc.end_date)
     ) x
     where x.characteristic_count > 1
+),
+errors as (
+    select a.k_student, a.k_lea, a.k_school, a.school_year, a.ed_org_id, a.student_unique_id,
+        a.state_student_id as legacy_state_student_id,
+        brule.tdoe_error_code as error_code,
+        concat('Student ', 
+            a.student_unique_id, ' (', coalesce(a.state_student_id, '[no value]'), ') ',
+            'has overlapping Student Characteristics. Same Student Characteristics are not allowed to overlap. Values received: ',
+            concat(a.student_characteristic, ' [', a.begin_date, ' - ', ifnull(a.end_date, 'null'), ']'),
+            ', ',
+            concat(b.student_characteristic, ' [', b.begin_date, ' - ', ifnull(b.end_date, 'null'), ']')
+        ) as error
+    from characteristics_to_compare a
+    join characteristics_to_compare b
+        on b.k_lea = a.k_lea
+        and b.k_student = a.k_student
+        and b.student_characteristic = a.student_characteristic
+        and b.begin_date > a.begin_date
+        /* This looks for overlapping dates. */
+        and (a.begin_date <= b.safe_end_date) and (a.safe_end_date >= b.begin_date)
+    join brule
+        on a.school_year between brule.error_school_year_start and brule.error_school_year_end
 )
-select a.k_student, a.k_lea, a.k_school, a.school_year, a.ed_org_id, a.student_unique_id,
-    a.state_student_id as legacy_state_student_id,
-    brule.tdoe_error_code as error_code,
-    concat('Student ', 
-        a.student_unique_id, ' (', coalesce(a.state_student_id, '[no value]'), ') ',
-        'has overlapping Student Characteristics. Same Student Characteristics are not allowed to overlap. Values received: ',
-        concat(a.student_characteristic, ' [', a.begin_date, ' - ', ifnull(a.end_date, 'null'), ']'),
-        ', ',
-        concat(b.student_characteristic, ' [', b.begin_date, ' - ', ifnull(b.end_date, 'null'), ']')
-    ) as error,
-    brule.tdoe_severity as severity
-from characteristics_to_compare a
-join characteristics_to_compare b
-    on b.k_lea = a.k_lea
-    and b.k_student = a.k_student
-    and b.student_characteristic = a.student_characteristic
-    and b.begin_date > a.begin_date
-    /* This looks for overlapping dates. */
-    and (a.begin_date <= b.safe_end_date) and (a.safe_end_date >= b.begin_date)
+select errors.*,
+    {{ severity_to_severity_code_case_clause('brule.tdoe_severity') }},
+    brule.tdoe_severity
+from errors errors
 join brule
-    on a.school_year between brule.error_school_year_start and brule.error_school_year_end
+    on errors.school_year between brule.error_school_year_start and brule.error_school_year_end

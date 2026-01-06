@@ -7,8 +7,8 @@
 
 with instructional_days as (
     select cd.k_school_calendar, cd.tenant_code, cd.calendar_date
-    from {{ ref('stg_ef3__calendar_dates_orig') }} cd
-    join {{ ref('stg_ef3__calendar_dates__calendar_events_orig') }} cde
+    from {{ ref('stg_ef3__calendar_dates') }} cd
+    join {{ ref('stg_ef3__calendar_dates__calendar_events') }} cde
         on cde.k_school_calendar = cd.k_school_calendar
         and cde.k_calendar_date = cd.k_calendar_date
         and cde.tenant_code = cd.tenant_code
@@ -18,7 +18,7 @@ select ssa.k_student, ssa.k_school, ssa.k_school_calendar,
     ssa.tenant_code, ssa.api_year, ssa.school_id, ssa.student_unique_id,
     ssa.school_year, ssa.is_primary_school, ssa.entry_date, ssa.exit_withdraw_date,
     ssa.calendar_code, ssa.entry_type, ssa.exit_withdraw_type
-from {{ ref('stg_ef3__student_school_associations_orig') }} ssa
+from {{ ref('stg_ef3__student_school_associations') }} ssa
 where 
     not exists (
         select 1

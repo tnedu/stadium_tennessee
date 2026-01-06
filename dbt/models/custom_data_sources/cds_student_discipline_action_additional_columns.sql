@@ -11,8 +11,8 @@ with disciplinary_start_dates as (
         coalesce(da.actual_discipline_action_length, da.discipline_action_length) as discipline_action_length,
         min(start_cd.calendar_date) as first_possible_discipinary_date, 
         min(start_cd.day_of_school_year) as first_possible_discipinary_day
-    from {{ ref('stg_ef3__discipline_actions_orig') }} da
-    left outer join {{ ref('stg_ef3__student_school_associations_orig') }} ssa
+    from {{ ref('stg_ef3__discipline_actions') }} da
+    left outer join {{ ref('stg_ef3__student_school_associations') }} ssa
         on da.school_year = ssa.school_year
         and da.tenant_code = ssa.tenant_code
         and da.k_school__responsibility = ssa.k_school

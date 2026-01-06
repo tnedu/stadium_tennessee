@@ -17,7 +17,7 @@ with brule as (
 ),
 stg_discipline_actions as (
     select * 
-    from {{ ref('stg_ef3__discipline_actions_orig') }} da
+    from {{ ref('stg_ef3__discipline_actions') }} da
     where exists (
         select 1
         from brule
@@ -36,7 +36,7 @@ discipline_start_end_dates as (
         ceiling(coalesce(da.actual_discipline_action_length, da.discipline_action_length)) as discipline_action_length,
         end_cd.calendar_date as discipline_end_date
     from stg_discipline_actions da
-    join {{ ref('stg_ef3__student_school_associations_orig') }} ssa
+    join {{ ref('stg_ef3__student_school_associations') }} ssa
         on ssa.k_student = da.k_student
         and ssa.k_school = da.k_school__responsibility
     join {{ ref('stg_ef3__students') }} s
@@ -53,28 +53,35 @@ discipline_start_end_dates as (
         and end_cd.day_of_school_year = 
             ((start_cd.day_of_school_year-1) + ceiling(coalesce(da.actual_discipline_action_length, da.discipline_action_length)))
     where ifnull(ceiling(coalesce(da.actual_discipline_action_length, da.discipline_action_length)), 0) > 0
+),
+errors as (
+    /* Discipline Actions are not allowed to overlap for the same student. */
+    select da1.k_student, da1.k_school__responsibility, da1.school_year,
+        da1.discipline_action_id, da1.discipline_date, da1.responsibility_school_id,
+        da1.student_unique_id,
+        da1.state_student_id as legacy_state_student_id,
+        brule.tdoe_error_code as error_code,
+        concat('Student ', 
+            da1.student_unique_id, ' (', coalesce(da1.state_student_id, '[no value]'), ') ',
+            'has Discipline Actions that overlap. Discipline Action ID ', 
+            da1.discipline_action_id, ' overlaps with Discipline Action ID ', da2.discipline_action_id, '.') as error
+    from discipline_start_end_dates da1
+    join discipline_start_end_dates da2
+        on da2.school_year = da1.school_year
+        and da2.k_student = da1.k_student
+        and da2.discipline_action_id != da1.discipline_action_id
+        /* Uncommenting this means conflicting rows will only show up once. But if there is an overlap between two different schools, 
+           that could be a problem for the error resolution folks. */
+        --and da2.discipline_date > da1.discipline_date
+        /* This looks for overlapping dates. */
+        and (da1.discipline_date <= da2.discipline_end_date) and (da1.discipline_end_date >= da2.discipline_date)
+    join brule
+        on da1.school_year between brule.error_school_year_start and brule.error_school_year_end
+    order by da1.school_year, da1.student_unique_id, da1.k_school__responsibility
 )
-/* Discipline Actions are not allowed to overlap for the same student. */
-select da1.k_student, da1.k_school__responsibility, da1.school_year,
-    da1.discipline_action_id, da1.discipline_date, da1.responsibility_school_id,
-    da1.student_unique_id,
-    da1.state_student_id as legacy_state_student_id,
-    brule.tdoe_error_code as error_code,
-    concat('Student ', 
-        da1.student_unique_id, ' (', coalesce(da1.state_student_id, '[no value]'), ') ',
-        'has Discipline Actions that overlap. Discipline Action ID ', 
-        da1.discipline_action_id, ' overlaps with Discipline Action ID ', da2.discipline_action_id, '.') as error,
-    brule.tdoe_severity as severity
-from discipline_start_end_dates da1
-join discipline_start_end_dates da2
-    on da2.school_year = da1.school_year
-    and da2.k_student = da1.k_student
-    and da2.discipline_action_id != da1.discipline_action_id
-    /* Uncommenting this means conflicting rows will only show up once. But if there is an overlap between two different schools, 
-        that could be a problem for the error resolution folks. */
-    --and da2.discipline_date > da1.discipline_date
-    /* This looks for overlapping dates. */
-    and (da1.discipline_date <= da2.discipline_end_date) and (da1.discipline_end_date >= da2.discipline_date)
+select errors.*,
+    {{ severity_to_severity_code_case_clause('brule.tdoe_severity') }},
+    brule.tdoe_severity
+from errors errors
 join brule
-    on da1.school_year between brule.error_school_year_start and brule.error_school_year_end
-order by da1.school_year, da1.student_unique_id, da1.k_school__responsibility
+    on errors.school_year between brule.error_school_year_start and brule.error_school_year_end
