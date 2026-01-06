@@ -77,7 +77,7 @@ errors as (
         By Instructional Days... sigh. */
     /* Do this by overlaps within the same School first so we can only get one message for that school. */
     select distinct p1.k_student, p1.k_school, p1.k_school_calendar, p1.school_id, p1.student_unique_id, p1.school_year, 
-        p1.entry_date, p1.entry_grade_level,
+        p1.entry_date, p1.entry_grade_level, p1.entry_type,
         p1.state_student_id as legacy_state_student_id,
         brule.tdoe_error_code as error_code,
         concat('Students cannot have overlapping Primary Enrollments. ',
@@ -106,7 +106,7 @@ errors as (
     union all
     /* Now do it when schools aren't equal. */
     select distinct p1.k_student, p1.k_school, p1.k_school_calendar, p1.school_id, p1.student_unique_id, p1.school_year, 
-        p1.entry_date, p1.entry_grade_level,
+        p1.entry_date, p1.entry_grade_level,p1.entry_type,
         p1.state_student_id as legacy_state_student_id,
         brule.tdoe_error_code as error_code,
         concat('Students cannot have overlapping Primary Enrollments. ',

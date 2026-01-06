@@ -26,7 +26,7 @@ stg_student_school_associations as (
 errors as (
     /* Secondary enrollments require an open Primary enrollment. */
     select s.k_student, s.k_school, s.k_school_calendar, s.school_id, s.student_unique_id, s.school_year, 
-        s.entry_date, s.entry_grade_level,
+        s.entry_date, s.entry_grade_level, s.entry_type,
         s2.state_student_id as legacy_state_student_id,
         brule.tdoe_error_code as error_code,
         concat('No Active Primary Enrollment designated for Student ', 

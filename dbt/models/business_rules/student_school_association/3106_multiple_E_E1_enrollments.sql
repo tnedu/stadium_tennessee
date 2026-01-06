@@ -26,7 +26,7 @@ stg_student_school_associations as (
 errors as (
     /* Only one Enrollment per year is allowed to be E or E1 at any given school. */
     select p1.k_student, p1.k_school, p1.k_school_calendar, p1.school_id, p1.student_unique_id, p1.school_year, 
-        p1.entry_date, p1.entry_grade_level,
+        p1.entry_date, p1.entry_grade_level, p1.entry_type,
         s.state_student_id as legacy_state_student_id,
         brule.tdoe_error_code as error_code,
         concat('Student ', 
