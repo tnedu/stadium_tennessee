@@ -33,6 +33,7 @@ errors as (
             ' Staff Email: ', coalesce(s.email_address, '[no value]')) as error
     from stg_staff_edorg_assignment_assoc seaa
     join {{ ref('dim_staff')}} s
+        on s.k_staff = seaa.k_staff
     join brule
         on seaa.school_year between brule.error_school_year_start and brule.error_school_year_end
     where seaa.full_time_equivalency is not null
