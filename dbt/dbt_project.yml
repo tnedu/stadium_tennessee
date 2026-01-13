@@ -432,6 +432,15 @@ vars:
       cds_additional_cols:
         tdoe_severity_code: { as: tdoe_severity_code, default: 0 }
         tdoe_severity: { as: tdoe_severity, default: "'good'" }
+  
+  'tdoe:student_district:custom_data_sources': 
+    cds_student_district_statuses:
+      joins: 
+        - cds_student_district_statuses.k_student = stu_immutable_demos.k_student
+        - cds_student_district_statuses.k_lea = stu_immutable_demos.k_lea
+      cds_additional_cols:
+        tdoe_severity_code: { as: tdoe_severity_code, default: 0 }
+        tdoe_severity: { as: tdoe_severity, default: "'good'" }
 
   'edu:discipline_actions:custom_data_sources':
     cds_student_discipline_action_additional_columns:
