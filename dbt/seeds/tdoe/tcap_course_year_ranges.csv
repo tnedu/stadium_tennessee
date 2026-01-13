@@ -211,7 +211,7 @@ G02H20,null,Spring EOC,Year Round,2026,null
 G02H32,null,Spring EOC,Year Round,2026,null
 G02H34,null,Spring EOC,Year Round,2026,null
 G02H21,null,Spring EOC,Year Round,2026,null
-G02H36,null,Spring EOC,Year Round, 2026,null
+G02H36,null,Spring EOC,Year Round,2026,null
 G01H09,null,Spring EOC,Year Round,2026,null
 G01H10,null,Spring EOC,Year Round,2026,null
 G04H11,null,Spring EOC,Year Round,2026,null
@@ -222,7 +222,7 @@ G02H54,null,Spring EOC,Year Round,2026,null
 G02H55,null,Spring EOC,Year Round,2026,null
 G02H56,null,Spring EOC,Year Round,2026,null
 G01H39,null,Spring EOC,Year Round,2026,null
-G01H43,null,Spring EOC,SYear Round,2026,null
+G01H43,null,Spring EOC,Year Round,2026,null
 G03H53,null,Spring EOC,Year Round,2026,null
 S02H00,11,Spring EOC,Year Round,2026,null
 S02H01,11,Spring EOC,Year Round,2026,null
