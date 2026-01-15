@@ -142,9 +142,9 @@ S01H00,11,Spring EOC,Spring Semester,2026,null
 S01H01,11,Spring EOC,Spring Semester,2026,null
 S01H02,11,Spring EOC,Spring Semester,2026,null
 S01H03,11,Spring EOC,Spring Semester,2026,null
-S03H00,10,Spring EOC,Spring Semester,2026,null
+S03H00,10,Grades 2-8 Alt,Spring Semester,2026,null
 S01H01,10,Spring EOC,Spring Semester,2026,null
-S03H02,10,Spring EOC,Spring Semester,2026,null
+S03H02,10,Grades 2-8 Alt,Spring Semester,2026,null
 G02X02,null,Fall EOC,Fall Semester,2026,null
 G02H00,null,Fall EOC,Fall Semester,2026,null
 G02H02,null,Fall EOC,Fall Semester,2026,null
@@ -185,13 +185,13 @@ S01H00,11,Fall EOC,Fall Semester,2026,null
 S01H01,11,Fall EOC,Fall Semester,2026,null
 S01H02,11,Fall EOC,Fall Semester,2026,null
 S01H03,11,Fall EOC,Fall Semester,2026,null
-S03H00,10,Fall EOC,Fall Semester,2026,null
+S03H00,10,Grades 2-8 Alt,Fall Semester,2026,null
 S01H01,10,Fall EOC,Fall Semester,2026,null
-S03H02,10,Fall EOC,Fall Semester,2026,null
-S03H01,10,Fall EOC,Fall Semester,2026,null
-S03H01,10,Spring EOC,Spring Semester,2026,null
-S01200,2,Grade 2-8,Year Round,2026,null
-S03H01,10,Spring EOC,Year Round,2026,null
+S03H02,10,Grades 2-8 Alt,Fall Semester,2026,null
+S03H01,10,Grades 2-8 Alt,Fall Semester,2026,null
+S03H01,10,Grades 2-8 Alt,Spring Semester,2026,null
+S01200,2,Grade 2-8 Alt,Year Round,2026,null
+S03H01,10,Grades 2-8 Alt,Year Round,2026,null
 G02X02,null,Spring EOC,Year Round,2026,null
 G02H00,null,Spring EOC,Year Round,2026,null
 G02H02,null,Spring EOC,Year Round,2026,null
@@ -232,6 +232,6 @@ S01H00,11,Spring EOC,Year Round,2026,null
 S01H01,11,Spring EOC,Year Round,2026,null
 S01H02,11,Spring EOC,Year Round,2026,null
 S01H03,11,Spring EOC,Year Round,2026,null
-S03H00,10,Spring EOC,Year Round,2026,null
+S03H00,10,Grade 2-8 Alt,Year Round,2026,null
 S01H01,10,Spring EOC,Year Round,2026,null
-S03H02,10,Spring EOC,Year Round,2026,null
+S03H02,10,Grades 2-8 Alt,Year Round,2026,null
