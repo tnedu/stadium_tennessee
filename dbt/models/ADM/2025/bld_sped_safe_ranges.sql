@@ -47,7 +47,7 @@ select k_student, k_lea, school_year, tenant_code, api_year, student_unique_id, 
     participation_status, option,
     primary_indicator, service_begin_date, service_end_date, service_eligibility_date,
     case
-        when next_service_begin_date is not null and next_service_begin_date < service_begin_date then date_sub(next_service_begin_date, 1)
+        when next_service_begin_date is not null and next_service_begin_date < service_end_date then date_sub(next_service_begin_date, 1)
         else coalesce(service_end_date, to_date(concat(school_year, '-06-30', 'yyyy-MM-dd')))
     end as safe_service_end_date
 from ordered_sped_options
