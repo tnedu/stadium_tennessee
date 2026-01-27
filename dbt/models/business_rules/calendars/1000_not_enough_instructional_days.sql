@@ -37,7 +37,7 @@ calendar_events as (
 not_enough_dates as (
     select k_school, k_school_calendar, school_year, school_id, calendar_code, count(*) as instructional_days
     from calendar_events
-    where calendar_event in ('ID', 'WN', 'SP', 'SI')
+    where calendar_event in ('ID', 'WN', 'SP', 'SP_0.33', 'SP_0.5', 'SI', 'SD', 'SN', 'SO', 'SI_0.33', 'SI_0.5', 'SD_0.33', 'SD_0.5', 'SN_0.33', 'SN_0.5', 'SO_0.33', 'SO_0.5')
     group by k_school, k_school_calendar, school_year, school_id, calendar_code
 ),
 errors as (
