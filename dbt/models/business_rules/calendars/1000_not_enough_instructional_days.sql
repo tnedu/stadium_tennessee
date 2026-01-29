@@ -24,7 +24,7 @@ calendars as (
         where cast(c.school_year as int) between brule.error_school_year_start and brule.error_school_year_end
     )
 ),
-calendar_events as (
+all_calendar_events as (
     select c.k_school, c.k_school_calendar, cd.k_calendar_date, c.tenant_code, c.api_year, c.school_year,
         c.school_id, c.calendar_code, cd.calendar_date, ce.calendar_event
     from calendars c
@@ -34,10 +34,19 @@ calendar_events as (
         on ce.k_school_calendar = cd.k_school_calendar
         and ce.k_calendar_date = cd.k_calendar_date
 ),
+calendar_events as (
+    /* Mark calendar events so that only one event per day is counted toward total count of instructional days. */
+    select *, dense_rank() over (
+            partition by k_school, k_school_calendar, school_year, school_id, calendar_code, calendar_date
+            order by calendar_event
+        ) as rnk
+    from all_calendar_events
+    where calendar_event in ('ID', 'WN', 'SP', 'SI', 'SD', 'SN', 'SO')
+),
 not_enough_dates as (
     select k_school, k_school_calendar, school_year, school_id, calendar_code, count(*) as instructional_days
     from calendar_events
-    where calendar_event in ('ID', 'WN', 'SP', 'SP_0.33', 'SP_0.5', 'SI', 'SD', 'SN', 'SO', 'SI_0.33', 'SI_0.5', 'SD_0.33', 'SD_0.5', 'SN_0.33', 'SN_0.5', 'SO_0.33', 'SO_0.5')
+    where rnk = 1
     group by k_school, k_school_calendar, school_year, school_id, calendar_code
 ),
 errors as (
