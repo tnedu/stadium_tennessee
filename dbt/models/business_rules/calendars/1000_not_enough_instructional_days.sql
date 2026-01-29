@@ -35,18 +35,13 @@ all_calendar_events as (
         and ce.k_calendar_date = cd.k_calendar_date
 ),
 calendar_events as (
-    /* Mark calendar events so that only one event per day is counted toward total count of instructional days. */
-    select *, dense_rank() over (
-            partition by k_school, k_school_calendar, school_year, school_id, calendar_code, calendar_date
-            order by calendar_event
-        ) as rnk
+    select distinct k_school, k_school_calendar, school_year, school_id, calendar_code, calendar_date
     from all_calendar_events
     where calendar_event in ('ID', 'WN', 'SP', 'SI', 'SD', 'SN', 'SO')
 ),
 not_enough_dates as (
     select k_school, k_school_calendar, school_year, school_id, calendar_code, count(*) as instructional_days
     from calendar_events
-    where rnk = 1
     group by k_school, k_school_calendar, school_year, school_id, calendar_code
 ),
 errors as (
