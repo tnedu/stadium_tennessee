@@ -216,6 +216,9 @@ vars:
         tdoe_severity: { as: tdoe_severity, default: "'good'" }
 
   'edu:course:custom_data_sources':
+    cds_courses_course_level_characteristics:
+      course_level_characteristic:
+        where: course_level_characteristic
     cds_default_severity_columns:
       joins: [true]
       cds_additional_cols:
