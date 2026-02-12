@@ -4,20 +4,13 @@
     schema="cds"
   )
 }}
-with course_chars as (
-    select 
-        courses.tenant_code, 
-        courses.api_year,
-        courses.k_course,
-       {{ edu_edfi_source.extract_descriptor('value:courseLevelCharacteristicDescriptor::string') }} as characteristic
-    from {{ ref('stg_ef3__courses') }} courses
-        {{ edu_edfi_source.json_flatten('courses.v_level_characteristics', outer=True) }}
-)
 select 
-    tenant_code,
-    api_year,
-    k_course,
-    characteristic as course_level_characteristic
-from course_chars
-where characteristic is not null
+  courses.tenant_code, 
+  courses.api_year,
+  courses.k_course,
+  max(case when course_level_characteristic = 'FUND' then true else false end) as is_cte,
+  max(case when course_level_characteristic in ('Advanced Placement', 'CIE', 'DE', 'IGCSE', 'International Baccalaureate', 'SDC') then course_level_characteristic else null end) as EPSOIdentification,
+  max(case when course_level_characteristic in ('CTE-ARTS', 'CTE-CA', 'CTE-EDU', 'CTE-FIN', 'CTE-CTE', 'CTE-HOSP', 'CTE-HUSV', 'CTE-IT', 'CTE-LAW', 'CTE-STEM', 'CTE-TRAN', 'CTE-WBL', 'CTE-GOV', 'CTE-HS', 'CTE-MKTG', 'CTE-MANU') then course_level_characteristic else null end) as CTE_Cluster
+from {{ ref('stg_ef3__courses__level_characteristics') }} courses
+where courses.course_level_characteristic is not null
 group by all

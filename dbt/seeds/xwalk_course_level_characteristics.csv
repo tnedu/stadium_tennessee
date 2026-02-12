@@ -1,5 +1,6 @@
-Dual Credit,is_dual_credit
-Honors,is_honors
+characteristic_descriptor,indicator_name
+H,is_honors
+LDC,is_local_dual_credit
 Fall Block,is_fall_block
 Spring Block,is_spring_block
 Year-long,is_year_long
