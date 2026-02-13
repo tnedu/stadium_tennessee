@@ -228,7 +228,7 @@ vars:
         where: is_cte
       EPSOIdentification:
         where: EPSOIdentification
-      Cluster:
+      CTE_Cluster:
         where: CTE_Cluster
     cds_default_severity_columns:
       joins: [true]
