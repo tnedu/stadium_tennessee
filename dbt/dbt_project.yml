@@ -41,9 +41,11 @@ vars:
   # todo: we need to get rid of this
   'edu:class_period:attempt_military_whatever': false
 
+  # keep no shows who exit before the first day of school
+  'edu:enroll:exclude_exit_before_first_day': false
+
   # one roster configs
   'oneroster:active_school_year': 2026
-
   # labels for generated race/ethnicity groups
   'edu:stu_demos:multiple_races_code': Multiple
   'edu:stu_demos:hispanic_latino_code': Latinx
