@@ -24,6 +24,16 @@ calendars as (
         where cast(c.school_year as int) between brule.error_school_year_start and brule.error_school_year_end
     )
 ),
+forbidden_on_school_days as (
+    select *
+    from {{ ref('xwalk_calendar_events') }}
+    where school_day_constraint = 'FORBIDDEN'
+),
+school_day_events as (
+    select *
+    from {{ ref('xwalk_calendar_events') }}
+    where is_school_day = true
+),
 calendar_events as (
     select c.k_school, c.k_school_calendar, cd.k_calendar_date, c.tenant_code, c.api_year, c.school_year,
         c.school_id, c.calendar_code, cd.calendar_date, ce.calendar_event
@@ -38,7 +48,7 @@ events_incorrectly_paired_with_instructional as (
     select ce.k_school, ce.k_school_calendar, ce.school_year, ce.school_id, ce.calendar_code, ce.calendar_date, 
         ce.calendar_event
     from calendar_events ce
-    where calendar_event in ('CH', 'MI', 'OH', 'SH', 'SI', 'TV')
+    where calendar_event in (select calendar_event_descriptor from forbidden_on_school_days)
         and exists (
             select 1
             from calendar_events x
@@ -46,7 +56,7 @@ events_incorrectly_paired_with_instructional as (
                 and x.k_school_calendar = ce.k_school_calendar
                 and x.calendar_code = ce.calendar_code
                 and x.calendar_date = ce.calendar_date
-                and x.calendar_event = 'ID'
+                and x.calendar_event in (select calendar_event_descriptor from school_day_events)
         )
 ),
 errors as (
