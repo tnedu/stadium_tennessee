@@ -38,6 +38,11 @@ multiple_primary_enrollments as (
     group by ssa.school_year, ssa.student_unique_id
     having count(*) > 1
 ), 
+xwalk_calendar_events as (
+    select *
+    from {{ ref('xwalk_calendar_events') }}
+    where is_school_day = true
+),
 student_enrolled_days as (
     select ssa.*, s.state_student_id, schools.school_short_name,
         cd.calendar_date
@@ -68,7 +73,7 @@ student_enrolled_days as (
         on cde.k_school_calendar = cd.k_school_calendar
         and cde.k_calendar_date = cd.k_calendar_date
         and cde.tenant_code = cd.tenant_code
-        and cde.calendar_event = 'ID'
+        and cde.calendar_event in (select calendar_event_descriptor from xwalk_calendar_events)
     where cd.calendar_date >= ssa.entry_date
         and cd.calendar_date < coalesce(ssa.exit_withdraw_date, to_date(concat(ssa.school_year, '-07-01')))
 ),

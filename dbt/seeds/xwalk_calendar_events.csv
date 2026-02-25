@@ -1,60 +1,60 @@
-namespace,calendar_event_descriptor,is_school_day
-uri://tdoe.edu/,IS,FALSE
-uri://tdoe.edu/,CS,FALSE
-uri://tdoe.edu/,CE,FALSE
-uri://tdoe.edu/,AE,FALSE
-uri://tdoe.edu/,AS,FALSE
-uri://tdoe.edu/,IO,FALSE
-uri://tdoe.edu/,TV,FALSE
-uri://tdoe.edu/,PT,FALSE
-uri://tdoe.edu/,AD,FALSE
-uri://tdoe.edu/,OH,FALSE
-uri://tdoe.edu/,CH,FALSE
-uri://tdoe.edu/,OS,FALSE
-uri://tdoe.edu/,SH,FALSE
-uri://tdoe.edu/,OV,FALSE
-uri://tdoe.edu/,OA,FALSE
-uri://tdoe.edu/,OI,FALSE
-uri://tdoe.edu/,OO,FALSE
-uri://tdoe.edu/,MI,FALSE
-uri://tdoe.edu/,SI,FALSE
-uri://tdoe.edu/,SP,FALSE
-uri://tdoe.edu/,ID,TRUE
-uri://tdoe.edu/,MS,FALSE
-uri://tdoe.edu/,MD,FALSE
-uri://tdoe.edu/,MA,FALSE
-uri://tdoe.edu/,MU,FALSE
-uri://tdoe.edu/,MH,FALSE
-uri://tdoe.edu/,WN,FALSE
-uri://tdoe.edu/,AD_0.33,FALSE
-uri://tdoe.edu/,AD_0.5,FALSE
-uri://tdoe.edu/,IO_0.33,FALSE
-uri://tdoe.edu/,IO_0.5,FALSE
-uri://tdoe.edu/,IS_0.33,FALSE
-uri://tdoe.edu/,IS_0.5,FALSE
-uri://tdoe.edu/,OA_0.33,FALSE
-uri://tdoe.edu/,OA_0.5,FALSE
-uri://tdoe.edu/,OI_0.33,FALSE
-uri://tdoe.edu/,OI_0.5,FALSE
-uri://tdoe.edu/,OO_0.33,FALSE
-uri://tdoe.edu/,OO_0.5,FALSE
-uri://tdoe.edu/,OS_0.33,FALSE
-uri://tdoe.edu/,OS_0.5,FALSE
-uri://tdoe.edu/,OV_0.33,FALSE
-uri://tdoe.edu/,OV_0.5,FALSE
-uri://tdoe.edu/,PT_0.33,FALSE
-uri://tdoe.edu/,PT_0.5,FALSE
-uri://tdoe.edu/,SD,FALSE
-uri://tdoe.edu/,SD_0.33,FALSE
-uri://tdoe.edu/,SD_0.5,FALSE
-uri://tdoe.edu/,SI_0.33,FALSE
-uri://tdoe.edu/,SI_0.5,FALSE
-uri://tdoe.edu/,SN,FALSE
-uri://tdoe.edu/,SN_0.33,FALSE
-uri://tdoe.edu/,SN_0.5,FALSE
-uri://tdoe.edu/,SO,FALSE
-uri://tdoe.edu/,SO_0.33,FALSE
-uri://tdoe.edu/,SO_0.5,FALSE
-uri://tdoe.edu/,SP_0.33,FALSE
-uri://tdoe.edu/,SP_0.5,FALSE
-uri://tdoe.edu/,WO,FALSE
+namespace,calendar_event_descriptor,is_school_day,is_funded_day,is_discretionary_day,is_parent_teacher_day,is_abbreviated_day,is_inservice_day,is_required,school_day_constraint
+uri://tdoe.edu/,CS: Calendar Start Date- Full Day,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,TRUE,
+uri://tdoe.edu/,CE: Calendar End Date- Full Day,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,TRUE,REQUIRED
+uri://tdoe.edu/,AE: Attendance End Date- Full Day,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,TRUE,
+uri://tdoe.edu/,AS: Attendance Start Date- Full Day,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,TRUE,REQUIRED
+uri://tdoe.edu/,TV: Teacher Vacation- Full Day,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FORBIDDEN
+uri://tdoe.edu/,OH: Holiday (Other)- Full Day,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FORBIDDEN
+uri://tdoe.edu/,CH: Holiday (Christmas)- Full Day,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FORBIDDEN
+uri://tdoe.edu/,SH: Holiday (Spring Break)- Full Day,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FORBIDDEN
+uri://tdoe.edu/,MI: Missed Instructional Day- Full Day,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FORBIDDEN
+uri://tdoe.edu/,ID: Instructional Days- Full Day,TRUE,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,
+uri://tdoe.edu/,MS: Make-up Day (Extend Service Program)- Full Day,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,REQUIRED
+uri://tdoe.edu/,MD: Make-up Day (Extend School Day)- Full Day,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,REQUIRED
+uri://tdoe.edu/,MA: Make-up Day (Saturday)- Full Day,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,REQUIRED
+uri://tdoe.edu/,MU: Make-up Day (Sunday)- Full Day,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,REQUIRED
+uri://tdoe.edu/,MH: Make-up Day (Previously Designated Holiday)- Full Day,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,REQUIRED
+uri://tdoe.edu/,WN: Waived Instructional Day: Natural Disaster- Full Day,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,
+uri://tdoe.edu/,AD: Abbreviated Day- Full Day,FALSE,FALSE,FALSE,FALSE,TRUE,FALSE,FALSE,REQUIRED
+uri://tdoe.edu/,AD_0.33: Abbreviated Day- 1/3 Day,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,
+uri://tdoe.edu/,AD_0.5: Abbreviated Day- 1/2 Day,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,
+uri://tdoe.edu/,IO: In Service Optional- Full Day,FALSE,FALSE,FALSE,FALSE,FALSE,TRUE,FALSE,
+uri://tdoe.edu/,IO_0.33: In Service Optional- 1/3 Day,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,
+uri://tdoe.edu/,IO_0.5: In Service Optional- 1/2 Day,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,
+uri://tdoe.edu/,IS: In Service Day- Full Day,FALSE,FALSE,FALSE,FALSE,FALSE,TRUE,FALSE,
+uri://tdoe.edu/,IS_0.33: In Service Day- 1/3 Day,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,
+uri://tdoe.edu/,IS_0.5: In Service Day- 1/2 Day,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,
+uri://tdoe.edu/,OA: Discretionary Day (Administrative)- Full Day,FALSE,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,
+uri://tdoe.edu/,OA_0.33: Discretionary Day (Administrative)- 1/3 Day,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,
+uri://tdoe.edu/,OA_0.5: Discretionary Day (Administrative)- 1/2 Day,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,
+uri://tdoe.edu/,OI: Discretionary Day (Instructional)- Full Day,FALSE,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,
+uri://tdoe.edu/,OI_0.33: Discretionary Day (Instructional)- 1/3 Day,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,
+uri://tdoe.edu/,OI_0.5: Discretionary Day (Instructional)- 1/2 Day,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,
+uri://tdoe.edu/,OO: Discretionary Day (Other)- Full Day,FALSE,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,
+uri://tdoe.edu/,OA_0.33: Discretionary Day (Administrative)- 1/3 Day,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,
+uri://tdoe.edu/,OO_0.5: Discretionary Day (Other)- 1/2 Day,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,
+uri://tdoe.edu/,OS: Discretionary Day (In-service)- Full Day,FALSE,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,
+uri://tdoe.edu/,OS_0.33: Discretionary Day (In-service)- 1/3 Day,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,
+uri://tdoe.edu/,OS_0.5: Discretionary Day (In-service)- 1/2 Day,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,
+uri://tdoe.edu/,OV: Discretionary Day (Teacher Vacation)- Full Day,FALSE,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,
+uri://tdoe.edu/,OV_0.33: Discretionary Day (Teacher Vacation)- 1/3 Day,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,
+uri://tdoe.edu/,OV_0.5: Discretionary Day (Teacher Vacation)- 1/2 Day,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,
+uri://tdoe.edu/,PT: Parent- Teacher Conference- Full Day,FALSE,FALSE,FALSE,TRUE,FALSE,FALSE,FALSE,
+uri://tdoe.edu/,PT_0.33: Parent- Teacher Conference- 1/3 Day,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,
+uri://tdoe.edu/,PT_0.5: Parent- Teacher Conference- 1/2 Day,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,
+uri://tdoe.edu/,SD: Stockpile Day: Dangerous or Environmental Conditions- Full Day,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,
+uri://tdoe.edu/,SD_0.33: Stockpile Day: Dangerous or Environmental Conditions- 1/3 Day,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,
+uri://tdoe.edu/,SD_0.5: Stockpile Day: Dangerous or Environmental Conditions- 1/2 Day,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,
+uri://tdoe.edu/,SI: Stockpile Day: Dangerous or extreme weather conditions- Full Day,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,FORBIDDEN
+uri://tdoe.edu/,SI_0.33: Stockpile Day: Dangerous or extreme weather conditions- 1/3 Day,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,
+uri://tdoe.edu/,SI_0.5: Stockpile Day: Dangerous or extreme weather conditions- 1/2 Day,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,
+uri://tdoe.edu/,SN: Stockpile Day: Natural Disaster- Full Day,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,
+uri://tdoe.edu/,SN_0.33: Stockpile Day: Natural Disaster- 1/3 Day,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,
+uri://tdoe.edu/,SN_0.5: Stockpile Day: Natural Disaster- 1/2 Day,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,
+uri://tdoe.edu/,SO: Stockpile Day: Serious Outbreaks of Illness- Full Day,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,
+uri://tdoe.edu/,SO_0.33: Stockpile Day: Serious Outbreaks of Illness- 1/3 Day,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,
+uri://tdoe.edu/,SO_0.5: Stockpile Day: Serious Outbreaks of Illness- 1/2 Day,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,
+uri://tdoe.edu/,SP: Stockpile Day: Professional Development- Full Day,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,
+uri://tdoe.edu/,SP_0.33: Stockpile Day: Professional Development- 1/3 Day,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,
+uri://tdoe.edu/,SP_0.5: Stockpile Day: Professional Development- 1/2 Day,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,
+uri://tdoe.edu/,WO: Waived Instructional Day: Serious Outbreaks of Illness- Full Day,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,
