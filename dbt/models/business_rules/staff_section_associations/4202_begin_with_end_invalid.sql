@@ -30,7 +30,7 @@ errors as (
         ssa.section_id, ssa.session_name, ssa.staff_unique_id, ssa.begin_date,
         brule.tdoe_error_code as error_code,
         concat('Staff Section Association End Date must be greater than the Begin Date. End Date received: ',
-            ssa.end_date, ', Begin Date: ', ssa.end_date, '.') as error
+            ssa.end_date, ', Begin Date: ', ssa.begin_date, '.') as error
     from stg_staff_section_associations ssa
     join brule
         on ssa.school_year between brule.error_school_year_start and brule.error_school_year_end
