@@ -117,6 +117,8 @@ vars:
       replace_with: short_description
     attendanceEventCategoryDescriptor:
       replace_with: short_description
+    diplomaTypeDescriptor:
+      replace_with: "concat(code_value,': ',short_description)"
   
   # Enable optional domains and programs
   'src:domain:assessment:enabled': True
