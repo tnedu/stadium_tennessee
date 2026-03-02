@@ -1,7 +1,7 @@
 namespace,calendar_event_descriptor,is_school_day,is_funded_day,is_discretionary_day,is_parent_teacher_day,is_abbreviated_day,is_inservice_day,is_required,school_day_constraint
 uri://tdoe.edu/,CS: Calendar Start Date- Full Day,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,TRUE,
-uri://tdoe.edu/,CE: Calendar End Date- Full Day,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,TRUE,REQUIRED
-uri://tdoe.edu/,AE: Attendance End Date- Full Day,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,TRUE,
+uri://tdoe.edu/,CE: Calendar End Date- Full Day,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,TRUE,
+uri://tdoe.edu/,AE: Attendance End Date- Full Day,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,TRUE,REQUIRED
 uri://tdoe.edu/,AS: Attendance Start Date- Full Day,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,TRUE,REQUIRED
 uri://tdoe.edu/,TV: Teacher Vacation- Full Day,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FORBIDDEN
 uri://tdoe.edu/,OH: Holiday (Other)- Full Day,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FORBIDDEN
