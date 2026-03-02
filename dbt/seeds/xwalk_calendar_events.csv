@@ -42,16 +42,16 @@ uri://tdoe.edu/,OV_0.5: Discretionary Day (Teacher Vacation)- 1/2 Day,FALSE,FALS
 uri://tdoe.edu/,PT: Parent- Teacher Conference- Full Day,FALSE,FALSE,FALSE,TRUE,FALSE,FALSE,FALSE,
 uri://tdoe.edu/,PT_0.33: Parent- Teacher Conference- 1/3 Day,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,
 uri://tdoe.edu/,PT_0.5: Parent- Teacher Conference- 1/2 Day,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,
-uri://tdoe.edu/,SD: Stockpile Day: Dangerous or Environmental Conditions- Full Day,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,
+uri://tdoe.edu/,SD: Stockpile Day: Dangerous or Environmental Conditions- Full Day,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,FORBIDDEN
 uri://tdoe.edu/,SD_0.33: Stockpile Day: Dangerous or Environmental Conditions- 1/3 Day,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,
 uri://tdoe.edu/,SD_0.5: Stockpile Day: Dangerous or Environmental Conditions- 1/2 Day,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,
 uri://tdoe.edu/,SI: Stockpile Day: Dangerous or extreme weather conditions- Full Day,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,FORBIDDEN
 uri://tdoe.edu/,SI_0.33: Stockpile Day: Dangerous or extreme weather conditions- 1/3 Day,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,
 uri://tdoe.edu/,SI_0.5: Stockpile Day: Dangerous or extreme weather conditions- 1/2 Day,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,
-uri://tdoe.edu/,SN: Stockpile Day: Natural Disaster- Full Day,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,
+uri://tdoe.edu/,SN: Stockpile Day: Natural Disaster- Full Day,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,FORBIDDEN
 uri://tdoe.edu/,SN_0.33: Stockpile Day: Natural Disaster- 1/3 Day,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,
 uri://tdoe.edu/,SN_0.5: Stockpile Day: Natural Disaster- 1/2 Day,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,
-uri://tdoe.edu/,SO: Stockpile Day: Serious Outbreaks of Illness- Full Day,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,
+uri://tdoe.edu/,SO: Stockpile Day: Serious Outbreaks of Illness- Full Day,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,FORBIDDEN
 uri://tdoe.edu/,SO_0.33: Stockpile Day: Serious Outbreaks of Illness- 1/3 Day,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,
 uri://tdoe.edu/,SO_0.5: Stockpile Day: Serious Outbreaks of Illness- 1/2 Day,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,
 uri://tdoe.edu/,SP: Stockpile Day: Professional Development- Full Day,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,
