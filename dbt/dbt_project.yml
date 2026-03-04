@@ -210,6 +210,14 @@ vars:
         tdoe_severity: { as: tdoe_severity, default: "'good'" }
   
   'edu:course_section:custom_data_sources':
+    cds_courses_course_level_characteristics:
+      joins: 
+        - cds_courses_course_level_characteristics.k_course = dim_course.k_course
+      cds_additional_cols:
+        is_cte: { as: is_cte, default: false }
+        EPSOIdentification: { as: EPSOIdentification, default: 'Null' }
+        CTE_Cluster: { as: CTE_Cluster, default: 'Null' }
+        is_General: { as: is_General, default: false }
     cds_sections_statuses:
       joins: 
         - cds_sections_statuses.k_course_section = stg_ef3__sections.k_course_section
@@ -218,6 +226,15 @@ vars:
         tdoe_severity: { as: tdoe_severity, default: "'good'" }
 
   'edu:course:custom_data_sources':
+    cds_courses_course_level_characteristics:
+      is_cte:
+        where: is_cte
+      EPSOIdentification:
+        where: EPSOIdentification
+      CTE_Cluster:
+        where: CTE_Cluster
+      is_General:
+        where: is_General
     cds_default_severity_columns:
       joins: [true]
       cds_additional_cols:
