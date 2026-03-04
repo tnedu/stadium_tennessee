@@ -6,6 +6,8 @@
 }}
 
 with unioned (
+    select * from {{ ref('wrk_adm_gaps_bell_schedules_issues') }}
+    union all
     select * from {{ ref('wrk_adm_gaps_calendar_issues') }}
     union all
     select * from {{ ref('wrk_adm_gaps_class_period_issues') }}
