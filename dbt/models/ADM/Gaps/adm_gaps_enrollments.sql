@@ -12,7 +12,7 @@ with school_day_events as (
     where is_school_day = true
 ),
 school_days as (
-    select dates.school_year, dates.k_school_calendar, dates.calendar_date
+    select distinct dates.school_year, dates.k_school_calendar, dates.calendar_date
     from {{ ref('stg_ef3__calendar_dates') }} dates
     join {{ ref('stg_ef3__calendar_dates__calendar_events') }} date_events
         on date_events.k_calendar_date = dates.k_calendar_date
