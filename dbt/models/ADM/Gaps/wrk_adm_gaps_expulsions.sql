@@ -5,42 +5,14 @@
   )
 }}
 
-with school_day_events as (
-    select *
-    from {{ ref('xwalk_calendar_events') }}
-    where is_school_day = true
-),
-q as (
-    select e.school_year, e.k_student, e.k_school, e.is_primary_school,
-        ex.discipline_date_begin, ex.discipline_date_end,
-        sum(
-            case
-                when ex.discipline_date is not null then 1
-                else 0
-            end
-        ) as expelled_days
-    from {{ ref('adm_gaps_enrollments') }} e
-    join {{ ref('stg_ef3__calendar_dates') }} dates
-        on dates.school_year = e.school_year
-        and dates.k_school_calendar = e.k_school_calendar
-        and dates.calendar_date >= e.entry_date
-        and (e.exit_withdraw_date is null 
-            or dates.calendar_date < e.exit_withdraw_date)
-    join {{ ref('stg_ef3__calendar_dates__calendar_events') }} date_events
-        on date_events.k_calendar_date = dates.k_calendar_date
-        and date_events.k_school_calendar = dates.k_school_calendar
-        and date_events.calendar_event in (select calendar_event_descriptor from school_day_events)
-    join {{ ref('wrk_expulsion_windows') }} ex
-        on e.k_student = ex.k_student
-        and e.k_school = ex.k_school
-        and e.school_year = ex.school_year
-        and dates.calendar_date between ex.discipline_date_begin and ex.discipline_date_end
-    group by e.school_year, e.k_student, e.k_school, e.is_primary_school, ex.discipline_date_begin, 
-        ex.discipline_date_end
-)
-select school_year, k_student, k_school, is_primary_school,
+
+select expelled.school_year, expelled.k_student, expelled.k_school, enrolled.is_primary_school,
     'funding' as reason_type,
     1 as reason_count,
-    concat('Student is expelled for ', expelled_days,' days (', 
-        discipline_date_begin, ' - ', discipline_date_end, ')') as possible_reason
-from q
+    concat('Student is expelled for ', expelled.discipline_action_length,' days (', 
+        expelled.discipline_date_begin, ' - ', expelled.discipline_date_end, '). Enrollment Entry Date: ', enrolled.entry_date, '.') as possible_reason
+from {{ ref('wrk_expulsion_windows') }} expelled
+join {{ ref('valid_enrollments') }} enrolled
+    on enrolled.k_student = expelled.k_student
+    and enrolled.k_school = expelled.k_school
+    and enrolled.school_year = expelled.school_year

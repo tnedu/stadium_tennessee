@@ -10,6 +10,14 @@ with school_day_events as (
     from {{ ref('xwalk_calendar_events') }}
     where is_school_day = true
 ),
+school_days as (
+    select distinct dates.school_year, dates.k_school_calendar, dates.calendar_date
+    from {{ ref('stg_ef3__calendar_dates') }} dates
+    join {{ ref('stg_ef3__calendar_dates__calendar_events') }} date_events
+        on date_events.k_calendar_date = dates.k_calendar_date
+        and date_events.k_school_calendar = dates.k_school_calendar
+        and date_events.calendar_event in (select calendar_event_descriptor from school_day_events)
+),
 q as (
     select e.school_year, e.k_student, e.k_school, e.is_primary_school,
         sum(
@@ -19,16 +27,12 @@ q as (
             end
         ) as ineligible_days
     from {{ ref('adm_gaps_enrollments') }} e
-    join {{ ref('stg_ef3__calendar_dates') }} dates
+    join school_days dates
         on dates.school_year = e.school_year
         and dates.k_school_calendar = e.k_school_calendar
         and dates.calendar_date >= e.entry_date
         and (e.exit_withdraw_date is null 
             or dates.calendar_date < e.exit_withdraw_date)
-    join {{ ref('stg_ef3__calendar_dates__calendar_events') }} date_events
-        on date_events.k_calendar_date = dates.k_calendar_date
-        and date_events.k_school_calendar = dates.k_school_calendar
-        and date_events.calendar_event in (select calendar_event_descriptor from school_day_events)
     join (
             select c.k_student, s.k_school, c.begin_date, c.end_date
             from {{ ref('stg_ef3__stu_ed_org__characteristics') }} c
