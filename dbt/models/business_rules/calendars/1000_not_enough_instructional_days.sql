@@ -34,10 +34,15 @@ all_calendar_events as (
         on ce.k_school_calendar = cd.k_school_calendar
         and ce.k_calendar_date = cd.k_calendar_date
 ),
+xwalk_calendar_events as (
+    select *
+    from {{ ref('xwalk_calendar_events') }}
+    where is_funded_day = true
+),
 calendar_events as (
     select distinct k_school, k_school_calendar, school_year, school_id, calendar_code, calendar_date
     from all_calendar_events
-    where calendar_event in ('ID', 'WN', 'SP', 'SI', 'SD', 'SN', 'SO')
+    where calendar_event in (select calendar_event_descriptor from xwalk_calendar_events)
 ),
 not_enough_dates as (
     select k_school, k_school_calendar, school_year, school_id, calendar_code, count(*) as instructional_days
