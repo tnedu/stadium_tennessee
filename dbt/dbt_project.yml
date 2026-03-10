@@ -114,9 +114,13 @@ vars:
 
   descriptors:
     exitWithdrawTypeDescriptor:
-      replace_with: short_description
+      replace_with: "concat(code_value,': ',short_description)"
     attendanceEventCategoryDescriptor:
       replace_with: short_description
+    calendarEventDescriptor:
+      replace_with: "concat(code_value,': ',short_description)"
+    diplomaTypeDescriptor:
+      replace_with: "concat(code_value,': ',short_description)"
   
   # Enable optional domains and programs
   'src:domain:assessment:enabled': True
