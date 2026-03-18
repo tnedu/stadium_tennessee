@@ -16,3 +16,6 @@ from {{ ref('2006_non_pullout_need_duration') }}
 union
 select *
 from {{ ref('2010_educational_environment_type') }}
+union
+select *
+from {{ ref('2012_post_secondary_institution') }}
