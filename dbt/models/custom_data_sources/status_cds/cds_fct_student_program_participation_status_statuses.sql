@@ -36,12 +36,6 @@
     {% do stage_program_relations.append(ref('stg_ef3__student_cte_program_associations')) %}
 {% endif %}
 
-stacked_program_services as (
-    {{ dbt_utils.union_relations(
-        relations=stage_program_relations
-    ) }}
-),
-
 with student_errors as (
     select k_student, tdoe_severity_code, tdoe_severity
     from {{ ref('dim_student') }}
@@ -49,6 +43,12 @@ with student_errors as (
 program_errors as (
     select k_program, ed_org_id, tdoe_severity_code, tdoe_severity
     from {{ ref('dim_program') }}
+),
+--all program services stacked here
+stacked_program_services as (
+    {{ dbt_utils.union_relations(
+        relations=stage_program_relations
+    ) }}
 ),
 --homeless_errors at correct grain
 homeless_errors as (
@@ -64,10 +64,10 @@ program_association_errors as (
   from homeless_errors
   union all
   select k_student, ed_org_id, k_program, k_student_program, tdoe_severity_code, tdoe_severity
-  from {{ ref('cds_student_migrant_education_program_assoc_statuses') }} migrant_errors
+  from {{ ref('cds_fct_student_migrant_education_program_assoc_statuses') }} migrant_errors
   union all
   select k_student, ed_org_id, k_program, k_student_program, tdoe_severity_code, tdoe_severity
-  from {{ ref('cds_student_school_food_service_program_associations') }} food_service_errors
+  from {{ ref('cds_fct_student_school_food_service_program_associations') }} food_service_errors
   --other dependent staging tables  will be added here if new business rules and errors are added in future
 ),
 unioned_errors as (

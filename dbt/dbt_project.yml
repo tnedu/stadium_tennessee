@@ -629,40 +629,40 @@ vars:
         tdoe_severity: { as: tdoe_severity, default: "'good'" }
   
   'edu:student_disability:custom_data_sources':
-    cds_student_disability_statuses:
+    cds_fct_student_disability_statuses:
       joins: 
-        - cds_student_disability_statuses.k_student = f.k_student
-        - cds_student_disability_statuses.k_program = f.k_program
+        - cds_fct_student_disability_statuses.k_student = f.k_student
+        - cds_fct_student_disability_statuses.k_program = f.k_program
       cds_additional_cols:
         tdoe_severity_code: { as: tdoe_severity_code, default: 0 }
         tdoe_severity: { as: tdoe_severity, default: "'good'" }
   
   'edu:student_migrant_education_program_association:custom_data_sources':
-    cds_student_migrant_education_program_assoc_statuses:
+    cds_fct_student_migrant_education_program_assoc_statuses:
       joins: 
-        - cds_student_migrant_education_program_assoc_statuses.k_student = stage.k_student
-        - cds_student_migrant_education_program_assoc_statuses.k_program = dim_program.k_program
-        - cds_student_migrant_education_program_assoc_statuses.k_student_program = dim_program.k_student_program
+        - cds_fct_student_migrant_education_program_assoc_statuses.k_student = stage.k_student
+        - cds_fct_student_migrant_education_program_assoc_statuses.k_program = dim_program.k_program
+        - cds_fct_student_migrant_education_program_assoc_statuses.k_student_program = dim_program.k_student_program
       cds_additional_cols:
         tdoe_severity_code: { as: tdoe_severity_code, default: 0 }
         tdoe_severity: { as: tdoe_severity, default: "'good'" }
   
   'edu:student_program_participation_status:custom_data_sources':
-    cds_student_program_participation_status_statuses:
+    cds_fct_student_program_participation_status_statuses:
       joins: 
-        - cds_student_program_participation_status_statuses.k_student = stacked.k_student
-        - cds_student_program_participation_status_statuses.k_program = stacked.k_program
-        - cds_student_program_participation_status_statuses.k_student_program = stacked.k_student_program
+        - cds_fct_student_program_participation_status_statuses.k_student = stacked.k_student
+        - cds_fct_student_program_participation_status_statuses.k_program = stacked.k_program
+        - cds_fct_student_program_participation_status_statuses.k_student_program = stacked.k_student_program
       cds_additional_cols:
         tdoe_severity_code: { as: tdoe_severity_code, default: 0 }
         tdoe_severity: { as: tdoe_severity, default: "'good'" }
   
   'edu:student_school_food_service_program_association:custom_data_sources':
-    cds_student_school_food_service_program_associations:
+    cds_fct_student_school_food_service_program_associations:
       joins: 
-        - cds_student_school_food_service_program_associations.k_student = stacked.k_student
-        - cds_student_school_food_service_program_associations.k_program = stacked.k_program
-        - cds_student_school_food_service_program_associations.k_student_program = stacked.k_student_program
+        - cds_fct_student_school_food_service_program_associations.k_student = stacked.k_student
+        - cds_fct_student_school_food_service_program_associations.k_program = stacked.k_program
+        - cds_fct_student_school_food_service_program_associations.k_student_program = stacked.k_student_program
       cds_additional_cols:
         tdoe_severity_code: { as: tdoe_severity_code, default: 0 }
         tdoe_severity: { as: tdoe_severity, default: "'good'" }
