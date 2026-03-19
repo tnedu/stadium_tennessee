@@ -26,9 +26,9 @@ stg_sections as (
          between brule.error_school_year_start and brule.error_school_year_end
 ),
 
--- sections that are LDC / DE
+-- LDC / DE sections using the correct helper table
 sections_with_ldc_de as (
-    select
+    select distinct
         s.k_course_section,
         s.k_course_offering,
         s.k_school,
@@ -39,39 +39,27 @@ sections_with_ldc_de as (
         s.school_id,
         s.school_year,
         s.session_name,
-        split(course_level_struct.courseLevelCharacteristicDescriptor, '#')[1] as course_level_characteristic
+        cl.course_level_characteristic
     from stg_sections s
-    lateral view explode(
-        cast(
-            s.v_course_level_characteristics
-            as array<struct<courseLevelCharacteristicDescriptor:string>>
-        )
-    ) cl AS course_level_struct
-    where split(course_level_struct.courseLevelCharacteristicDescriptor, '#')[1] in ('LDC', 'DE')
+    join {{ ref('stg_ef3__sections__course_level_characteristics') }} cl
+      on cl.k_course_section = s.k_course_section
+    where cl.course_level_characteristic in ('LDC','DE')
 ),
 
--- sections that HAVE a postsecondary institution
+-- sections that HAVE a valid postsecondary institution
 sections_with_postsecondary as (
     select distinct
         s.k_course_section
     from stg_sections s
-    lateral view outer explode(
-        cast(
-            s.v_programs
-            as array<struct<
-                programReference:struct<
-                    educationOrganizationId:int,
-                    programName:string,
-                    programTypeDescriptor:string,
-                    link:struct<href:string, rel:string>
-                >
-            >>
-        )
-    ) p AS program_struct
-    where program_struct.programReference.educationOrganizationId is not null
+    join {{ ref('stg_ef3__sections__programs') }} sp
+      on sp.k_course_section = s.k_course_section
+    join {{ ref('stg_ef3__programs') }} p
+      on p.k_program = sp.k_program
+    join {{ ref('stg_ef3__post_secondary_institutions') }} psi
+      on psi.post_secondary_institution_id = p.ed_org_id
 ),
 
--- LDC / DE sections that are MISSING postsecondary institution
+-- LDC / DE sections that are MISSING a valid postsecondary institution
 errors as (
     select
         sw.k_course_section,
