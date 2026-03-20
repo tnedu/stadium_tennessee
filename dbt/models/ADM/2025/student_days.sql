@@ -15,7 +15,7 @@ with q as (
         fssa.school_year, fssa.is_primary_school, fssa.entry_date, fssa.exit_withdraw_date,
         gl.grade_level_short as grade_level, gl.grade_level_adm,
         case
-            when fssa.exit_withdraw_type = 'Early Graduate' then 1
+            when fssa.exit_withdraw_type = '12: Early Graduate' then 1
             else 0
         end as is_early_graduate, 
         ssd.ssd_duration,
