@@ -6,5 +6,5 @@
 }}
 
 select *
-from {{ ref('calendars_errors_unioned') }}
-where tdoe_severity != 'potential'
+from {{ ref('bell_schedules_errors_unioned') }}
+where tdoe_severity = 'potential'

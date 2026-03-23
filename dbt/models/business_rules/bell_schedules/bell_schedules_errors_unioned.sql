@@ -6,5 +6,4 @@
 }}
 
 select *
-from {{ ref('calendars_errors_unioned') }}
-where tdoe_severity != 'potential'
+from {{ ref('2008_dates_required') }}

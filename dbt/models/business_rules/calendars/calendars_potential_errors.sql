@@ -7,4 +7,4 @@
 
 select *
 from {{ ref('calendars_errors_unioned') }}
-where tdoe_severity != 'potential'
+where tdoe_severity = 'potential'
