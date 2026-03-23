@@ -6,4 +6,5 @@
 }}
 
 select *
-from {{ ref('2008_dates_required') }}
+from {{ ref('bell_schedules_errors_unioned') }}
+where tdoe_severity != 'potential'
