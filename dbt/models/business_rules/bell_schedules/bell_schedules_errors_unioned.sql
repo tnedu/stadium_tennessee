@@ -1,7 +1,7 @@
 {{
   config(
     materialized="table",
-    schema="data_errors"
+    schema="stg_data_errors"
   )
 }}
 
