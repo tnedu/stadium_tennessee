@@ -26,8 +26,8 @@ stg_sections as (
          between brule.error_school_year_start and brule.error_school_year_end
 ),
 
--- LDC / DE sections using the correct helper table
-sections_with_ldc_de as (
+-- LDC sections (section-level characteristic)
+ldc_sections as (
     select distinct
         s.k_course_section,
         s.k_course_offering,
@@ -39,20 +39,47 @@ sections_with_ldc_de as (
         s.school_id,
         s.school_year,
         s.session_name,
-        cl.course_level_characteristic
+        'LDC' as course_level_characteristic
     from stg_sections s
     join {{ ref('stg_ef3__sections__course_level_characteristics') }} cl
       on cl.k_course_section = s.k_course_section
-    where cl.course_level_characteristic in ('LDC','DE')
+    where cl.course_level_characteristic = 'LDC'
+),
+
+-- DE sections (course-level characteristic)
+de_sections as (
+    select distinct
+        s.k_course_section,
+        s.k_course_offering,
+        s.k_school,
+        s.k_location,
+        s.k_school__location,
+        s.section_id,
+        s.local_course_code,
+        s.school_id,
+        s.school_year,
+        s.session_name,
+        'DE' as course_level_characteristic
+    from stg_sections s
+    join {{ ref('stg_ef3__course_offerings') }} co
+      on co.k_course_offering = s.k_course_offering
+    join {{ ref('stg_ef3__courses__level_characteristics') }} cl
+      on cl.k_course = co.k_course
+    where cl.course_level_characteristic = 'DE'
+),
+
+-- union LDC + DE sections
+ldc_de_sections as (
+    select * from ldc_sections
+    union all
+    select * from de_sections
 ),
 
 -- sections that HAVE a valid postsecondary institution
 sections_with_postsecondary as (
     select distinct
-        s.k_course_section
-    from stg_sections s
-    join {{ ref('stg_ef3__sections__programs') }} sp
-      on sp.k_course_section = s.k_course_section
+        sp.k_course_section
+    from {{ ref('stg_ef3__sections__programs') }} sp
     join {{ ref('stg_ef3__programs') }} p
       on p.k_program = sp.k_program
     join {{ ref('stg_ef3__post_secondary_institutions') }} psi
@@ -81,7 +108,7 @@ errors as (
             sw.session_name, ', ',
             sw.course_level_characteristic, '.'
         ) as error
-    from sections_with_ldc_de sw
+    from ldc_de_sections sw
     left join sections_with_postsecondary sp
       on sw.k_course_section = sp.k_course_section
     where sp.k_course_section is null
