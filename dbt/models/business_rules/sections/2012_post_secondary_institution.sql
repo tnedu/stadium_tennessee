@@ -39,7 +39,7 @@ ldc_sections as (
         s.school_id,
         s.school_year,
         s.session_name,
-        'LDC' as course_level_characteristic
+        cl.course_level_characteristic
     from stg_sections s
     join {{ ref('stg_ef3__sections__course_level_characteristics') }} cl
       on cl.k_course_section = s.k_course_section
@@ -59,7 +59,7 @@ de_sections as (
         s.school_id,
         s.school_year,
         s.session_name,
-        'DE' as course_level_characteristic
+        cl.course_level_characteristic
     from stg_sections s
     join {{ ref('stg_ef3__course_offerings') }} co
       on co.k_course_offering = s.k_course_offering
@@ -101,12 +101,11 @@ errors as (
         sw.session_name,
         {{ error_code }} as error_code,
         concat(
-            'Post Secondary Institution must be submitted for LDC / DE sections. ',
-            sw.school_id, ', ',
-            sw.local_course_code, ', ',
-            sw.section_id, ', ',
-            sw.session_name, ', ',
-            sw.course_level_characteristic, '.'
+        'Post Secondary Institution is missing for LDC/DE ',
+        'Section "', section_id, '" ',
+        'of Local Course Code "', local_course_code, '" ',
+        'in Session ', session_name, ' ',
+        'for School ', school_id, '.'
         ) as error
     from ldc_de_sections sw
     left join sections_with_postsecondary sp
