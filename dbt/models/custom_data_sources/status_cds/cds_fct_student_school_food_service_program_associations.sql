@@ -22,21 +22,21 @@ food_services_prog as (
 -- Student food services program association errors will be here if added in future
 unioned_errors as (
     -- Create grain at student level for all stacked_program_services
-    select student_errors.k_student, food_services_prog.ed_org_id,
+    select food_services_prog.k_student, food_services_prog.ed_org_id,
            food_services_prog.k_program, food_services_prog.k_student_program, max(student_errors.tdoe_severity_code) as tdoe_severity_code
     from food_services_prog
     left outer join program_errors on program_errors.k_program = food_services_prog.k_program
     left outer join student_errors on student_errors.k_student = food_services_prog.k_student 
-    group by student_errors.k_student, food_services_prog.ed_org_id,
+    group by food_services_prog.k_student, food_services_prog.ed_org_id,
            food_services_prog.k_program, food_services_prog.k_student_program
     
     union all
     -- Create grain at program level for all stacked_program_services
-    select food_services_prog.k_student, program_errors.ed_org_id,
-           program_errors.k_program, food_services_prog.k_student_program, max(program_errors.tdoe_severity_code) as tdoe_severity_code
+    select food_services_prog.k_student, food_services_prog.ed_org_id,
+           food_services_prog.k_program, food_services_prog.k_student_program, max(program_errors.tdoe_severity_code) as tdoe_severity_code
     from food_services_prog
     left outer join program_errors on program_errors.k_program = food_services_prog.k_program
-    group by food_services_prog.k_student, program_errors.ed_org_id, program_errors.k_program, food_services_prog.k_student_program
+    group by food_services_prog.k_student, food_services_prog.ed_org_id, food_services_prog.k_program, food_services_prog.k_student_program
 
     -- program assocaition errors at correct grain will be here if added in future    
 )

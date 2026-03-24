@@ -72,22 +72,22 @@ program_association_errors as (
 ),
 unioned_errors as (
     -- Create grain at student level for all stacked_program_services
-    select student_errors.k_student, stacked.ed_org_id,
+    select stacked.k_student, stacked.ed_org_id,
            stacked.k_program, stacked.k_student_program, max(student_errors.tdoe_severity_code) as tdoe_severity_code
     from stacked_program_services stacked
     left outer join program_errors 
           on program_errors.k_program = stacked.k_program
     left outer join student_errors on student_errors.k_student = stacked.k_student 
-    group by student_errors.k_student, stacked.ed_org_id, stacked.k_program, stacked.k_student_program
+    group by stacked.k_student, stacked.ed_org_id, stacked.k_program, stacked.k_student_program
 
     union all
     -- Create grain at program level for all stacked_program_services
-    select stacked.k_student, program_errors.ed_org_id, program_errors.k_program, 
+    select stacked.k_student, stacked.ed_org_id, stacked.k_program, 
            stacked.k_student_program, max(program_errors.tdoe_severity_code) as tdoe_severity_code
     from stacked_program_services stacked
     left outer join program_errors 
           on program_errors.k_program = stacked.k_program
-    group by stacked.k_student, program_errors.ed_org_id, program_errors.k_program, stacked.k_student_program
+    group by stacked.k_student, stacked.ed_org_id, stacked.k_program, stacked.k_student_program
 
     union all
     -- Add program assocaition errors at correct grain
