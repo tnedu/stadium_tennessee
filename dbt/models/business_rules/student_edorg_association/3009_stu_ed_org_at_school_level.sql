@@ -18,7 +18,7 @@ with brule as (
 ),
 stg_student_edorgs as (
     select *
-    from {{ ref('stg_ef3__student_education_organization_associations_orig') }} seoa
+    from {{ ref('stg_ef3__student_education_organization_associations') }} seoa
     where k_lea is null
         and exists (
         select 1
@@ -34,7 +34,8 @@ select distinct se.k_student, se.k_lea, cast( null as int ) as k_school, se.scho
     concat('Student ', 
         se.student_unique_id, '(', coalesce(s.state_student_id, '[no value]'), ') ',
         'has School level Student/EdOrg Association that needs to be removed.') as error,
-    brule.tdoe_severity as severity
+    {{ severity_to_severity_code_case_clause('brule.tdoe_severity') }},
+    brule.tdoe_severity
 from stg_student_edorgs se
 join {{ ref('edu_edfi_source', 'stg_ef3__students') }} s
     on se.k_student = s.k_student
