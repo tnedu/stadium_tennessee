@@ -7,4 +7,4 @@
 
 select *
 from {{ ref('student_education_organization_associations_unioned') }}
-where tdoe_severity_code != 9
+where tdoe_severity != 'potential'
