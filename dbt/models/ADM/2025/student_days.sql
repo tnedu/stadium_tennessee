@@ -27,37 +27,15 @@ with q as (
             else 0
         end as is_SPED,
         case
-            when exists(
-                select 1
-                from {{ ref('fct_student_characteristics') }} x 
-                where x.k_student = fssa.k_student 
-                    and x.k_lea = fssa.k_lea
-                    and x.student_characteristic IN ('FundineligI20', 'FundineligOOS')
-                    and dcd.calendar_date >= x.begin_date 
-                    and (x.end_date is null or dcd.calendar_date <= x.end_date)
-                ) then 1
+            when funding_ineligible.begin_date is not null then 1
             else 0
         end as is_funding_ineligible,
         case
-            when exists(
-                select 1
-                from {{ ref('wrk_expulsion_windows') }} x
-                where x.k_student = fssa.k_student
-                    and x.k_school = fssa.k_school
-                    and dcd.calendar_date between x.discipline_date_begin and x.discipline_date_end
-            ) then 1
+            when expulsions.discipline_date_begin is not null then 1
             else 0
         end as is_expelled,
         case
-            when exists(
-                select 1
-                from {{ ref('fct_student_characteristics') }} x
-                where x.k_student = fssa.k_student
-                    and x.k_lea = fssa.k_lea
-                    and x.student_characteristic in ('I', 'J', 'H', 'U', 'FOS01', 'SN', 'TO')
-                    and dcd.calendar_date >= x.begin_date 
-                    and (x.end_date is null or dcd.calendar_date <= x.end_date)
-            ) then 1
+            when econdis.begin_date is not null then 1
             else 0
         end as is_EconDis,
         case
@@ -68,8 +46,12 @@ with q as (
             when ilpd.service_begin_date is not null then 1
             else 0
         end as is_Dyslexic,
-        greatest(coalesce(fssa.tdoe_severity_code, 0), coalesce(dcd.tdoe_severity_code, 0), coalesce(ssd.tdoe_severity_code, 0)) as tdoe_severity_code,
-        {{ severity_code_to_severity_case_clause('greatest(coalesce(fssa.tdoe_severity_code, 0), coalesce(dcd.tdoe_severity_code, 0), coalesce(ssd.tdoe_severity_code, 0))') }}
+        case
+            when attendance.calendar_date is not null then attendance.is_absent
+            else 0.0
+        end as is_absent,
+        greatest(coalesce(fssa.tdoe_severity_code, 0), coalesce(dcd.tdoe_severity_code, 0), coalesce(ssd.tdoe_severity_code, 0), coalesce(attendance.tdoe_severity_code, 0)) as tdoe_severity_code,
+        {{ severity_code_to_severity_case_clause('greatest(coalesce(fssa.tdoe_severity_code, 0), coalesce(dcd.tdoe_severity_code, 0), coalesce(ssd.tdoe_severity_code, 0), coalesce(attendance.tdoe_severity_code, 0))') }}
     from {{ ref('fct_student_school_association') }} fssa
     join {{ ref('xwalk_grade_levels') }} gl
         on upper(gl.grade_level) = upper(fssa.entry_grade_level)
@@ -87,6 +69,24 @@ with q as (
         and sped.school_year = fssa.school_year
         and sped.primary_indicator = true
         and dcd.calendar_date between sped.service_begin_date and sped.safe_service_end_date
+    left outer join {{ ref('bld_funding_ineligible_safe_ranges') }} funding_ineligible
+        on funding_ineligible.k_lea = fssa.k_lea
+        and funding_ineligible.k_student = fssa.k_student
+        and funding_ineligible.tenant_code = fssa.tenant_code
+        and funding_ineligible.school_year = fssa.school_year
+        and dcd.calendar_date between funding_ineligible.begin_date and funding_ineligible.safe_end_date
+    left outer join {{ ref('bld_econdis_safe_ranges') }} econdis
+        on econdis.k_lea = fssa.k_lea
+        and econdis.k_student = fssa.k_student
+        and econdis.tenant_code = fssa.tenant_code
+        and econdis.school_year = fssa.school_year
+        and dcd.calendar_date between econdis.begin_date and econdis.safe_end_date
+    left outer join {{ ref('bld_expulsion_safe_ranges') }} expulsions
+        on expulsions.k_school = fssa.k_school
+        and expulsions.k_student = fssa.k_student
+        and expulsions.tenant_code = fssa.tenant_code
+        and expulsions.school_year = fssa.school_year
+        and dcd.calendar_date between expulsions.discipline_date_begin and expulsions.safe_discipline_date_end
     left outer join {{ ref('bld_ilp_safe_ranges') }} ilp
         on ilp.k_school = fssa.k_school
         and ilp.k_student = fssa.k_student
@@ -108,6 +108,11 @@ with q as (
         on ilpd.k_school = fssa.k_school
         and ilpd.k_student = fssa.k_student
         and dcd.calendar_date between ilpd.service_begin_date and ilpd.safe_service_end_date
+    left outer join {{ ref('fct_student_daily_attendance') }} attendance
+        on attendance.k_student = fssa.k_student
+        and attendance.k_school = fssa.k_school
+        and attendance.calendar_date = dcd.calendar_date
+        and attendance.is_absent > 0.0
 )
 select k_student, k_lea, k_school, k_school_calendar,
     school_year, is_primary_school, entry_date, exit_withdraw_date,
@@ -120,6 +125,7 @@ select k_student, k_lea, k_school, k_school_calendar,
     coalesce(is_EconDis,0) as is_EconDis,
     coalesce(is_EL,0) as is_EL,
     coalesce(is_Dyslexic,0) as is_Dyslexic,
+    coalesce(is_absent, 0.0) as is_absent,
     case
         when exit_withdraw_date is not null and calendar_date >= exit_withdraw_date 
             and is_early_graduate = 1 then 1
