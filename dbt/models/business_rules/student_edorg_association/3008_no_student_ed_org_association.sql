@@ -40,7 +40,7 @@ stg_student_school_associations as (
 )
 /* Student Enrollments that does not exist in Student/EdOrg Associations. */
 select distinct ssa.k_student, lea.k_lea, cast( null as int ) as k_school, 
-        ssa.school_year, ssa.ed_org_id, s.student_unique_id,
+        cast(ssa.school_year as int) as school_year, ssa.ed_org_id, s.student_unique_id,
         s.state_student_id as legacy_state_student_id,
         brule.tdoe_error_code as error_code,
         concat('Student ', s.student_unique_id, ' (', coalesce(s.state_student_id, '[no value]'), ') ',
