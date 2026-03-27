@@ -389,10 +389,35 @@ vars:
         tdoe_severity_code: { as: tdoe_severity_code, default: 0 }
         tdoe_severity: { as: tdoe_severity, default: "'good'" }
 
+  'tdoe:staff_assignment_association:custom_data_sources': 
+    cds_fct_staff_assignment_association_statuses:
+      joins: 
+        - cds_fct_staff_assignment_association_statuses.k_staff = stg_staff_edorg_assignments.k_staff
+        - cds_fct_staff_assignment_association_statuses.ed_org_id = stg_staff_edorg_assignments.ed_org_id
+        - cds_fct_staff_assignment_association_statuses.begin_date = stg_staff_edorg_assignments.begin_date
+        - cds_fct_staff_assignment_association_statuses.staff_classification = stg_staff_edorg_assignments.staff_classification
+      cds_additional_cols:
+        tdoe_severity_code: { as: tdoe_severity_code, default: 0 }
+        tdoe_severity: { as: tdoe_severity, default: "'good'" }
+
+  'tdoe:staff_contact_association:custom_data_sources': 
+    cds_default_severity_columns:
+      joins: [true]
+      cds_additional_cols:
+        tdoe_severity_code: { as: tdoe_severity_code, default: 0 }
+        tdoe_severity: { as: tdoe_severity, default: "'good'" }
+
+  'tdoe:staff_employment_association:custom_data_sources': 
+    cds_default_severity_columns:
+      joins: [true]
+      cds_additional_cols:
+        tdoe_severity_code: { as: tdoe_severity_code, default: 0 }
+        tdoe_severity: { as: tdoe_severity, default: "'good'" }
+
   'edu:staff_school_association:custom_data_sources': 
     cds_staff_school_assoc_statuses:
       joins: 
-        - cds_staff_school_assoc_statuses.k_staff = dim_staff.k_staff
+        - cds_staff_school_assoc_statuses.k_staff = ca.k_staff
       cds_additional_cols:
         tdoe_severity_code: { as: tdoe_severity_code, default: 0 }
         tdoe_severity: { as: tdoe_severity, default: "'good'" }
