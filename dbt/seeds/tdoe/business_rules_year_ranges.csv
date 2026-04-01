@@ -19,6 +19,7 @@ tdoe_error_code,end_point,error_school_year_start,error_school_year_end,tdoe_sev
 2009,classPeriods,2025,,critical,Class Periods must have a positive meeting time duration.
 2011,classPeriods,2025,,critical,Class Periods must be tied to a Bell Schedule.
 2008,bellSchedules,2025,,critical,Bell Schedules must have dates.
+2015,bellSchedules,2025,,potential,Bell Schedule date must be an School Calendar instructional day.
 3001,studentEducationOrganizationAssociations,2025,,critical,Date Entered US cannot be missing for an immigrant student.
 3002,studentEducationOrganizationAssociations,2025,,error,"Date Entered US must exist for students with English Language Background code L,W,1,2,3,4,F,N."
 3003,studentEducationOrganizationAssociations,2025,,error,Native Language must exist for students.
