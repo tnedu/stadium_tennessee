@@ -29,6 +29,11 @@ bell_schedule_periods_dates as (
         where cast(bs.school_year as int) between brule.error_school_year_start and brule.error_school_year_end
     )
 ),
+school_day_events as (
+    select *
+    from {{ ref('xwalk_calendar_events') }}
+    where is_school_day = true
+),
 school_days as (
     select cal_dates.tenant_code, cal_dates.school_year, cal_dates.school_id,  cal_dates.calendar_date,
            cal_dates.calendar_code
@@ -37,7 +42,7 @@ school_days as (
         on cal_events.api_year = cal_dates.api_year
         and cal_events.tenant_code = cal_dates.tenant_code
         and cal_events.k_calendar_date = cal_dates.k_calendar_date
-    where cal_events.calendar_event like 'ID%'
+    where cal_events.calendar_event in (select calendar_event_descriptor from school_day_events)
 ),
 /* Bell Schedules dates must have ID event in school calendar. */
 bsdates_missing_school_days as (
