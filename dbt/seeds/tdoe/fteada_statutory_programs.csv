@@ -1,0 +1,34 @@
+start_school_year,end_school_year,program_grouping,program_criterion,statutory_program,weight
+2025,,Grade,K,Regular academic K-3,1.287
+2025,,Grade,01,Regular academic K-3,1.287
+2025,,Grade,02,Regular academic K-3,1.287
+2025,,Grade,03,Regular academic K-3,1.287
+2025,,Grade,03,Regular academic 4,1.218
+2025,,Grade,04,Regular academic 5-6,1.037
+2025,,Grade,05,Regular academic 5-6,1.037
+2025,,Grade,07,Regular academic 7-8,1.137
+2025,,Grade,08,Regular academic 7-8,1.137
+2025,,Grade,09,Regular academic 9,1.261
+2025,,Grade,10,Regular academic 10-12,1.371
+2025,,Grade,11,Regular academic 10-12,1.371
+2025,,Grade,12,Regular academic 10-12,1.371
+2025,,Sped,true,Sped,0.030
+2025,,CTE,CTE-AG,"Agriculture, Food, & Natural Resources",2.027
+2025,,CTE,CTE-CONS,Architecture & Construction,1.911
+2025,,CTE,CTE-ARTS,"Arts, Audio/Visual Technology, & Communications",1.911
+2025,,CTE,CTE-BUS,Business Management & Administration,1.58
+2025,,CTE,CTE-EDU,Education & Training,1.58
+2025,,CTE,CTE-FIN,Finance,1.58
+2025,,CTE,CTE-GOV,Government & Public Administration,1.58
+2025,,CTE,CTE-HS,Health Sciences,1.634
+2025,,CTE,CTE-HOSP,Hospitality & Tourism,1.911
+2025,,CTE,CTE-HUSV,Human Services,1.58
+2025,,CTE,CTE-IT,Information Technology,1.911
+2025,,CTE,CTE-LAW,"Law, Public Safety, Corrections & Security",1.911
+2025,,CTE,CTE-MANU,Manufacturing,1.911
+2025,,CTE,CTE-MKTG,Marketing,1.58
+2025,,CTE,CTE-TRAN,"Transportation, Distrivution & Logistics",1.911
+2025,,CTE,CTE-STEM,"Science, Technology, Engineering, & Mathematics",1.911
+2025,,CTE,CTE-WBL,Work-Based Learning,1.58
+2025,,CTE,CTE-CA,Contectual Academics,1.58
+2025,,CTE,General CTE,General CTE,1.58

@@ -12,11 +12,11 @@ That is to say, a student is expelled from Date A to Date B, inclusive. That's m
 when you need to know if they are expelled on any given day (for ADM calculations).
 */
 
-select k_student, k_school, school_year, tenant_code, discipline_date, discipline_action_length,
+select k_student, k_school, school_year, tenant_code, discipline_date, discipline_action, discipline_action_length,
     min(calendar_date) as discipline_date_begin,
     max(calendar_date) as discipline_date_end
 from (
-    select fsda.k_student, fsda.k_school, fsda.school_year, fsda.tenant_code, fsda.discipline_date, 
+    select fsda.k_student, fsda.k_school, fsda.school_year, fsda.tenant_code, fsda.discipline_date, fsda.discipline_action,
         coalesce(fsda.actual_discipline_action_length, fsda.discipline_action_length) as discipline_action_length,
         dcd.calendar_date,
         row_number() over (
@@ -31,10 +31,10 @@ from (
         on dcd.k_school_calendar = fssa.k_school_calendar
         and dcd.k_school = fssa.k_school
         and dcd.is_school_day = true
-    where fsda.discipline_action = 'E'
+    where fsda.discipline_action in ('S','E')
         and fsda.discipline_action_length is not null
         and coalesce(fsda.actual_discipline_action_length, fsda.discipline_action_length) > 0
         and dcd.calendar_date >= fsda.discipline_date
 )
 where rn <= discipline_action_length
-group by k_student, k_school, school_year, tenant_code, discipline_date, discipline_action_length
+group by k_student, k_school, school_year, tenant_code, discipline_date, discipline_action, discipline_action_length

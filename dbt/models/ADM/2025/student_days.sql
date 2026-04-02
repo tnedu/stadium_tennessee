@@ -30,10 +30,14 @@ with q as (
             when funding_ineligible.begin_date is not null then 1
             else 0
         end as is_funding_ineligible,
-        case
-            when expulsions.discipline_date_begin is not null then 1
+        max(case
+            when expulsions.discipline_action = 'E' and expulsions.discipline_date_begin is not null then 1
             else 0
-        end as is_expelled,
+        end) as is_expelled,
+        max(case
+            when expulsions.discipline_action = 'S' and expulsions.discipline_date_begin is not null then 1
+            else 0
+        end) as is_suspended,
         case
             when econdis.begin_date is not null then 1
             else 0
@@ -113,6 +117,7 @@ with q as (
         and attendance.k_school = fssa.k_school
         and attendance.calendar_date = dcd.calendar_date
         and attendance.is_absent > 0.0
+    group by all
 )
 select k_student, k_lea, k_school, k_school_calendar,
     school_year, is_primary_school, entry_date, exit_withdraw_date,
@@ -122,6 +127,7 @@ select k_student, k_lea, k_school, k_school_calendar,
     coalesce(is_sped,0) as is_sped,
     coalesce(is_funding_ineligible,0) as is_funding_ineligible,
     coalesce(is_expelled,0) as is_expelled, 
+    coalesce(is_suspended,0) as is_suspended, 
     coalesce(is_EconDis,0) as is_EconDis,
     coalesce(is_EL,0) as is_EL,
     coalesce(is_Dyslexic,0) as is_Dyslexic,
