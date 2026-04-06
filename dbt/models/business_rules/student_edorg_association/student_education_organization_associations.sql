@@ -6,5 +6,5 @@
 }}
 
 select *
-from {{ ref('student_education_organization_associations_unioned') }}
+from {{ ref('student_education_organization_associations_errors_unioned') }}
 where tdoe_severity != 'potential'
