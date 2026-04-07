@@ -16,7 +16,7 @@ with brule as (
     from {{ ref('business_rules_year_ranges') }} br
     where br.tdoe_error_code = {{ error_code }}
 ),
-/* Student School Association with valid enrollments */
+/* All Student Enrollment records. */
 stg_student_school_associations as (
     select *,
             {{ get_district_from_school_id('ssa.school_id') }}  as ed_org_id
