@@ -104,6 +104,7 @@ vars:
       warning: 2
       error: 3
       critical: 4
+      potential: 9
 
   # source config
   extensions:
@@ -117,7 +118,11 @@ vars:
       replace_with: "concat(code_value,': ',short_description)"
     attendanceEventCategoryDescriptor:
       replace_with: short_description
+    calendarEventDescriptor:
+      replace_with: "concat(code_value,': ',short_description)"
     diplomaTypeDescriptor:
+      replace_with: "concat(code_value,': ',short_description)"
+    calendarEventDescriptor:
       replace_with: "concat(code_value,': ',short_description)"
   
   # Enable optional domains and programs
