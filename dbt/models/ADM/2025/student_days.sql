@@ -35,7 +35,7 @@ with q as (
             else 0
         end) as is_expelled,
         max(case
-            when expulsions.discipline_action = 'S' and expulsions.discipline_date_begin is not null then 1
+            when suspensions.discipline_action = 'S' and suspensions.discipline_date_begin is not null then 1
             else 0
         end) as is_suspended,
         case
@@ -88,9 +88,19 @@ with q as (
     left outer join {{ ref('bld_expulsion_safe_ranges') }} expulsions
         on expulsions.k_school = fssa.k_school
         and expulsions.k_student = fssa.k_student
+        and expulsions.k_school_calendar = fssa.k_school_calendar
         and expulsions.tenant_code = fssa.tenant_code
         and expulsions.school_year = fssa.school_year
+        and expulsions.discipline_action = 'E'
         and dcd.calendar_date between expulsions.discipline_date_begin and expulsions.safe_discipline_date_end
+    left outer join {{ ref('bld_suspension_safe_ranges') }} suspensions
+        on suspensions.k_school = fssa.k_school
+        and suspensions.k_student = fssa.k_student
+        and suspensions.k_school_calendar = fssa.k_school_calendar
+        and suspensions.tenant_code = fssa.tenant_code
+        and suspensions.school_year = fssa.school_year
+        and suspensions.discipline_action = 'S'
+        and dcd.calendar_date between suspensions.discipline_date_begin and suspensions.safe_discipline_date_end
     left outer join {{ ref('bld_ilp_safe_ranges') }} ilp
         on ilp.k_school = fssa.k_school
         and ilp.k_student = fssa.k_student

@@ -11,7 +11,8 @@ along with the duration of the Section (which can be split across multiple class
 Class Period Meeting Times have been added for detail in the next step.
 */
 
-select dcs.school_year, dcs.k_school, dcs.k_course_section, dcs.course_code, dcs.is_cte, dcs.CTE_Cluster,
+select dcs.school_year, dcs.k_school, dcs.k_course_section, scpd.class_period_name, scpd.bell_schedule_name,
+    dcs.course_code, dcs.is_cte, dcs.CTE_Cluster,
     scpd.calendar_date,
     scpd.start_time, scpd.end_time,
     scpd.period_duration as period_duration,

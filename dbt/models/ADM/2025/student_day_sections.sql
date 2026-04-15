@@ -23,7 +23,7 @@ student_classes as (
         sm.ssd_duration,
         sm.report_period, sm.report_period_begin_date, sm.report_period_end_date,
         sm.days_in_report_period,
-        si.course_code, si.start_time, si.end_time, coalesce(si.period_duration,0) as period_duration,
+        si.course_code, fssa.k_course_section, fssa.begin_date as fssa_begin_date, si.class_period_name, si.bell_schedule_name, si.start_time, si.end_time, coalesce(si.period_duration,0) as period_duration,
         si.is_cte, si.CTE_Cluster,  
         max_by(fteada.statutory_program, fteada.weight) as fteada_program,
         max(fteada.weight) as fteada_weight,
@@ -70,7 +70,7 @@ student_classes as (
         sm.ssd_duration,
         sm.report_period, sm.report_period_begin_date, sm.report_period_end_date,
         sm.days_in_report_period,
-        si.course_code, si.start_time, si.end_time, coalesce(si.period_duration,0),
+        si.course_code, fssa.k_course_section, fssa.begin_date, si.class_period_name, si.bell_schedule_name, si.start_time, si.end_time, coalesce(si.period_duration,0),
         si.is_cte, si.CTE_Cluster,
         greatest(coalesce(sm.tdoe_severity_code,0), coalesce(fssa.tdoe_severity_code,0), coalesce(si.tdoe_severity_code,0))
 ),
@@ -106,14 +106,14 @@ student_courses_aggregated as (
         report_period, report_period_begin_date, report_period_end_date,
         days_in_report_period,
         course_code, 
-        count(course_code) as section_count,
+        count(course_code) as section_classperiod_count,
         sum(period_duration) as course_duration,
         max(is_cte) as is_cte,
         max(has_overlapping_period) as has_overlapping_periods,
         struct(
             min(start_time) as min_start_time,
             course_code,
-            count(course_code) as section_count,
+            count(course_code) as section_classperiod_count,
             sum(period_duration) as course_duration,
             max(
                 case
@@ -159,14 +159,14 @@ student_daily_schedule as (
             else 0
         end as has_overlapping_periods,
         case
-            when max(section_count) > 1 then 1
+            when max(section_classperiod_count) > 1 then 1
             else 0
         end as has_duplicate_course_scheduled,
         transform(
             sort_array(collect_list(course_info)),
             c -> struct(
                 c.course_code,
-                c.section_count,
+                c.section_classperiod_count,
                 c.course_duration,
                 c.is_vocational_course,
                 c.CTE_Cluster,

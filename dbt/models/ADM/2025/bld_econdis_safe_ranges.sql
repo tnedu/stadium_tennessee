@@ -20,6 +20,7 @@ with econ_disadvantaged as (
             where stu_chars.school_year >= x.stuchar_school_year_start
                 and (x.stuchar_school_year_end is null or stu_chars.school_year <= x.stuchar_school_year_end)
                 and x.is_econ_disadvantaged = 'Y'
+                and x.student_characteristic = stu_chars.student_characteristic
         )
 ),
 clean_econ_disadvantaged as (
@@ -32,7 +33,7 @@ clean_econ_disadvantaged as (
 safe_dates as (
     select tenant_code, school_year, k_student, k_lea, begin_date, end_date,
         case
-            when next_begin_date is not null and next_begin_date < end_date then date_sub(next_begin_date, 1)
+            when next_begin_date is not null and next_begin_date <= end_date then date_sub(next_begin_date, 1)
             else end_date
         end as safe_end_date
     from clean_econ_disadvantaged
