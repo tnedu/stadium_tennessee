@@ -15,6 +15,7 @@ tdoe_error_code,end_point,error_school_year_start,error_school_year_end,tdoe_sev
 2005,sections,2025,,critical,Sections only get one of Fall Block or Spring Block or Year-long.
 2006,sections,2025,,critical,Sections that are not Pull Out must have a meeting time duration.
 2010,sections,2025,,critical,Sections must have an educational_environment_type.
+2012,sections,2025,,potential,Post Secondary Institution must be submitted for LDC / DE sections.
 2007,classPeriods,2025,,critical,Class Periods cannot have more than one meeting time.
 2009,classPeriods,2025,,critical,Class Periods must have a positive meeting time duration.
 2011,classPeriods,2025,,critical,Class Periods must be tied to a Bell Schedule.

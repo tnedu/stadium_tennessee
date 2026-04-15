@@ -122,8 +122,6 @@ vars:
       replace_with: "concat(code_value,': ',short_description)"
     diplomaTypeDescriptor:
       replace_with: "concat(code_value,': ',short_description)"
-    calendarEventDescriptor:
-      replace_with: "concat(code_value,': ',short_description)"
   
   # Enable optional domains and programs
   'src:domain:assessment:enabled': True
@@ -225,9 +223,9 @@ vars:
         EPSOIdentification: { as: EPSOIdentification, default: 'Null' }
         CTE_Cluster: { as: CTE_Cluster, default: 'Null' }
         is_General: { as: is_General, default: false }
-    cds_sections_statuses:
+    cds_dim_course_section_statuses:
       joins: 
-        - cds_sections_statuses.k_course_section = stg_ef3__sections.k_course_section
+        - cds_dim_course_section_statuses.k_course_section = stg_ef3__sections.k_course_section
       cds_additional_cols:
         tdoe_severity_code: { as: tdoe_severity_code, default: 0 }
         tdoe_severity: { as: tdoe_severity, default: "'good'" }
