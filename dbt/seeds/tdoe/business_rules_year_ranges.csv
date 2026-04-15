@@ -36,6 +36,7 @@ tdoe_error_code,end_point,error_school_year_start,error_school_year_end,tdoe_sev
 3106,studentSchoolAssociations,2025,,warning,Student cannot have more than one School Association with Enrollment Reason Code of E or E1 in a single school year.
 3107,studentSchoolAssociations,2025,,warning,Student cannot have TR Enrollment Reason Code if there is not existing E or E1 at a different school in a single school year.
 3108,studentSchoolAssociations,2025,,warning,Student cannot have more than one enrollment reason code in a single school year.
+3110,studentSchoolAssociations,2025,,potential,Calendar code missing on Student School Association record.
 3109,studentHomelessProgramAssociations,2025,,critical,Homeless students must have homeless primary nighttime residence.
 3200,disciplineActions,2025,,critical,Discipline Date must be within the school year.
 3201,disciplineActions,2025,,critical,Discipline Incident Date cannot be after Discipline Action Date.
