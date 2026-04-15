@@ -93,6 +93,6 @@ select k_student, k_lea, school_year, tenant_code, api_year, student_unique_id, 
     case
         when next_island_begin_date is not null
              then date_sub(next_island_begin_date, 1)
-        else statusservice_end_date_end_date
+        else service_end_date
     end as service_end_date
 from final_with_next
