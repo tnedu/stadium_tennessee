@@ -58,7 +58,7 @@ with raw_el_adm as (
         ) as normalized_el_adm,
         ilp.participation_status,
         ilp.status_begin_date as calc_status_begin_date,
-        ilp.safe_status_end_date as calc_status_end_date,
+        ilp.status_end_date as calc_status_end_date,
         ilp.total_years_esl,
         case
             when ilp.seq = 1
@@ -67,7 +67,7 @@ with raw_el_adm as (
                             when datediff(ilp.status_begin_date, sm.entry_date) > 0 and datediff(ilp.status_begin_date, sm.entry_date) <= 60 then sm.entry_date
                             else ilp.status_begin_date
                         end)
-                        and ilp.safe_status_end_date then true
+                        and ilp.status_end_date then true
             else false
         end as is_generous,
         max(sm.tdoe_severity_code) as tdoe_severity_code,
@@ -84,10 +84,10 @@ with raw_el_adm as (
                             when datediff(ilp.status_begin_date, sm.entry_date) > 0 and datediff(ilp.status_begin_date, sm.entry_date) <= 60 then sm.entry_date
                             else ilp.status_begin_date
                         end)
-                        and ilp.safe_status_end_date
+                        and ilp.status_end_date
                 ) or (
                     ilp.seq != 1
-                    and sm.calendar_date between ilp.status_begin_date and ilp.safe_status_end_date
+                    and sm.calendar_date between ilp.status_begin_date and ilp.status_end_date
                 )
             )
     join {{ ref('dim_student') }} s
@@ -104,7 +104,7 @@ with raw_el_adm as (
         sm.report_period, sm.report_period_begin_date, sm.report_period_end_date, sm.days_in_report_period,
         ilp.participation_status,
         ilp.status_begin_date,
-        ilp.safe_status_end_date,
+        ilp.status_end_date,
         ilp.total_years_esl,
         case
             when ilp.seq = 1
@@ -113,7 +113,7 @@ with raw_el_adm as (
                             when datediff(ilp.status_begin_date, sm.entry_date) > 0 and datediff(ilp.status_begin_date, sm.entry_date) <= 60 then sm.entry_date
                             else ilp.status_begin_date
                         end)
-                        and ilp.safe_status_end_date then true
+                        and ilp.status_end_date then true
             else false
         end
 )

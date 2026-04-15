@@ -58,7 +58,7 @@ with raw_el_adm as (
         sped.participation_status,
         sped.option,
         sped.service_begin_date,
-        sped.safe_service_end_date as service_end_date,
+        sped.service_end_date as service_end_date,
         sped.service_eligibility_date,
         max(sm.tdoe_severity_code) as tdoe_severity_code,
         {{ severity_code_to_severity_case_clause('max(sm.tdoe_severity_code)') }}
@@ -68,7 +68,7 @@ with raw_el_adm as (
         and sped.k_student = sm.k_student
         and sped.school_year = sm.school_year
         and sm.is_sped = 1
-        and sm.calendar_date between sped.service_begin_date and sped.safe_service_end_date
+        and sm.calendar_date between sped.service_begin_date and sped.service_end_date
     join {{ ref('dim_student') }} s
         on s.k_student = sm.k_student
     join {{ ref('dim_lea') }} l
@@ -85,7 +85,7 @@ with raw_el_adm as (
         sped.participation_status,
         sped.option,
         sped.service_begin_date,
-        sped.safe_service_end_date,
+        sped.service_end_date,
         sped.service_eligibility_date
 )
 select x.*

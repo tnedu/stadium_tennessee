@@ -23,21 +23,39 @@ with funding_ineligible as (
                 and x.student_characteristic = stu_chars.student_characteristic
         )
 ),
-clean_funding_ineligible as (
+ordered as (
     select tenant_code, school_year, k_student, k_lea, begin_date, end_date,
-        lead(begin_date) over (
+        lag(end_date) over (
             partition by tenant_code, school_year, k_student, k_lea
-            order by begin_date, end_date) as next_begin_date
-    from funding_ineligible 
+            order by begin_date, end_date
+        ) as prev_end_date
+    from funding_ineligible
 ),
-safe_dates as (
-    select tenant_code, school_year, k_student, k_lea, begin_date, end_date,
+islands as (
+    select *,
         case
-            when next_begin_date is not null and next_begin_date <= end_date then date_sub(next_begin_date, 1)
-            else end_date
-        end as safe_end_date
-    from clean_funding_ineligible
+            when prev_end_date is null then 1
+            -- gap of at least 1 day = new island
+            when begin_date > date_add(prev_end_date, 1) then 1
+            else 0
+        end as is_new_island
+    from ordered
+), 
+island_ids as (
+    select *,
+        sum(is_new_island) over (
+            partition by tenant_code, school_year, k_student, k_lea
+            order by begin_date, end_date
+            rows between unbounded preceding and current row
+        ) as island_id
+    from islands
 )
-select *
-from safe_dates
-where begin_date <= safe_end_date
+select tenant_code, school_year, k_student, k_lea,
+    min(begin_date) as begin_date,
+    case
+        when max(end_date) = to_date(concat(school_year, '-06-30'), 'yyyy-MM-dd')
+            then max(end_date)
+        else date_sub(max(end_date), 1)
+    end as end_date
+from island_ids
+group by tenant_code, school_year, k_student, k_lea, island_id
