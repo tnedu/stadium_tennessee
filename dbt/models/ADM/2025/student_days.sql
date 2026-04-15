@@ -72,19 +72,19 @@ with q as (
         and sped.tenant_code = fssa.tenant_code
         and sped.school_year = fssa.school_year
         and sped.primary_indicator = true
-        and dcd.calendar_date between sped.service_begin_date and sped.safe_service_end_date
+        and dcd.calendar_date between sped.service_begin_date and sped.service_end_date
     left outer join {{ ref('bld_funding_ineligible_safe_ranges') }} funding_ineligible
         on funding_ineligible.k_lea = fssa.k_lea
         and funding_ineligible.k_student = fssa.k_student
         and funding_ineligible.tenant_code = fssa.tenant_code
         and funding_ineligible.school_year = fssa.school_year
-        and dcd.calendar_date between funding_ineligible.begin_date and funding_ineligible.safe_end_date
+        and dcd.calendar_date between funding_ineligible.begin_date and funding_ineligible.end_date
     left outer join {{ ref('bld_econdis_safe_ranges') }} econdis
         on econdis.k_lea = fssa.k_lea
         and econdis.k_student = fssa.k_student
         and econdis.tenant_code = fssa.tenant_code
         and econdis.school_year = fssa.school_year
-        and dcd.calendar_date between econdis.begin_date and econdis.safe_end_date
+        and dcd.calendar_date between econdis.begin_date and econdis.end_date
     left outer join {{ ref('bld_expulsion_safe_ranges') }} expulsions
         on expulsions.k_school = fssa.k_school
         and expulsions.k_student = fssa.k_student
@@ -92,7 +92,7 @@ with q as (
         and expulsions.tenant_code = fssa.tenant_code
         and expulsions.school_year = fssa.school_year
         and expulsions.discipline_action = 'E'
-        and dcd.calendar_date between expulsions.discipline_date_begin and expulsions.safe_discipline_date_end
+        and dcd.calendar_date between expulsions.discipline_date_begin and expulsions.discipline_date_end
     left outer join {{ ref('bld_suspension_safe_ranges') }} suspensions
         on suspensions.k_school = fssa.k_school
         and suspensions.k_student = fssa.k_student
@@ -100,7 +100,7 @@ with q as (
         and suspensions.tenant_code = fssa.tenant_code
         and suspensions.school_year = fssa.school_year
         and suspensions.discipline_action = 'S'
-        and dcd.calendar_date between suspensions.discipline_date_begin and suspensions.safe_discipline_date_end
+        and dcd.calendar_date between suspensions.discipline_date_begin and suspensions.discipline_date_end
     left outer join {{ ref('bld_ilp_safe_ranges') }} ilp
         on ilp.k_school = fssa.k_school
         and ilp.k_student = fssa.k_student
@@ -112,16 +112,16 @@ with q as (
                             when datediff(ilp.status_begin_date, fssa.entry_date) > 0 and datediff(ilp.status_begin_date, fssa.entry_date) <= 60 then fssa.entry_date
                             else ilp.status_begin_date
                         end)
-                        and ilp.safe_status_end_date
+                        and ilp.status_end_date
                 ) or (
                     ilp.seq != 1
-                    and dcd.calendar_date between ilp.status_begin_date and ilp.safe_status_end_date
+                    and dcd.calendar_date between ilp.status_begin_date and ilp.status_end_date
                 )
             )
     left outer join {{ ref('bld_ilpd_safe_ranges') }} ilpd
         on ilpd.k_school = fssa.k_school
         and ilpd.k_student = fssa.k_student
-        and dcd.calendar_date between ilpd.service_begin_date and ilpd.safe_service_end_date
+        and dcd.calendar_date between ilpd.service_begin_date and ilpd.service_end_date
     left outer join {{ ref('fct_student_daily_attendance') }} attendance
         on attendance.k_student = fssa.k_student
         and attendance.k_school = fssa.k_school
