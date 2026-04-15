@@ -26,8 +26,8 @@ stg_sections as (
          between brule.error_school_year_start and brule.error_school_year_end
 ),
 
--- LDC sections (section-level characteristic)
-ldc_sections as (
+-- LDC at section level
+ldc_section as (
     select distinct
         s.k_course_section,
         s.k_course_offering,
@@ -46,8 +46,28 @@ ldc_sections as (
     where cl.course_level_characteristic = 'LDC'
 ),
 
--- DE sections (course-level characteristic)
-de_sections as (
+-- LDC at course-offering level
+ldc_course_offering as (
+    select distinct
+        s.k_course_section,
+        s.k_course_offering,
+        s.k_school,
+        s.k_location,
+        s.k_school__location,
+        s.section_id,
+        s.local_course_code,
+        s.school_id,
+        s.school_year,
+        s.session_name,
+        cl.course_level_characteristic
+    from stg_sections s
+    join {{ ref('stg_ef3__course_offerings__level_characteristics') }} cl
+      on cl.k_course_offering = s.k_course_offering
+    where cl.course_level_characteristic = 'LDC'
+),
+
+-- DE SOURCE (course-level only)
+de_course as (
     select distinct
         s.k_course_section,
         s.k_course_offering,
@@ -70,9 +90,25 @@ de_sections as (
 
 -- union LDC + DE sections
 ldc_de_sections as (
-    select * from ldc_sections
-    union all
-    select * from de_sections
+    select distinct
+        k_course_section,
+        k_course_offering,
+        k_school,
+        k_location,
+        k_school__location,
+        section_id,
+        local_course_code,
+        school_id,
+        school_year,
+        session_name,
+        course_level_characteristic
+    from (
+        select * from ldc_section
+        union all
+        select * from ldc_course_offering
+        union all
+        select * from de_course
+    )
 ),
 
 -- sections that HAVE a valid postsecondary institution
@@ -84,6 +120,7 @@ sections_with_postsecondary as (
       on p.k_program = sp.k_program
     join {{ ref('stg_ef3__post_secondary_institutions') }} psi
       on psi.post_secondary_institution_id = p.ed_org_id
+     and psi.tenant_code = p.tenant_code
 ),
 
 -- LDC / DE sections that are MISSING a valid postsecondary institution
@@ -101,11 +138,12 @@ errors as (
         sw.session_name,
         {{ error_code }} as error_code,
         concat(
-        'Post Secondary Institution is missing for LDC/DE ',
-        'Section "', section_id, '" ',
-        'of Local Course Code "', local_course_code, '" ',
-        'in Session ', session_name, ' ',
-        'for School ', school_id, '.'
+            'Post Secondary Institution is missing for ',
+            sw.course_level_characteristic, ' ',
+            'Section "', sw.section_id, '" ',
+            'of Local Course Code "', sw.local_course_code, '" ',
+            'in Session ', sw.session_name, ' ',
+            'for School ', sw.school_id, '.'
         ) as error
     from ldc_de_sections sw
     left join sections_with_postsecondary sp
