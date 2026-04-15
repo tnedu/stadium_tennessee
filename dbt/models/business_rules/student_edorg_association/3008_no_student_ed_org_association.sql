@@ -1,0 +1,53 @@
+{{
+  config(
+    materialized="table",
+    schema="stg_data_errors"
+  )
+}}
+
+{% set error_code = 3008 %}
+
+/* brule as per standard */
+with brule as (
+    select tdoe_error_code, 
+        cast(error_school_year_start as int) as error_school_year_start, 
+        cast(ifnull(error_school_year_end, 9999) as int) as error_school_year_end,
+        tdoe_severity
+    from {{ ref('business_rules_year_ranges') }} br
+    where br.tdoe_error_code = {{ error_code }}
+),
+/* All Student Enrollment records. */
+stg_student_school_associations as (
+    select *,
+            {{ get_district_from_school_id('ssa.school_id') }}  as ed_org_id
+    from {{ ref('stg_ef3__student_school_associations') }} ssa
+    where exists (
+        select 1
+        from brule
+        where cast(ssa.school_year as int) between brule.error_school_year_start and brule.error_school_year_end
+    )
+)
+/* Student Enrollments that does not exist in Student/EdOrg Associations. */
+select distinct ssa.k_student, lea.k_lea, cast( null as int ) as k_school, 
+        cast(ssa.school_year as int) as school_year, ssa.ed_org_id, s.student_unique_id,
+        s.state_student_id as legacy_state_student_id,
+        brule.tdoe_error_code as error_code,
+        concat('Student ', s.student_unique_id, ' (', coalesce(s.state_student_id, '[no value]'), ') ',
+                'has an enrollment in District ',ssa.ed_org_id , ' but is missing a Student/EdOrg Association for this District.'
+                ) as error,
+        {{ severity_to_severity_code_case_clause('brule.tdoe_severity') }},
+        brule.tdoe_severity
+from stg_student_school_associations ssa
+join {{ ref('edu_edfi_source', 'stg_ef3__students') }} s
+    on ssa.k_student = s.k_student
+join {{ ref('edu_edfi_source', 'stg_ef3__local_education_agencies') }} lea
+    on ssa.ed_org_id = lea.lea_id
+join brule
+    on cast(ssa.school_year as int) between brule.error_school_year_start and brule.error_school_year_end
+where not exists (
+            select 1 
+            from {{ ref('stg_ef3__student_education_organization_associations') }} se
+            where se.k_student = ssa.k_student
+            and cast(se.school_year as int)  = cast(ssa.school_year as int) 
+            and se.ed_org_id = ssa.ed_org_id
+        )
