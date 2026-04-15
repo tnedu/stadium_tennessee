@@ -35,7 +35,7 @@ with raw_el_adm as (
         sum(sm.is_EL) as days_EL,
         sum(sm.el_membership) as sum_el_membership,
         sum(sm.ssd_duration) as sum_student_standard_day,
-        sum(sm.class_duration) as sum_class_duration,
+        sum(sm.total_duration) as sum_class_duration,
         cast(
             (floor(
                 (case

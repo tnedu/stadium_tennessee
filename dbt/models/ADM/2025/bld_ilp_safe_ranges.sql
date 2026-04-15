@@ -51,18 +51,23 @@ ordered_ilp_statuses as (
             order by status_begin_date) as next_status_begin_date
     from rank_ilp_statuses 
     where rn = 1
+),
+clean_ilp_statuses as (
+    select k_student, k_school, school_year, tenant_code, api_year, student_unique_id, ed_org_id,
+        participation_status,
+        status_begin_date,
+        status_end_date,
+        total_years_esl,
+        case
+            when next_status_begin_date is not null and next_status_begin_date <= status_end_date then date_sub(next_status_begin_date, 1)
+            else coalesce(status_end_date, to_date(concat(school_year, '-06-30'), 'yyyy-MM-dd'))
+        end as safe_status_end_date,
+        row_number() over (
+            partition by k_student, k_school, school_year, tenant_code
+            order by status_begin_date
+        ) as seq
+    from ordered_ilp_statuses
 )
-select k_student, k_school, school_year, tenant_code, api_year, student_unique_id, ed_org_id,
-    participation_status,
-    status_begin_date,
-    status_end_date,
-    total_years_esl,
-    case
-        when next_status_begin_date is not null and next_status_begin_date < status_end_date then date_sub(next_status_begin_date, 1)
-        else coalesce(status_end_date, to_date(concat(school_year, '-06-30', 'yyyy-MM-dd')))
-    end as safe_status_end_date,
-    row_number() over (
-        partition by k_student, k_school, school_year, tenant_code
-        order by status_begin_date
-    ) as seq
-from ordered_ilp_statuses
+select *
+from clean_ilp_statuses
+where status_begin_date <= safe_status_end_date
