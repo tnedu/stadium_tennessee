@@ -1,0 +1,4 @@
+section_characteristic_descriptor,indicator_name
+Fall Block,is_fall_block
+Spring Block,is_spring_block
+Year-long,is_year_long

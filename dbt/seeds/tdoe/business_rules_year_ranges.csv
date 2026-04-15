@@ -15,10 +15,12 @@ tdoe_error_code,end_point,error_school_year_start,error_school_year_end,tdoe_sev
 2005,sections,2025,,critical,Sections only get one of Fall Block or Spring Block or Year-long.
 2006,sections,2025,,critical,Sections that are not Pull Out must have a meeting time duration.
 2010,sections,2025,,critical,Sections must have an educational_environment_type.
+2012,sections,2025,,potential,Post Secondary Institution must be submitted for LDC / DE sections.
 2007,classPeriods,2025,,critical,Class Periods cannot have more than one meeting time.
 2009,classPeriods,2025,,critical,Class Periods must have a positive meeting time duration.
 2011,classPeriods,2025,,critical,Class Periods must be tied to a Bell Schedule.
 2008,bellSchedules,2025,,critical,Bell Schedules must have dates.
+2015,bellSchedules,2025,,potential,Bell Schedule date must be an School Calendar instructional day.
 3001,studentEducationOrganizationAssociations,2025,,critical,Date Entered US cannot be missing for an immigrant student.
 3002,studentEducationOrganizationAssociations,2025,,error,"Date Entered US must exist for students with English Language Background code L,W,1,2,3,4,F,N."
 3003,studentEducationOrganizationAssociations,2025,,error,Native Language must exist for students.
@@ -26,6 +28,7 @@ tdoe_error_code,end_point,error_school_year_start,error_school_year_end,tdoe_sev
 3005,studentEducationOrganizationAssociations,2025,,warning,Cohort Year must exist for Students with instructional grade greater than 8.
 3006,studentEducationOrganizationAssociations,2025,,critical,Student Characteristics End Date must be greater than or equal to Begin Date.
 3007,studentEducationOrganizationAssociations,2025,,error,Student cannot have overlapping Student Characteristics records for the same characteristics.
+3008,studentEducationOrganizationAssociations,2025,,potential,Student cannot have missing Student Education Organization Association at the District level when Student School Association exists.
 3101,studentSchoolAssociations,2025,,critical,Entry Date must be within the school year.
 3102,studentSchoolAssociations,2025,,critical,Withdrawal Date must be within the school year.
 3103,studentSchoolAssociations,2025,,critical,Withdrawal Date must be greater than or equal to Entry Date.
@@ -34,6 +37,7 @@ tdoe_error_code,end_point,error_school_year_start,error_school_year_end,tdoe_sev
 3106,studentSchoolAssociations,2025,,warning,Student cannot have more than one School Association with Enrollment Reason Code of E or E1 in a single school year.
 3107,studentSchoolAssociations,2025,,warning,Student cannot have TR Enrollment Reason Code if there is not existing E or E1 at a different school in a single school year.
 3108,studentSchoolAssociations,2025,,warning,Student cannot have more than one enrollment reason code in a single school year.
+3110,studentSchoolAssociations,2025,,potential,Calendar code missing on Student School Association record.
 3109,studentHomelessProgramAssociations,2025,,critical,Homeless students must have homeless primary nighttime residence.
 3200,disciplineActions,2025,,critical,Discipline Date must be within the school year.
 3201,disciplineActions,2025,,critical,Discipline Incident Date cannot be after Discipline Action Date.
