@@ -69,7 +69,9 @@ with raw_el_adm as (
                         end)
                         and ilp.safe_status_end_date then true
             else false
-        end as is_generous
+        end as is_generous,
+        max(sm.tdoe_severity_code) as tdoe_severity_code,
+        {{ severity_code_to_severity_case_clause('max(sm.tdoe_severity_code)') }}
     from {{ ref('student_membership') }} sm
     left outer join {{ ref('bld_ilp_safe_ranges') }} ilp
         on ilp.k_school = sm.k_school
