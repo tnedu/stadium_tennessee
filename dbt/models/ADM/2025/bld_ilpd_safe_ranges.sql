@@ -23,9 +23,10 @@ with ilpd_statuses as (
 ordered as (
     select k_student, k_school, school_year, tenant_code, api_year, student_unique_id, ed_org_id,
         service_begin_date, service_end_date,
-        lag(service_end_date) over (
+        max(service_end_date) over (
             partition by k_student, k_school, school_year, tenant_code
             order by service_begin_date, service_end_date
+            rows between unbounded preceding and 1 preceding
         ) as prev_end_date
     from ilpd_statuses
 ),
@@ -46,13 +47,27 @@ island_ids as (
             rows between unbounded preceding and current row
         ) as island_id
     from islands
+),
+aggregated as (
+    select k_student, k_school, school_year, tenant_code, api_year, student_unique_id, ed_org_id,
+        min(service_begin_date) as service_begin_date,
+        max(service_end_date) as service_end_date
+    from island_ids
+    group by k_student, k_school, school_year, tenant_code, api_year, student_unique_id, ed_org_id, island_id
+),
+final_with_next as (
+    select *,
+        lead(service_begin_date) over (
+            partition by k_student, k_school, school_year, tenant_code, api_year, student_unique_id, ed_org_id
+            order by service_begin_date
+        ) as next_island_begin_date
+    from aggregated
 )
 select k_student, k_school, school_year, tenant_code, api_year, student_unique_id, ed_org_id,
-    min(service_begin_date) as service_begin_date,
+    service_begin_date,
     case
-        when max(service_end_date) = to_date(concat(school_year, '-06-30'), 'yyyy-MM-dd')
-            then max(service_end_date)
-        else date_sub(max(service_end_date), 1)
+        when next_island_begin_date is not null and next_island_begin_date <= service_end_date
+             then date_sub(next_island_begin_date, 1)
+        else service_end_date
     end as service_end_date
-from island_ids
-group by k_student, k_school, school_year, tenant_code, api_year, student_unique_id, ed_org_id, island_id
+from final_with_next

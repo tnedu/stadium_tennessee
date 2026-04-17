@@ -20,9 +20,10 @@ with suspensions as (
 ordered as (
     select k_student, k_school, k_school_calendar, school_year, tenant_code, discipline_action,
         discipline_date_begin, discipline_date_end,
-        lag(discipline_date_end) over (
+        max(discipline_date_end) over (
             partition by k_student, k_school, k_school_calendar, school_year, tenant_code, discipline_action
             order by discipline_date_begin, discipline_date_end
+            rows between unbounded preceding and 1 preceding
         ) as prev_end_date
     from suspensions
 ),
@@ -44,13 +45,27 @@ island_ids as (
             rows between unbounded preceding and current row
         ) as island_id
     from islands
+),
+aggregated as (
+    select k_student, k_school, k_school_calendar, school_year, tenant_code, discipline_action,
+        min(discipline_date_begin) as discipline_date_begin,
+        max(discipline_date_end) as discipline_date_end
+    from island_ids
+    group by k_student, k_school, k_school_calendar, school_year, tenant_code, discipline_action, island_id
+),
+final_with_next as (
+    select *,
+        lead(discipline_date_begin) over (
+            partition by k_student, k_school, k_school_calendar, school_year, tenant_code, discipline_action
+            order by discipline_date_begin
+        ) as next_island_begin_date
+    from aggregated
 )
 select k_student, k_school, k_school_calendar, school_year, tenant_code, discipline_action,
-    min(discipline_date_begin) as discipline_date_begin,
+    discipline_date_begin,
     case
-        when max(discipline_date_end) = to_date(concat(school_year, '-06-30'), 'yyyy-MM-dd')
-            then max(discipline_date_end)
-        else date_sub(max(discipline_date_end), 1)
+        when next_island_begin_date is not null and next_island_begin_date <= discipline_date_end
+             then date_sub(next_island_begin_date, 1)
+        else discipline_date_end
     end as discipline_date_end
-from island_ids
-group by k_student, k_school, k_school_calendar, school_year, tenant_code, discipline_action, island_id
+from final_with_next
