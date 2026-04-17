@@ -38,9 +38,10 @@ ordered as (
     select k_student, k_lea, school_year, tenant_code, api_year, student_unique_id, ed_org_id,
         participation_status, option,
         primary_indicator, service_begin_date, service_end_date, service_eligibility_date,
-        lag(service_end_date) over (
+        max(service_end_date) over (
             partition by k_student, k_lea, school_year, tenant_code, primary_indicator
             order by service_begin_date, service_end_date
+            rows between unbounded preceding and 1 preceding
         ) as prev_end_date,
         lag(participation_status) over (
             partition by k_student, k_lea, school_year, tenant_code, primary_indicator
@@ -91,7 +92,7 @@ select k_student, k_lea, school_year, tenant_code, api_year, student_unique_id, 
     participation_status, option, primary_indicator, service_eligibility_date,
     service_begin_date,
     case
-        when next_island_begin_date is not null
+        when next_island_begin_date is not null and next_island_begin_date <= service_end_date
              then date_sub(next_island_begin_date, 1)
         else service_end_date
     end as service_end_date

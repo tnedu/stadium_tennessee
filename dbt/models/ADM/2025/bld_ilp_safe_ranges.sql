@@ -44,9 +44,10 @@ rank_ilp_statuses as (
 ordered as (
     select k_student, k_school, school_year, tenant_code, api_year, student_unique_id, ed_org_id,
         participation_status, status_begin_date, status_end_date, total_years_esl,
-        lag(status_end_date) over (
+        max(status_end_date) over (
             partition by k_student, k_school, school_year, tenant_code
             order by status_begin_date, status_end_date
+            rows between unbounded preceding and 1 preceding
         ) as prev_end_date,
         lag(participation_status) over (
             partition by k_student, k_school, school_year, tenant_code
@@ -96,7 +97,7 @@ select k_student, k_school, school_year, tenant_code, api_year, student_unique_i
     participation_status, total_years_esl,
     status_begin_date,
     case
-        when next_island_begin_date is not null
+        when next_island_begin_date is not null and next_island_begin_date <= status_end_date
              then date_sub(next_island_begin_date, 1)
         else status_end_date
     end as status_end_date,

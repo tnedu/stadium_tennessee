@@ -25,9 +25,10 @@ with econ_disadvantaged as (
 ),
 ordered as (
     select tenant_code, school_year, k_student, k_lea, begin_date, end_date,
-        lag(end_date) over (
+        max(end_date) over (
             partition by tenant_code, school_year, k_student, k_lea
             order by begin_date, end_date
+            rows between unbounded preceding and 1 preceding
         ) as prev_end_date
     from econ_disadvantaged
 ),
@@ -49,13 +50,27 @@ island_ids as (
             rows between unbounded preceding and current row
         ) as island_id
     from islands
+),
+aggregated as (
+    select tenant_code, school_year, k_student, k_lea,
+        min(begin_date) as begin_date,
+        max(end_date) as end_date
+    from island_ids
+    group by tenant_code, school_year, k_student, k_lea, island_id
+),
+final_with_next as (
+    select *,
+        lead(begin_date) over (
+            partition by tenant_code, school_year, k_student, k_lea
+            order by begin_date
+        ) as next_island_begin_date
+    from aggregated
 )
 select tenant_code, school_year, k_student, k_lea,
-    min(begin_date) as begin_date,
+    begin_date,
     case
-        when max(end_date) = to_date(concat(school_year, '-06-30'), 'yyyy-MM-dd')
-            then max(end_date)
-        else date_sub(max(end_date), 1)
+        when next_island_begin_date is not null and next_island_begin_date <= end_date
+             then date_sub(next_island_begin_date, 1)
+        else end_date
     end as end_date
-from island_ids
-group by tenant_code, school_year, k_student, k_lea, island_id
+from final_with_next
