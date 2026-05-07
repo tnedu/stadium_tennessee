@@ -17,7 +17,7 @@ with q as (
     from  {{ ref('fct_student_school_association') }} ssa
          join {{ ref('dim_student') }} s on ssa.k_student = s.k_student
          join {{ ref('dim_school') }} sc on ssa.k_school = sc.k_school
-        join t{{ ref('dim_lea')}} lea on sc.k_lea = lea.k_lea
+        join {{ ref('dim_lea')}} lea on sc.k_lea = lea.k_lea
         where ssa.school_year = 2026 and
         ssa.is_primary_school = 'True' and
         (exit_withdraw_date is null or entry_date < exit_withdraw_date))
