@@ -39,6 +39,7 @@ with q as (
 select
     school_year,
     student_unique_id,
+    state_student_id,
     first_name,
     last_name,
     grade_level_integer,
