@@ -26,8 +26,8 @@ stg_sections as (
          between brule.error_school_year_start and brule.error_school_year_end
 ),
 
--- LDC sections (section-level characteristic)
-ldc_sections as (
+-- LDC at section level
+ldc_section as (
     select distinct
         s.k_course_section,
         s.k_course_offering,
