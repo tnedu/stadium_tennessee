@@ -27,7 +27,7 @@ stg_sections as (
 ),
 
 -- LDC at section level
-ldc_section as (
+ldc_sections as (
     select distinct
         s.k_course_section,
         s.k_course_offering,
