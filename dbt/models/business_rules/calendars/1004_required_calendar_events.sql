@@ -24,6 +24,11 @@ calendars as (
         where cast(c.school_year as int) between brule.error_school_year_start and brule.error_school_year_end
     )
 ),
+xwalk_calendar_events as (
+    select *
+    from {{ ref('xwalk_calendar_events') }}
+    where is_required = true
+),
 calendar_events as (
     select c.k_school, c.k_school_calendar, cd.k_calendar_date, c.tenant_code, c.api_year, c.school_year,
         c.school_id, c.calendar_code, cd.calendar_date, ce.calendar_event
@@ -34,12 +39,6 @@ calendar_events as (
         on ce.k_school_calendar = cd.k_school_calendar
         and ce.k_calendar_date = cd.k_calendar_date
 ),
-required_events as (
-    select 'AS' as required_calendar_event union
-    select 'AE' as required_calendar_event union
-    select 'CS' as required_calendar_event union
-    select 'CE' as required_calendar_event
-),
 missing_events as (
     select k_school, k_school_calendar, school_year, school_id, calendar_code,
         substr(missing_calendar_events, 2, len(missing_calendar_events)-2) as missing_calendar_events
@@ -47,7 +46,11 @@ missing_events as (
         select c.k_school, c.k_school_calendar, c.school_year, c.school_id, c.calendar_code,
             cast(array_agg(re.required_calendar_event) as String) as missing_calendar_events
         from calendars c
-        cross join required_events re
+        cross join (
+            select distinct calendar_event_descriptor as required_calendar_event
+            from xwalk_calendar_events
+            where is_required = true
+        )  re
         where not exists (
             select 1
             from calendar_events x

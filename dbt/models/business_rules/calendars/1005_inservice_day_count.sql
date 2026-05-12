@@ -24,6 +24,11 @@ calendars as (
         where cast(c.school_year as int) between brule.error_school_year_start and brule.error_school_year_end
     )
 ),
+xwalk_calendar_events as (
+    select *
+    from {{ ref('xwalk_calendar_events') }}
+    where is_inservice_day = true
+),
 calendar_events as (
     select c.k_school, c.k_school_calendar, cd.k_calendar_date, c.tenant_code, c.api_year, c.school_year,
         c.school_id, c.calendar_code, cd.calendar_date, ce.calendar_event
@@ -37,7 +42,7 @@ calendar_events as (
 not_enough_dates as (
     select k_school, k_school_calendar, school_year, school_id, calendar_code, count(*) as inservice_days
     from calendar_events
-    where calendar_event in ('IS', 'IO')
+    where calendar_event in (select calendar_event_descriptor from xwalk_calendar_events)
     group by k_school, k_school_calendar, school_year, school_id, calendar_code
 ),
 errors as (

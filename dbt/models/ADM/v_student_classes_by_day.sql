@@ -31,9 +31,15 @@ left outer join {{ ref('edu_wh', 'fct_student_section_association') }} sec
 left outer join (
         select k_course_section, k_class_period, calendar_date, 
             course_code, period_duration, is_cte
-        from {{ ref('fct_section_class_period_dates') }}
+        from {{ ref('fct_section_class_period_dates') }} fscpd
         where ifnull(educational_environment_type,'X') != 'P' /* Remove pull out classes. */
-            and course_code not in ('G25H09','G25X23') /* Remove cafeteria courses */
+            and not exists (
+                select 1
+                from {{ ref('ignored_adm_courses') }} ignored
+                where ignored.course_code = fscpd.course_code
+                    and fscpd.school_year >= ignored.ignored_course_school_year_start
+                    and (ignored.ignored_course_school_year_end is null or fscpd.school_year <= ignored.ignored_course_school_year_end)
+            )
     ) scpd
     on scpd.k_course_section = sec.k_course_section
     and scpd.calendar_date = sm.calendar_date

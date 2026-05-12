@@ -35,7 +35,7 @@ select sm.k_student, sm.k_lea, sm.k_school, sm.k_school_calendar, sm.school_year
     sum(sm.is_Dyslexic) as days_Dyslexic,
     sum(sm.membership) as sum_membership,
     sum(sm.ssd_duration) as sum_student_standard_day,
-    sum(sm.class_duration) as sum_class_duration,
+    sum(sm.total_duration) as sum_class_duration,
     cast(
         (floor(
             (case
