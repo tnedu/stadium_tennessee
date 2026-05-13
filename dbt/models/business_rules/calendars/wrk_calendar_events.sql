@@ -9,7 +9,7 @@
 select c.*, cd.k_calendar_date, cd.calendar_date, cd.n_calendar_events, ce.calendar_event, 
     xwalk.pct_of_day, xwalk.is_school_day, xwalk.is_statutory_day, xwalk.is_discretionary_day,
     xwalk.is_parent_teacher_day, xwalk.is_abbreviated_day, xwalk.is_inservice_day, 
-    xwalk.is_stockpile_day
+    xwalk.is_stockpile_day, xwalk.is_teacher_vacation_day
 from {{ ref('stg_ef3__calendars') }} c
 left outer join {{ ref('stg_ef3__calendar_dates') }} cd
     on cd.k_school_calendar = c.k_school_calendar

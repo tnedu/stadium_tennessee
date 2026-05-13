@@ -28,7 +28,9 @@ specific_events as (
 sum_event_parts as (
     /* We need to sum up the event values. 
        But we cannot simply sum the fractional values because we could get rounding errors.
-       So scale this to integers and then sum and scale back down to fractional values. */
+       So scale this to integers and then sum and scale back down to fractional values.
+       We don't need to worry about multiple events being on the same day because there will
+       be a different rule for that scenario. */
     select k_school, k_school_calendar, tenant_code, api_year, school_year, school_id, calendar_code, 
         potential_tdoe_error_code, potential_tdoe_severity,
         cast(

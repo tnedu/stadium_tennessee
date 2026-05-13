@@ -7,8 +7,9 @@ tdoe_error_code,end_point,error_school_year_start,error_school_year_end,tdoe_sev
 1005,calendars,2025,,error,In Service Days cannot be less than 5.
 1006,calendars,2025,,error,Stockpile days must be less than or equal to 13.
 1007,calendars,2025,,error,Parent Teacher Days cannot be less than 1.
-1008,calendars,2025,,error,Discrectionary Days cannot be greater than 4.
+1008,calendars,2025,,error,Discrectionary Days cannot be less than 4.
 1009,calendars,2025,,error,Instructional Day dates must be found in any Bell Schedule Dates.
+1010,calendars,2025,,error,Teacher Vacation Days cannot be less than 10.
 2001,sessions,2025,,critical,Session Begin Date must be within the school year.
 2002,sessions,2025,,critical,Session End Date must be within the school year.
 2003,sessions,2025,,critical,Session Begin Date must be less than or equal to End Date.
@@ -21,7 +22,7 @@ tdoe_error_code,end_point,error_school_year_start,error_school_year_end,tdoe_sev
 2009,classPeriods,2025,,critical,Class Periods must have a positive meeting time duration.
 2011,classPeriods,2025,,critical,Class Periods must be tied to a Bell Schedule.
 2008,bellSchedules,2025,,critical,Bell Schedules must have dates.
-2015,bellSchedules,2025,,potential,Bell Schedule date must be an School Calendar instructional day.
+2015,bellSchedules,2025,,potential,Bell Schedule date must be a School Calendar instructional day.
 3001,studentEducationOrganizationAssociations,2025,,critical,Date Entered US cannot be missing for an immigrant student.
 3002,studentEducationOrganizationAssociations,2025,,error,"Date Entered US must exist for students with English Language Background code L,W,1,2,3,4,F,N."
 3003,studentEducationOrganizationAssociations,2025,,error,Native Language must exist for students.

@@ -5,7 +5,7 @@
   )
 }}
 
-{% set error_code = 9999 %}
+{% set error_code = 1001 %}
 
 with brule as (
     select tdoe_error_code, 
@@ -16,24 +16,27 @@ with brule as (
     where br.tdoe_error_code = {{ error_code }}
 ),
 multi_event_days as (
-    select *,
-        -1 as potential_tdoe_error_code,
-        'undefined' as potential_tdoe_severity
-    from {{ ref('wrk_calendar_events') }}
+    select c.*,
+        brule.tdoe_error_code as potential_tdoe_error_code
+    from {{ ref('wrk_calendar_events') }} c
+    join brule brule
+        on cast(c.school_year as int) between brule.error_school_year_start and brule.error_school_year_end
     where n_calendar_events > 1
 ),
 coexistence_rules as (
-    select *
+    select *,
+        lower(split(coexistence_rule, ':')[1]) as potential_tdoe_severity
     from {{ ref('wrk_calendar_event_coexistence_rules') }}
     where coalesce(coexistence_rule, 'IGNORE') not in ('IGNORE', 'ALLOWED')
 ),
 forbidden_event_conflicts as (
     select perspective_events.*,
-        rules.other_calendar_event, rules.coexistence_rule
+        rules.other_calendar_event, rules.coexistence_rule, rules.potential_tdoe_severity
     from multi_event_days perspective_events
     join coexistence_rules rules
         on rules.perspective_calendar_event = perspective_events.calendar_event
-    where rules.coexistence_rule = 'FORBIDDEN'
+    where rules.coexistence_rule like 'FORBIDDEN%'
+        and perspective_events.school_year between rules.school_year_start and coalesce(rules.school_year_end, 9999)
         and exists (
             select 1
             from multi_event_days other_events
@@ -49,11 +52,12 @@ forbidden_event_conflicts as (
 ),
 required_event_conflicts as (
     select perspective_events.*,
-        rules.other_calendar_event, rules.coexistence_rule
+        rules.other_calendar_event, rules.coexistence_rule, rules.potential_tdoe_severity
     from multi_event_days perspective_events
     join coexistence_rules rules
         on rules.perspective_calendar_event = perspective_events.calendar_event
-    where rules.coexistence_rule = 'REQUIRED'
+    where rules.coexistence_rule like 'REQUIRED%'
+        and perspective_events.school_year between rules.school_year_start and coalesce(rules.school_year_end, 9999)
         and not exists (
             select 1
             from multi_event_days other_events
