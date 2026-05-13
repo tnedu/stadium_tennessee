@@ -69,6 +69,11 @@ edfi_resource_dags__default_args: &edfi_resource_dags__default_args
 
 edfi_resource_dags:
   TDOE:
+    2027:
+      pool: default_pool
+      edfi_conn_id: 'edfi_TENANT1_YEAR2027'
+      schedule_interval: '@daily'
+      <<: *edfi_resource_dags__default_args
     2026:
       pool: default_pool
       edfi_conn_id: 'edfi_TENANT1_YEAR2026'
