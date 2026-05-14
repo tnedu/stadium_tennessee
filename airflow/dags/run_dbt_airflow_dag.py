@@ -51,6 +51,10 @@ class RunDbtDag:
         full_refresh: bool = False,
         full_refresh_schedule: Optional[str] = None,
 
+        seed_vars: Optional[dict] = None,
+        run_vars: Optional[dict] = None,
+        test_vars: Optional[dict] = None,
+
         opt_swap: bool = False,
         opt_dest_schema: Optional[str] = None,
         opt_swap_target: Optional[str] = None,
@@ -71,6 +75,11 @@ class RunDbtDag:
         # full refreshes schedules 
         self.full_refresh = full_refresh
         self.full_refresh_schedule = full_refresh_schedule
+
+        # run-time vars
+        self.seed_vars = seed_vars
+        self.run_vars = run_vars
+        self.test_vars = test_vars
 
         # bluegreen
         self.opt_swap        = opt_swap
@@ -148,7 +157,8 @@ class RunDbtDag:
         """
         # set a logic to force a full refresh 
         day = datetime.today().weekday()
-        if self.full_refresh_schedule == day or "{{ dag_run.conf['full_refresh'] }}":
+        dag_conf_full_refresh = kwargs.get('dag_run', {}).get('conf', {}).get('full_refresh') or False
+        if self.full_refresh_schedule == day or dag_conf_full_refresh:
            self.full_refresh = True
 
         with TaskGroup(
@@ -165,6 +175,7 @@ class RunDbtDag:
                 dbt_bin= self.dbt_bin_path,
                 trigger_rule='all_success',
                 full_refresh=True,
+                vars=self.seed_vars,
                 dag=self.dag
             )
 
@@ -174,6 +185,7 @@ class RunDbtDag:
                 target = self.dbt_target_name,
                 dbt_bin= self.dbt_bin_path,
                 full_refresh=self.full_refresh,
+                vars=self.run_vars,
                 dag=self.dag
             )
 
@@ -182,6 +194,7 @@ class RunDbtDag:
                 dir    = self.dbt_repo_path,
                 target = self.dbt_target_name,
                 dbt_bin= self.dbt_bin_path,
+                vars=self.test_vars,
                 dag=self.dag
             )
 

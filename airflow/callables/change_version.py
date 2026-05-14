@@ -10,13 +10,13 @@ from tn_edu_airflow.callables import airflow_util
 from edu_edfi_airflow.providers.edfi.hooks.edfi import EdFiHook
 
 
-def get_newest_edfi_change_version(edfi_conn_id: str, **kwargs) -> int:
+def get_newest_edfi_change_version(edfi_conn_id: str, use_edfi_token_cache: bool = False, **kwargs) -> int:
     """
 
     :return:
     """
     ### Connect to EdFi ODS and verify EdFi3.
-    edfi_conn = EdFiHook(edfi_conn_id=edfi_conn_id).get_conn()
+    edfi_conn = EdFiHook(edfi_conn_id=edfi_conn_id, use_token_cache=use_edfi_token_cache).get_conn()
 
     # Break off prematurely if change versions not supported.
     if edfi_conn.is_edfi2():
@@ -77,6 +77,8 @@ def get_previous_change_versions(
 
         get_deletes: bool = False,
         get_key_changes: bool = False,
+        has_key_changes: bool = False,
+        use_edfi_token_cache: bool = False,
 
         **context
 ) -> None:
@@ -109,8 +111,10 @@ def get_previous_change_versions(
         filter_clause = "is_deletes"
     elif get_key_changes:
         filter_clause = "is_key_changes"
+    elif has_key_changes:
+        filter_clause = "NOT COALESCE(is_deletes, false) AND NOT COALESCE(is_key_changes, false)"
     else:
-        filter_clause = " NOT COALESCE(is_deletes, false) AND NOT COALESCE(is_key_changes, false)"
+        filter_clause = "NOT COALESCE(is_deletes, false)"
     logging.info(f"filter_clause: {filter_clause}")
 
     qry_prior_max = f"""
@@ -154,6 +158,8 @@ def get_previous_change_versions_with_deltas(
 
         get_deletes: bool = False,
         get_key_changes: bool = False,
+        has_key_changes: bool = False,
+        use_edfi_token_cache: bool = False,
 
         **context
 ) -> None:
@@ -163,11 +169,11 @@ def get_previous_change_versions_with_deltas(
     return_tuples = get_previous_change_versions(
         tenant_code=tenant_code, api_year=api_year, endpoints=endpoints,
         databricks_conn_id=databricks_conn_id, change_version_table=change_version_table,
-        get_deletes=get_deletes, get_key_changes=get_key_changes,
+        get_deletes=get_deletes, get_key_changes=get_key_changes, has_key_changes=has_key_changes,
         **context
     )
 
-    edfi_conn = EdFiHook(edfi_conn_id=edfi_conn_id).get_conn()
+    edfi_conn = EdFiHook(edfi_conn_id=edfi_conn_id, use_token_cache=use_edfi_token_cache).get_conn()
 
     # Only ping the API if the endpoint is specified in the run.
     config_endpoints = airflow_util.get_config_endpoints(context)
@@ -244,6 +250,7 @@ def update_change_versions(
         endpoints: List[str],
         get_deletes: bool,
         get_key_changes: bool,
+        has_key_changes: bool = False,
 
         **kwargs
 ):
@@ -256,6 +263,9 @@ def update_change_versions(
             "There are no new change versions to update for any endpoints. All upstream tasks skipped or failed."
         )
 
+    # XCom filters can produce lazy objects without a length.
+    endpoints = list(endpoints)
+
     logging.info(f"Collected updated change versions for {len(endpoints)} endpoints.")
 
     # Deletes and KeyChanges are mutually-exclusive. Delete-status is original and required to output.
@@ -267,24 +277,34 @@ def update_change_versions(
         "is_deletes",
     ]
 
-    if get_key_changes:
+    if has_key_changes:
         columns.append("is_key_changes")
 
     # Build and insert row tuples for each endpoint.
     rows_to_insert = []
 
-    for endpoint in endpoints:
-        row = [
-            tenant_code, api_year, endpoint,
-            kwargs["ds"], kwargs["ts"],
-            edfi_change_version, True,
-            get_deletes,
-        ]
+    row_sets = [{"get_deletes": get_deletes, "get_key_changes": get_key_changes}]
 
-        if get_key_changes:
-            row.append(get_key_changes)
+    # On full-refresh, also advance deletes/keyChanges watermarks so the next
+    # incremental run does not re-pull historical delete/key-change records.
+    if airflow_util.is_full_refresh(kwargs):
+        row_sets.append({"get_deletes": True, "get_key_changes": False})
+        if has_key_changes:
+            row_sets.append({"get_deletes": False, "get_key_changes": True})
 
-        rows_to_insert.append(row)
+    for row_set in row_sets:
+        for endpoint in endpoints:
+            row = [
+                tenant_code, api_year, endpoint,
+                kwargs["ds"], kwargs["ts"],
+                edfi_change_version, True,
+                row_set["get_deletes"],
+            ]
+
+            if has_key_changes:
+                row.append(row_set["get_key_changes"])
+
+            rows_to_insert.append(row)
 
     insert_into_databricks(
         databricks_conn_id=databricks_conn_id,

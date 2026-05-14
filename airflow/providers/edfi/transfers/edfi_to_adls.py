@@ -44,6 +44,7 @@ class EdFiToADLSOperator(BaseOperator):
                  get_key_changes: bool = False,
                  min_change_version: Optional[int] = None,
                  max_change_version: Optional[int] = None,
+                 use_edfi_token_cache: bool = False,
 
                  namespace: str = 'ed-fi',
                  page_size: int = 500,
@@ -67,6 +68,7 @@ class EdFiToADLSOperator(BaseOperator):
         self.get_key_changes = get_key_changes
         self.min_change_version = min_change_version
         self.max_change_version = max_change_version
+        self.use_edfi_token_cache = use_edfi_token_cache
 
         # Storage variables
         self.tmp_dir = tmp_dir
@@ -113,7 +115,7 @@ class EdFiToADLSOperator(BaseOperator):
         self.check_change_version_window_validity(self.min_change_version, self.max_change_version)
 
         # Complete the pull and write to ADLS
-        edfi_conn = EdFiHook(self.edfi_conn_id).get_conn()
+        edfi_conn = EdFiHook(self.edfi_conn_id, use_token_cache=self.use_edfi_token_cache).get_conn()
 
         self.pull_edfi_to_adls(
             edfi_conn=edfi_conn,
@@ -283,7 +285,7 @@ class BulkEdFiToADLSOperator(EdFiToADLSOperator):
             )
 
         # Make connection outside of loop to not re-authenticate at every resource.
-        edfi_conn = EdFiHook(self.edfi_conn_id).get_conn()
+        edfi_conn = EdFiHook(self.edfi_conn_id, use_token_cache=self.use_edfi_token_cache).get_conn()
 
         # Gather DAG-level endpoints outside of loop.
         config_endpoints = airflow_util.get_config_endpoints(context)

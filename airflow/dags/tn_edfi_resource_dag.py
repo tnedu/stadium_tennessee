@@ -61,6 +61,7 @@ class TNEdFiResourceDAG:
                  api_year: int,
 
                  edfi_conn_id: str,
+                 use_edfi_token_cache: bool = True,
                  adls_conn_id: str,
                  adls_container: str,
                  adls_storage_account: str,
@@ -95,6 +96,7 @@ class TNEdFiResourceDAG:
         self.api_year = api_year
 
         self.edfi_conn_id = edfi_conn_id
+        self.use_edfi_token_cache = use_edfi_token_cache
         self.adls_conn_id = adls_conn_id
         self.adls_storage_account = adls_storage_account
         self.adls_container = adls_container
@@ -349,6 +351,7 @@ class TNEdFiResourceDAG:
                 python_callable=change_version.get_newest_edfi_change_version,
                 op_kwargs={
                     'edfi_conn_id': self.edfi_conn_id,
+                    'use_edfi_token_cache': self.use_edfi_token_cache,
                 },
                 dag=self.dag
             )
@@ -393,7 +396,9 @@ class TNEdFiResourceDAG:
                 'change_version_table': self.change_version_table,
                 'get_deletes': get_deletes,
                 'get_key_changes': get_key_changes,
+                'has_key_changes': self.get_key_changes,
                 'edfi_conn_id': self.edfi_conn_id,
+                'use_edfi_token_cache': self.use_edfi_token_cache,
                 'max_change_version': airflow_util.xcom_pull_template(self.newest_edfi_cv_task_id),
             },
             trigger_rule='none_failed',  # Run regardless of whether the CV table was reset.
@@ -443,6 +448,7 @@ class TNEdFiResourceDAG:
                 'endpoints': endpoints,
                 'get_deletes': get_deletes,
                 'get_key_changes': get_key_changes,
+                'has_key_changes': self.get_key_changes,
             },
             provide_context=True,
             dag=self.dag,
@@ -533,6 +539,7 @@ class TNEdFiResourceDAG:
 
                     get_deletes=get_deletes,
                     get_key_changes=get_key_changes,
+                    use_edfi_token_cache=self.use_edfi_token_cache,
                     min_change_version=self.xcom_pull_template_get_key(get_cv_operator, endpoint) if get_cv_operator else None,
                     max_change_version=airflow_util.xcom_pull_template(self.newest_edfi_cv_task_id),
                     reverse_paging=self.get_deletes_cv_with_deltas if get_deletes else True,
@@ -558,6 +565,7 @@ class TNEdFiResourceDAG:
                 resource=self.xcom_pull_template_map_idx(pull_operators_list, 0),
                 table_name=table or self.xcom_pull_template_map_idx(pull_operators_list, 0),
                 edfi_conn_id=self.edfi_conn_id,
+                use_edfi_token_cache=self.use_edfi_token_cache,
                 databricks_conn_id=self.databricks_conn_id,
                 adls_destination_key=self.xcom_pull_template_map_idx(pull_operators_list, 1),
                 adls_storage_account=self.adls_storage_account,
@@ -659,6 +667,7 @@ class TNEdFiResourceDAG:
 
                     get_deletes=get_deletes,
                     get_key_changes=get_key_changes,
+                    use_edfi_token_cache=self.use_edfi_token_cache,
                     max_change_version=airflow_util.xcom_pull_template(self.newest_edfi_cv_task_id),
                     reverse_paging=self.get_deletes_cv_with_deltas if get_deletes else True,
 
@@ -681,6 +690,7 @@ class TNEdFiResourceDAG:
                 resource=self.xcom_pull_template_map_idx(pull_edfi_to_adls, 0),
                 table_name=table or self.xcom_pull_template_map_idx(pull_edfi_to_adls, 0),
                 edfi_conn_id=self.edfi_conn_id,
+                use_edfi_token_cache=self.use_edfi_token_cache,
                 databricks_conn_id=self.databricks_conn_id,
                 adls_destination_key=self.xcom_pull_template_map_idx(pull_edfi_to_adls, 1),
                 adls_storage_account=self.adls_storage_account,
@@ -778,6 +788,7 @@ class TNEdFiResourceDAG:
 
                 get_deletes=get_deletes,
                 get_key_changes=get_key_changes,
+                use_edfi_token_cache=self.use_edfi_token_cache,
                 max_change_version=airflow_util.xcom_pull_template(self.newest_edfi_cv_task_id),
                 reverse_paging=self.get_deletes_cv_with_deltas if get_deletes else True,
 
@@ -806,6 +817,7 @@ class TNEdFiResourceDAG:
                 resource=self.xcom_pull_template_map_idx(pull_edfi_to_adls, 0),
                 table_name=table or self.xcom_pull_template_map_idx(pull_edfi_to_adls, 0),
                 edfi_conn_id=self.edfi_conn_id,
+                use_edfi_token_cache=self.use_edfi_token_cache,
                 databricks_conn_id=self.databricks_conn_id,
                 adls_destination_key=self.xcom_pull_template_map_idx(pull_edfi_to_adls, 1),
                 adls_container=self.adls_container,
