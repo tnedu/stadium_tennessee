@@ -16,7 +16,6 @@ with brule as (
     from {{ ref('business_rules_year_ranges') }} br
     where br.tdoe_error_code = {{ error_code }}
 ),
-
 stg_student_school_associations as (
     select *
     from {{ ref('stg_ef3__student_school_associations') }} ssa
@@ -27,7 +26,11 @@ stg_student_school_associations as (
             between brule.error_school_year_start and brule.error_school_year_end
     )
 ),
-
+valid_enrollents_minus_zeroday_early_grads as (
+    select *
+    from {{ ref('valid_enrollments') }}
+    where is_zeroday_early_graduate = 0
+),
 errors as (
     /* Calendar code missing on Student School Association record */
     select
@@ -54,8 +57,17 @@ errors as (
     join brule
         on ssa.school_year between brule.error_school_year_start and brule.error_school_year_end
     where 
-        ssa.calendar_code is null 
-        or trim(ssa.calendar_code) = ''
+        (ssa.calendar_code is null or trim(ssa.calendar_code) = '')
+        /* We only want this rule to fire if there exists an enrollment that is non-zero-day early grad. */
+        and exists (
+            select 1
+            from valid_enrollents_minus_zeroday_early_grads x
+            where ssa.k_student = x.k_student
+                and ssa.k_school = x.k_school
+                and ssa.k_school_calendar = x.k_school_calendar
+                and ssa.entry_date = x.entry_date
+                and ssa.is_primary_school = x.is_primary_school
+        )
     order by ssa.school_year, ssa.student_unique_id, ssa.entry_date
 )
 

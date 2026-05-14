@@ -26,6 +26,11 @@ stg_student_edorgs as (
         where cast(seoa.school_year as int) between brule.error_school_year_start and brule.error_school_year_end
     )
 ),
+valid_enrollents_minus_zeroday_early_grads as (
+    select *
+    from {{ ref('valid_enrollments') }}
+    where is_zeroday_early_graduate = 0
+),
 errors as (
     select se.k_student, se.k_lea, se.k_school, se.school_year, se.ed_org_id, se.student_unique_id,
         s.state_student_id as legacy_state_student_id,
@@ -45,6 +50,13 @@ errors as (
             where sc.k_lea = se.k_lea
                 and sc.k_student = se.k_student
                 and sc.student_characteristic = 'IMMG'
+        )
+        /* We only want this rule to fire if there exists an enrollment that is non-zero-day early grad. */
+        and exists (
+            select 1
+            from valid_enrollents_minus_zeroday_early_grads x
+            where se.k_student = x.k_student
+                and se.k_lea = x.k_lea
         )
 )
 select errors.*,
