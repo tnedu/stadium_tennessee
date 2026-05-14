@@ -24,7 +24,7 @@ select sm.k_student, sm.k_lea, sm.k_school, sm.k_school_calendar, sm.school_year
     cast(right(cast(school.school_id as string), 4) as int) as school_id, school.school_name,
     s.student_unique_id,
     sm.is_primary_school, sm.entry_date,
-    sm.exit_withdraw_date, sm.grade_level, sm.grade_level_adm, sm.is_early_graduate, 
+    sm.exit_withdraw_date, sm.grade_level, sm.grade_level_adm, sm.is_early_graduate, sm.is_zeroday_early_graduate, 
     sm.report_period, sm.report_period_begin_date, sm.report_period_end_date, sm.days_in_report_period,
     max(sm.has_vocational_courses) as has_vocational_courses,
     sum(sm.is_sped) as days_sped,
@@ -69,6 +69,6 @@ group by sm.k_student, sm.k_lea, sm.k_school, sm.k_school_calendar, sm.school_ye
     l.lea_id, l.lea_name, cast(right(cast(school.school_id as string), 4) as int), school.school_name,
     s.student_unique_id,
     sm.is_primary_school, sm.entry_date,
-    sm.exit_withdraw_date, sm.grade_level, sm.grade_level_adm, sm.is_early_graduate, 
+    sm.exit_withdraw_date, sm.grade_level, sm.grade_level_adm, sm.is_early_graduate, sm.is_zeroday_early_graduate, 
     sm.report_period, sm.report_period_begin_date, sm.report_period_end_date, sm.days_in_report_period
 order by sm.k_lea, sm.k_school, sm.k_student, sm.report_period
