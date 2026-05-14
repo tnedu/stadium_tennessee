@@ -39,6 +39,7 @@ class ADLSToDatabricksOperator(BaseOperator):
                  edfi_conn_id: Optional[str] = None,
                  ods_version: Optional[str] = None,
                  data_model_version: Optional[str] = None,
+                 use_edfi_token_cache: bool = False,
 
                  full_refresh: bool = False,
                  xcom_return: Optional[Any] = None,
@@ -47,6 +48,7 @@ class ADLSToDatabricksOperator(BaseOperator):
         super(ADLSToDatabricksOperator, self).__init__(**kwargs)
 
         self.edfi_conn_id = edfi_conn_id
+        self.use_edfi_token_cache = use_edfi_token_cache
         self.databricks_conn_id = databricks_conn_id
 
         self.tenant_code = tenant_code
@@ -97,7 +99,7 @@ class ADLSToDatabricksOperator(BaseOperator):
         This needs to occur in execute to not call the API at every Airflow synchronize.
         """
         if self.edfi_conn_id:
-            edfi_conn = EdFiHook(edfi_conn_id=self.edfi_conn_id).get_conn()
+            edfi_conn = EdFiHook(edfi_conn_id=self.edfi_conn_id, use_token_cache=self.use_edfi_token_cache).get_conn()
             if is_edfi2 := edfi_conn.is_edfi2():
                 self.full_refresh = True
 
