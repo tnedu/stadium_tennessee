@@ -19,25 +19,34 @@
 }}
 
 with student_fteada as (
-    select sds.k_student, sds.k_school, sds.k_lea, sds.k_school_calendar, sds.school_year, sds.is_primary_school, sds.entry_date, sds.calendar_date, sds.is_early_grad_date, 
+    select sds.k_student, sds.k_school, sds.k_lea, sds.k_school_calendar, sds.school_year, sds.is_primary_school, sds.entry_date, 
+        sds.grade_level, sds.grade_level_adm,
+        sds.calendar_date, sds.is_early_grad_date, 
         sds.isa_member, sds.is_funding_ineligible, sds.is_absent, sds.is_suspended, sds.ssd_duration, sds.report_period, sds.report_period_begin_date, 
         sds.report_period_end_date, sds.days_in_report_period,
+        sds.total_duration,
         course.course_duration, course.fteada_program, course.fteada_weight
     from {{ ref('student_day_sections') }} sds
     lateral view outer explode(sds.courses) as course
+    where sds.grade_level_adm in ('K', '01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12')
 ),
 grouped_by_program as (
-    select k_student, k_school, k_lea, k_school_calendar, school_year, is_primary_school, entry_date, calendar_date, is_early_grad_date, 
+    select k_student, k_school, k_lea, k_school_calendar, school_year, is_primary_school, entry_date, 
+        grade_level, grade_level_adm,
+        calendar_date, is_early_grad_date, 
         isa_member, is_funding_ineligible, is_absent, is_suspended, ssd_duration, report_period, report_period_begin_date, 
         report_period_end_date, days_in_report_period,
+        total_duration,
         sum(course_duration) as program_duration, 
         fteada_program, fteada_weight
     from student_fteada
     group by all
 ),
 daily_attendance as (
-    select k_student, k_school, k_lea, k_school_calendar, school_year, is_primary_school, entry_date, calendar_date, is_early_grad_date, 
-        isa_member, is_funding_ineligible, is_absent, is_suspended, ssd_duration, report_period, report_period_begin_date, 
+    select k_student, k_school, k_lea, k_school_calendar, school_year, is_primary_school, entry_date, 
+        grade_level, grade_level_adm,
+        calendar_date, is_early_grad_date, 
+        isa_member, is_funding_ineligible, is_absent, is_suspended, ssd_duration, total_duration, report_period, report_period_begin_date, 
         report_period_end_date, days_in_report_period,
         case
             when isa_member = 0 or is_absent = 1 or is_suspended = 1 then 0
@@ -51,6 +60,18 @@ daily_attendance as (
             when coalesce(program_duration, 0) = 0 then 0
             else cast((floor(cast(program_duration as decimal(12,8)) / cast(ssd_duration as decimal(12,8)) * 100000.0) / 100000.0) as decimal(8,5))
         end as daily_attendance_ifa_member,
+        case
+            when isa_member = 0 or is_absent = 1 or is_suspended = 1 then 0
+            when coalesce(ssd_duration, 0) = 0 then 0
+            when coalesce(program_duration, 0) = 0 then 0
+            else cast((floor(cast(program_duration as decimal(12,8)) / cast(total_duration as decimal(12,8)) * 100000.0) / 100000.0) as decimal(8,5))
+        end as daily_attendance_total_duration,
+        case
+            when isa_member = 0 then 0
+            when coalesce(ssd_duration, 0) = 0 then 0
+            when coalesce(program_duration, 0) = 0 then 0
+            else cast((floor(cast(program_duration as decimal(12,8)) / cast(total_duration as decimal(12,8)) * 100000.0) / 100000.0) as decimal(8,5))
+        end as daily_attendance_total_duration_ifa_member,
         program_duration, 
         fteada_program, fteada_weight,
         date_format(calendar_date, 'E') as day_of_week
@@ -60,7 +81,9 @@ fake_schedule_by_dow as (
     /* For EGs, we need to get the latest day for each day of the week, for which the student is not yet an EG. 
     We do this so that we can fake the EG days with actual minutes since EGs should continue to generate funding. */
     select k_student, k_school, k_lea, k_school_calendar, school_year, is_primary_school, entry_date, day_of_week, 
-        daily_attendance_ifa_member as daily_attendance, program_duration, fteada_program, fteada_weight, calendar_date
+        daily_attendance_ifa_member as daily_attendance, 
+        daily_attendance_total_duration_ifa_member as daily_attendance_total_duration,
+        program_duration, fteada_program, fteada_weight, calendar_date
     from daily_attendance
     where is_early_grad_date = 0
         and isa_member = 1
@@ -71,17 +94,21 @@ fake_schedule_by_dow as (
         )
 ),
 unioned_eg_schedule as (
-    select k_student, k_school, k_lea, k_school_calendar, school_year, is_primary_school, entry_date, calendar_date, is_early_grad_date, 
-        isa_member, is_funding_ineligible, is_absent, is_suspended, ssd_duration, report_period, report_period_begin_date, 
-        report_period_end_date, days_in_report_period, daily_attendance,
+    select k_student, k_school, k_lea, k_school_calendar, school_year, is_primary_school, entry_date, 
+        grade_level, grade_level_adm,
+        calendar_date, is_early_grad_date, 
+        isa_member, is_funding_ineligible, is_absent, is_suspended, ssd_duration, total_duration, report_period, report_period_begin_date, 
+        report_period_end_date, days_in_report_period, daily_attendance, daily_attendance_total_duration,
         program_duration, fteada_program, fteada_weight
     from daily_attendance
     where is_early_grad_date = 0
     union all
     /* Now for the EG dates, we join in the fake schedule we made above. */
-    select da.k_student, da.k_school, da.k_lea, da.k_school_calendar, da.school_year, da.is_primary_school, da.entry_date, da.calendar_date, da.is_early_grad_date, 
-        da.isa_member, da.is_funding_ineligible, da.is_absent, da.is_suspended, da.ssd_duration, da.report_period, da.report_period_begin_date, 
-        da.report_period_end_date, da.days_in_report_period, fs.daily_attendance,
+    select da.k_student, da.k_school, da.k_lea, da.k_school_calendar, da.school_year, da.is_primary_school, da.entry_date, 
+        da.grade_level, da.grade_level_adm,
+        da.calendar_date, da.is_early_grad_date, 
+        da.isa_member, da.is_funding_ineligible, da.is_absent, da.is_suspended, da.ssd_duration, da.total_duration, da.report_period, da.report_period_begin_date, 
+        da.report_period_end_date, da.days_in_report_period, fs.daily_attendance, fs.daily_attendance_total_duration,
         fs.program_duration, fs.fteada_program, fs.fteada_weight
     from daily_attendance da
     left outer join fake_schedule_by_dow fs
@@ -94,7 +121,8 @@ unioned_eg_schedule as (
     where is_early_grad_date = 1
 ),
 fteada as (
-    select k_student, k_school, k_lea, k_school_calendar, school_year, is_primary_school,  
+    select k_student, k_school, k_lea, k_school_calendar, school_year, is_primary_school, 
+        grade_level, grade_level_adm,
         sum(is_early_grad_date) as early_grad_days, 
         sum(isa_member) member_days, 
         sum(is_funding_ineligible) as funding_ineligible_days,
@@ -104,6 +132,7 @@ fteada as (
         report_period_end_date, days_in_report_period,
         sum(ssd_duration) as sum_ssd_duration, 
         sum(program_duration) as sum_program_duration,
+        sum(total_duration) as sum_total_duration,
         cast(
             (floor(
                 (case
@@ -122,11 +151,21 @@ fteada as (
                 end) * 100000) / 100000)
             as decimal(8,5)
         ) as normalized_fteada,
+        cast(
+            (floor(
+                (case
+                    when coalesce(days_in_report_period,0) = 0 then 0
+                    when coalesce(sum(daily_attendance_total_duration),0) = 0 then 0
+                    else sum(least(daily_attendance_total_duration, 1.0) / cast(least(days_in_report_period,20) as decimal(12,8)) )
+                end) * 100000) / 100000)
+            as decimal(8,5)
+        ) as total_duration_fteada,
         fteada_program, fteada_weight
     from unioned_eg_schedule
     group by all
 )
 select *,
-    cast((floor(normalized_fteada * fteada_weight * 100000) / 100000) as decimal(8,5)) as normalized_fteada_weighted
+    cast((floor(normalized_fteada * fteada_weight * 100000) / 100000) as decimal(8,5)) as normalized_fteada_weighted,
+    cast((floor(total_duration_fteada * fteada_weight * 100000) / 100000) as decimal(8,5)) as total_duration_fteada_weighted
 from fteada
 order by k_lea, k_school, is_primary_school, k_student, report_period, fteada_program

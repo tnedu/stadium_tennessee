@@ -36,6 +36,8 @@ select sm.k_student, sm.k_lea, sm.k_school, sm.k_school_calendar, sm.school_year
     sum(sm.membership) as sum_membership,
     sum(sm.ssd_duration) as sum_student_standard_day,
     sum(sm.total_duration) as sum_class_duration,
+    sum(sm.is_absent) as sum_days_absent,
+    sum(sm.is_suspended) as sum_days_suspended,
     cast(
         (floor(
             (case
@@ -56,6 +58,34 @@ select sm.k_student, sm.k_lea, sm.k_school, sm.k_school_calendar, sm.school_year
             end) * 100000) / 100000)
         as decimal(8,5)
     ) as normalized_adm,
+    cast(
+        (floor(
+            (case
+                when sm.days_in_report_period is null or sm.days_in_report_period = 0 then 0
+                when sum(sm.membership) is null or sum(sm.membership) = 0 then 0
+                else sum(
+                        case
+                            when sm.is_absent = 1 or sm.is_suspended = 1 then 0
+                            else sm.membership
+                        end
+                        ) / cast(sm.days_in_report_period as decimal(12,8))
+            end) * 100000) / 100000)
+        as decimal(8,5)
+    ) as actual_ada,
+    cast(
+        (floor(
+            (case
+                when sm.days_in_report_period is null or sm.days_in_report_period = 0 then 0
+                when sum(sm.membership) is null or sum(sm.membership) = 0 then 0
+                else least(sum(least(
+                        case
+                            when sm.is_absent = 1 or sm.is_suspended = 1 then 0
+                            else sm.membership
+                        end
+                        , 1.0)) / cast(least(sm.days_in_report_period,20) as decimal(12,8)), 1.0)
+            end) * 100000) / 100000)
+        as decimal(8,5)
+    ) as normalized_ada,
     max(sm.tdoe_severity_code) as tdoe_severity_code,
     {{ severity_code_to_severity_case_clause('max(sm.tdoe_severity_code)') }}
 from {{ ref('student_membership') }} sm
