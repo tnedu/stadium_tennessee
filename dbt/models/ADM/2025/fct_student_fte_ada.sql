@@ -19,15 +19,20 @@
 }}
 
 with student_fteada as (
-    select sds.k_student, sds.k_school, sds.k_lea, sds.k_school_calendar, sds.school_year, sds.is_primary_school, sds.entry_date, sds.calendar_date, sds.is_early_grad_date, 
+    select sds.k_student, sds.k_school, sds.k_lea, sds.k_school_calendar, sds.school_year, sds.is_primary_school, sds.entry_date, 
+        sds.grade_level, sds.grade_level_adm,
+        sds.calendar_date, sds.is_early_grad_date, 
         sds.isa_member, sds.is_funding_ineligible, sds.is_absent, sds.is_suspended, sds.ssd_duration, sds.report_period, sds.report_period_begin_date, 
         sds.report_period_end_date, sds.days_in_report_period,
         course.course_duration, course.fteada_program, course.fteada_weight
     from {{ ref('student_day_sections') }} sds
     lateral view outer explode(sds.courses) as course
+    where sds.grade_level_adm in ('K', '01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12')
 ),
 grouped_by_program as (
-    select k_student, k_school, k_lea, k_school_calendar, school_year, is_primary_school, entry_date, calendar_date, is_early_grad_date, 
+    select k_student, k_school, k_lea, k_school_calendar, school_year, is_primary_school, entry_date, 
+        grade_level, grade_level_adm,
+        calendar_date, is_early_grad_date, 
         isa_member, is_funding_ineligible, is_absent, is_suspended, ssd_duration, report_period, report_period_begin_date, 
         report_period_end_date, days_in_report_period,
         sum(course_duration) as program_duration, 
@@ -36,7 +41,9 @@ grouped_by_program as (
     group by all
 ),
 daily_attendance as (
-    select k_student, k_school, k_lea, k_school_calendar, school_year, is_primary_school, entry_date, calendar_date, is_early_grad_date, 
+    select k_student, k_school, k_lea, k_school_calendar, school_year, is_primary_school, entry_date, 
+        grade_level, grade_level_adm,
+        calendar_date, is_early_grad_date, 
         isa_member, is_funding_ineligible, is_absent, is_suspended, ssd_duration, report_period, report_period_begin_date, 
         report_period_end_date, days_in_report_period,
         case
@@ -71,7 +78,9 @@ fake_schedule_by_dow as (
         )
 ),
 unioned_eg_schedule as (
-    select k_student, k_school, k_lea, k_school_calendar, school_year, is_primary_school, entry_date, calendar_date, is_early_grad_date, 
+    select k_student, k_school, k_lea, k_school_calendar, school_year, is_primary_school, entry_date, 
+        grade_level, grade_level_adm,
+        calendar_date, is_early_grad_date, 
         isa_member, is_funding_ineligible, is_absent, is_suspended, ssd_duration, report_period, report_period_begin_date, 
         report_period_end_date, days_in_report_period, daily_attendance,
         program_duration, fteada_program, fteada_weight
@@ -79,7 +88,9 @@ unioned_eg_schedule as (
     where is_early_grad_date = 0
     union all
     /* Now for the EG dates, we join in the fake schedule we made above. */
-    select da.k_student, da.k_school, da.k_lea, da.k_school_calendar, da.school_year, da.is_primary_school, da.entry_date, da.calendar_date, da.is_early_grad_date, 
+    select da.k_student, da.k_school, da.k_lea, da.k_school_calendar, da.school_year, da.is_primary_school, da.entry_date, 
+        da.grade_level, da.grade_level_adm,
+        da.calendar_date, da.is_early_grad_date, 
         da.isa_member, da.is_funding_ineligible, da.is_absent, da.is_suspended, da.ssd_duration, da.report_period, da.report_period_begin_date, 
         da.report_period_end_date, da.days_in_report_period, fs.daily_attendance,
         fs.program_duration, fs.fteada_program, fs.fteada_weight
@@ -95,6 +106,7 @@ unioned_eg_schedule as (
 ),
 fteada as (
     select k_student, k_school, k_lea, k_school_calendar, school_year, is_primary_school,  
+        entry_date, grade_level, grade_level_adm,
         sum(is_early_grad_date) as early_grad_days, 
         sum(isa_member) member_days, 
         sum(is_funding_ineligible) as funding_ineligible_days,
