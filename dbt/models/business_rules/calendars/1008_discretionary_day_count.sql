@@ -50,10 +50,10 @@ sum_event_parts as (
 /* There must be at least 4 Discretionary days. */
 select sep.k_school, sep.k_school_calendar, sep.school_year, sep.school_id, sep.calendar_code, 
     potential_tdoe_error_code as error_code,
-    concat('Calendar ', sep.calendar_code, ' has total calculated Discretionary days less than the minimum of 4.0. Total days calculated: ',
+    concat('Calendar ', sep.calendar_code, ' has total calculated Discretionary days more than the maximum of 4.0. Total days calculated: ',
         coalesce(sep.sum_event_values, 0), ' (', sep.count_events, ' events on ', count_days, ' days).') as error,
     {{ severity_to_severity_code_case_clause('potential_tdoe_severity') }},
     potential_tdoe_severity as tdoe_severity
 from sum_event_parts sep
-where coalesce(sep.sum_event_values, 0) < 4
+where coalesce(sep.sum_event_values, 0) > 4
 order by 3, 4, 5
