@@ -1,15 +1,14 @@
 tdoe_error_code,end_point,error_school_year_start,error_school_year_end,tdoe_severity,tdoe_error_description
 1000,calendars,2025,,error,Instructional Day count must be at least 180.
-1001,calendars,2025,,critical,"AS, AE, AD, MS, MD, MA, MU, MH require an ID on the same date."
-1002,calendars,2025,,error,"CH, MI, OH, SH, SI, TV are incorrectly paired with an ID on the same date."
+1001,calendars,2025,,various,Generic Calendar coexistence rule using the calendar event coexistence seed.
 1003,calendars,2025,,critical,Calendar Event Date must be within the school year.
 1004,calendars,2025,,error,"AS, AE, CS, CE are required."
-1005,calendars,2025,,error,In Service Days cannot be less than 5.
-1006,calendars,2025,,error,Stockpile days must be less than or equal to 13.
-1007,calendars,2025,,error,Parent Teacher Days cannot be less than 1.
-1008,calendars,2025,,error,Discrectionary Days cannot be less than 4.
-1009,calendars,2025,,error,Instructional Day dates must be found in any Bell Schedule Dates.
-1010,calendars,2025,,error,Teacher Vacation Days cannot be less than 10.
+1005,calendars,2025,,potential,In Service Days cannot be less than 5.
+1006,calendars,2025,,potential,Stockpile days must be less than or equal to 13.
+1007,calendars,2025,,potential,Parent Teacher Days cannot be less than 1.
+1008,calendars,2025,,potential,Discrectionary Days cannot be more than 4.
+1009,calendars,2025,,potential,Instructional Day dates must be found in any Bell Schedule Dates.
+1010,calendars,2025,,potential,Teacher Vacation Days cannot be less than 10.
 2001,sessions,2025,,critical,Session Begin Date must be within the school year.
 2002,sessions,2025,,critical,Session End Date must be within the school year.
 2003,sessions,2025,,critical,Session Begin Date must be less than or equal to End Date.
