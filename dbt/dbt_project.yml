@@ -112,6 +112,14 @@ vars:
       state_student_id:
         name: 'tdoe:stateStudentId'
         dtype: 'bigint'
+    stg_ef3__student_school_associations:
+      studentStandardDays:
+       name: 'tdoe:studentStandardDays'
+       dtype: 'array<struct<studentStandardDayDuration:int, effectiveDate:date>>'
+    stg_ef3__student_education_organization_associations:
+      dateEnteredUS:
+        name: 'tdoe:dateEnteredUS'
+        dtype: 'date'
 
   descriptors:
     exitWithdrawTypeDescriptor:
