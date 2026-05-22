@@ -50,7 +50,7 @@ ssa_ssd as (
           order by sd.col.effectiveDate::date), -1)
         , to_date(concat(ssa.school_year, '-06-30'), 'yyyy-MM-dd')) as ssd_date_end,
     sd.col.studentStandardDayDuration::int as ssd_duration
-    from `teds_dev`.`dev_thanujab_stage`.`stg_ef3__student_school_associations` ssa
+    from {{ ref('stg_ef3__student_school_associations') }} ssa
     lateral view explode(studentStandardDays) sd
     qualify row_number() over(
       partition by ssa.k_student, ssa.k_school, ssa.k_student_xyear,sd.col.effectiveDate 
