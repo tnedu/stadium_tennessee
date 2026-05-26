@@ -17,7 +17,9 @@ with brule as (
     where br.tdoe_error_code = {{ error_code }}
 ),
 stg_student_edorgs as (
-    select *
+    select 
+        seoa.*,
+        to_date(get_json_object(cast(v_ext as string), '$.tdoe.dateEnteredUS')) as date_entered_us
     from {{ ref('stg_ef3__student_education_organization_associations') }} seoa
     where k_lea is not null
         and exists (
@@ -38,8 +40,19 @@ errors as (
         on se.k_student = s.k_student
     join brule
         on se.school_year between brule.error_school_year_start and brule.error_school_year_end
-    where s.date_entered_us is null
-    and exists (
+    where         
+        (
+            (
+                se.school_year <= 2026 
+                and s.date_entered_us is null
+            )
+            or
+            (
+                se.school_year >= 2027 
+                and se.date_entered_us is null
+            )
+        )
+        and exists (
             select 1
             from {{ ref('stg_ef3__stu_ed_org__characteristics') }} sc
             where sc.k_lea = se.k_lea

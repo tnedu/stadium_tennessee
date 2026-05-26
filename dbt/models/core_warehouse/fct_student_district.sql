@@ -47,6 +47,15 @@ stu_languages as (
 stu_cohort_year as (
     select * from {{ ref('bld_ef3__student_cohort_years_by_district')}}
 ),
+seoa as (
+    select
+        k_student,
+        ed_org_id,
+        api_year,
+        to_date(get_json_object(cast(v_ext as string), '$.tdoe.dateEnteredUS')) as date_entered_us
+    from {{ ref('stg_ef3__student_education_organization_associations') }}
+    where k_lea is not null
+),
 formatted as (
     select
         stg_student.k_student,
@@ -56,6 +65,7 @@ formatted as (
         stg_student.api_year as school_year,
         stg_student.student_unique_id,
         stu_immutable_demos.ed_org_id,
+        seoa.date_entered_us,
         -- student ids
         {{ edu_wh.accordion_columns(
             source_table='bld_ef3__wide_ids_student',
@@ -108,6 +118,11 @@ formatted as (
     left join stu_cohort_year
         on stu_immutable_demos.k_student = stu_cohort_year.k_student
         and stu_immutable_demos.ed_org_id = stu_cohort_year.ed_org_id
+    left join seoa
+        on stg_student.k_student = seoa.k_student
+        and stu_immutable_demos.ed_org_id = seoa.ed_org_id
+        and stg_student.api_year = seoa.api_year
+
 
     -- custom data sources
     {{ edu_wh.add_cds_joins_v2(custom_data_sources=custom_data_sources) }}
