@@ -15,7 +15,7 @@ with brule as (
         tdoe_severity
     from {{ ref('business_rules_year_ranges') }} br
     where br.tdoe_error_code = {{ error_code }}
-    and br.error_school_year_end is not null
+    and br.error_school_year_end is null
 ),
 stg_student_edorgs as (
     select *
@@ -40,7 +40,7 @@ errors as (
         on se.k_student = s.k_student
     join brule
         on se.school_year between brule.error_school_year_start and brule.error_school_year_end
-    where s.date_entered_us is null
+    where se.dateEnteredUS is null
 )
 select errors.*,
     {{ severity_to_severity_code_case_clause('brule.tdoe_severity') }},

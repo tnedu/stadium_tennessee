@@ -52,7 +52,7 @@ seoa as (
         k_student,
         ed_org_id,
         api_year,
-        to_date(get_json_object(cast(v_ext as string), '$.tdoe.dateEnteredUS')) as date_entered_us
+        dateEnteredUS
     from {{ ref('stg_ef3__student_education_organization_associations') }}
     where k_lea is not null
 ),
@@ -65,7 +65,7 @@ formatted as (
         stg_student.api_year as school_year,
         stg_student.student_unique_id,
         stu_immutable_demos.ed_org_id,
-        seoa.date_entered_us,
+        seoa.dateEnteredUS,
         -- student ids
         {{ edu_wh.accordion_columns(
             source_table='bld_ef3__wide_ids_student',
