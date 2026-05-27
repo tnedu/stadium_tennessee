@@ -22,3 +22,12 @@ from {{ ref('3105_overlapping_P_enrollments') }}
 union
 select *
 from {{ ref('3110_calendar_code_missing') }}
+union
+select *
+from {{ ref('3300_ssa_ssd_dates_within_enrollment') }}
+union
+select *
+from {{ ref('3302_missing_ssa_ssd_coverage') }}
+union
+select *
+from {{ ref('3303_bad_ssa_ssd_durations') }}
