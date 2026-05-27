@@ -9,7 +9,13 @@ select *
 from {{ ref('3001_immigrant_date_entered_us') }}
 union
 select *
+from {{ ref('3001_seoa_immigrant_date_entered_us') }}
+union
+select *
 from {{ ref('3002_elb_date_entered_us') }}
+union
+select *
+from {{ ref('3002_seoa_elb_date_entered_us') }}
 union
 select *
 from {{ ref('3003_no_native_language') }}
