@@ -1,0 +1,17 @@
+packages:
+  - git: https://github.com/tnedu/edu_wh.git
+    name: edu_wh
+    revision: b99617320c52fedf9bd9f0acceb798c3bcd56a1a
+  - name: dbt_artifacts
+    package: brooklyn-data/dbt_artifacts
+    version: 2.10.1
+  - git: https://github.com/tnedu/edu_ext_oneroster.git
+    name: edu_ext_oneroster
+    revision: 505ee9e5eb664ddc552694b882b0a59a2ce7f2de
+  - git: https://github.com/tnedu/edu_edfi_source.git
+    name: edu_edfi_source
+    revision: 5c496a236d8c112733bbf0e7cc3f8383ee1ffbd3
+  - name: dbt_utils
+    package: dbt-labs/dbt_utils
+    version: 1.3.0
+sha1_hash: 84d9bcc74dcdc3e5be786bcaa8df3935d737f622
