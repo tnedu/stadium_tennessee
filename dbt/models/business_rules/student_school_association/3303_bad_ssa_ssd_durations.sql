@@ -12,9 +12,11 @@ with brule as (
     select tdoe_error_code, 
         cast(error_school_year_start as int) as error_school_year_start, 
         cast(ifnull(error_school_year_end, 9999) as int) as error_school_year_end,
-        tdoe_severity
+        tdoe_severity,
+        rule_model
     from {{ ref('business_rules_year_ranges') }} br
     where br.tdoe_error_code = {{ error_code }}
+    and rule_model = '{{this.identifier}}'
 ),
 ssa_ssd as (
         select ssa.k_student, ssa.k_school, ssa.k_school_calendar, 
@@ -26,7 +28,7 @@ ssa_ssd as (
         sd.col.effectiveDate::date as ssd_date_start,
         sd.col.studentStandardDayDuration::int as ssd_duration
     from {{ ref('stg_ef3__student_school_associations') }} ssa
-    lateral view explode(studentStandardDays) sd
+    lateral view outer explode(studentStandardDays) sd
     where exists (
         select 1
         from brule

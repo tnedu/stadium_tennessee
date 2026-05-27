@@ -12,9 +12,11 @@ with brule as (
     select tdoe_error_code, 
         cast(error_school_year_start as int) as error_school_year_start, 
         cast(ifnull(error_school_year_end, 9999) as int) as error_school_year_end,
-        tdoe_severity
+        tdoe_severity,
+        rule_model
     from {{ ref('business_rules_year_ranges') }} br
     where br.tdoe_error_code = {{ error_code }}
+    and rule_model = '{{this.identifier}}'
 ),
 attendance_events as (
     select *

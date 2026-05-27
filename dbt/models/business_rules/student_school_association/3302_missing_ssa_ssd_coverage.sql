@@ -16,14 +16,14 @@ with brule as (
         rule_model
     from {{ ref('business_rules_year_ranges') }} br
     where br.tdoe_error_code = {{ error_code }}
-    and rule_model = '{{this}}'
+    and rule_model = '{{this.identifier}}'
 ),
 ssa_ssd as (
-        select 
-            ssa.k_student, ssa.k_school, ssa.k_school_calendar, cast(ssa.school_id as int) as school_id,
-            ssa.student_unique_id, cast(ssa.school_year as int) as school_year, ssa.entry_date, 
-            ssa.exit_withdraw_date, ssa.entry_grade_level, ssa.calendar_code,
-            sd.col.effectiveDate::date as ssd_date_start
+    select 
+        ssa.k_student, ssa.k_school, ssa.k_school_calendar, cast(ssa.school_id as int) as school_id,
+        ssa.student_unique_id, cast(ssa.school_year as int) as school_year, ssa.entry_date, 
+        ssa.exit_withdraw_date, ssa.entry_grade_level, ssa.calendar_code,
+        sd.col.effectiveDate::date as ssd_date_start
     from {{ ref('stg_ef3__student_school_associations') }} ssa
     lateral view outer explode(studentStandardDays) sd
     where exists (
@@ -48,15 +48,15 @@ calendar_dates as (
     join {{ ref('stg_ef3__calendars') }} c
         on cd.k_school_calendar = c.k_school_calendar
     join (
-            select 
-                ce.k_calendar_date,
-                -- if there are multiple events on a day, having at least one 
-                -- that counts as a school day applies to the whole day
-                sum(xce.is_school_day::integer) >= 1 as is_school_day
-            from {{ ref('stg_ef3__calendar_dates__calendar_events') }} ce
-            join {{ ref('xwalk_calendar_events') }} xce
-                on ce.calendar_event = xce.calendar_event_descriptor
-            group by 1
+        select 
+            ce.k_calendar_date,
+            -- if there are multiple events on a day, having at least one 
+            -- that counts as a school day applies to the whole day
+            sum(xce.is_school_day::integer) >= 1 as is_school_day
+        from {{ ref('stg_ef3__calendar_dates__calendar_events') }} ce
+        join {{ ref('xwalk_calendar_events') }} xce
+            on ce.calendar_event = xce.calendar_event_descriptor
+        group by 1
         ) summarize_calendar_events
         on cd.k_calendar_date = summarize_calendar_events.k_calendar_date
     where summarize_calendar_events.is_school_day = true
