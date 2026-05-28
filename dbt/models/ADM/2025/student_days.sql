@@ -129,6 +129,9 @@ with q as (
         and attendance.k_school = fssa.k_school
         and attendance.calendar_date = dcd.calendar_date
         and attendance.is_absent > 0.0
+    where 
+        not (fssa.entry_date = fssa.exit_withdraw_date
+            and fssa.exit_withdraw_type = '12: Early Graduate')
     group by all
     union
     /* Bring in the zero-day early grads. */
