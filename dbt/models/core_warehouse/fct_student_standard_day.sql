@@ -53,18 +53,16 @@ ssa_ssd as (
                 to_date(concat(ssa.school_year, '-06-30'), 'yyyy-MM-dd')
             ) as ssd_date_end,
         sd.col.studentStandardDayDuration::int as ssd_duration
-    from `teds_dev`.`dev_thanujab_stage`.`stg_ef3__student_school_associations` ssa
-    lateral view explode(studentStandardDays) sd
-    qualify row_number() over (
-        partition by ssa.k_student, ssa.k_school, sd.col.effectiveDate 
-        order by sd.col.studentStandardDayDuration desc) = 1
+    from {{ ref('stg_ef3__student_school_associations') }} ssa
+    lateral view explode(ssa.studentStandardDays) sd
 ), 
 all_ssds as (
     select * from ssae_ssd ssae
     union all
     select * from ssa_ssd ssa
 )
-select ssd.*
+select 
+    ssd.*
     -- custom data sources
     {{ edu_wh.add_cds_columns(custom_data_sources=custom_data_sources) }}
 from all_ssds ssd

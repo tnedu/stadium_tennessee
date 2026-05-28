@@ -22,7 +22,8 @@ ssas as (
     select 
         ssa.k_student, ssa.k_school, ssa.k_school_calendar, cast(ssa.school_id as int) as school_id,
         ssa.student_unique_id, cast(ssa.school_year as int) as school_year, ssa.entry_date, 
-        ssa.exit_withdraw_date, ssa.entry_grade_level, ssa.calendar_code
+        ssa.exit_withdraw_date, ssa.entry_grade_level, ssa.calendar_code, ssa.studentStandardDays,
+        brule.tdoe_error_code, brule.tdoe_severity
     from {{ ref('stg_ef3__student_school_associations') }} ssa
     join brule brule
         on cast(ssa.school_year as int) between brule.error_school_year_start and brule.error_school_year_end
@@ -57,22 +58,18 @@ errors as (
         ssa.entry_grade_level,
         ssa.calendar_code,
         s.state_student_id as legacy_state_student_id,
-        brule.tdoe_error_code as error_code,
+        ssa.tdoe_error_code as error_code, 
         concat('SSD Duration missing for Student: ', ssa.student_unique_id, ' (', coalesce(s.state_student_id, '[no value]') ,'), ',
             'District: ', {{ get_district_from_school_id('ssa.school_id') }}, ', ',
             'School: ', ssa.school_id, ', ',
             'Enrollment Entry Date: ', ssa.entry_date, ', ',
-            'Enrollment End Date: ', coalesce(ssa.exit_withdraw_date, '[null]'), '.') as error
+            'Enrollment End Date: ', coalesce(ssa.exit_withdraw_date, '[null]'), '.') as error,
+        {{ severity_to_severity_code_case_clause('ssa.tdoe_severity') }},
+        ssa.tdoe_severity
     from ssa_ssd ssa
     join {{ ref('stg_ef3__students') }} s
         on s.k_student = ssa.k_student
-    join brule
-        on ssa.school_year between brule.error_school_year_start and brule.error_school_year_end
     where coalesce(ssa.ssd_duration, 0) = 0
 )
-select errors.*,
-    {{ severity_to_severity_code_case_clause('brule.tdoe_severity') }},
-    brule.tdoe_severity
+select errors.*
 from errors errors
-join brule
-    on errors.school_year between brule.error_school_year_start and brule.error_school_year_end
