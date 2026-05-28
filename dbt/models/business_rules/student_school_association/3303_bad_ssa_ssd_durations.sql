@@ -71,5 +71,4 @@ errors as (
         on s.k_student = ssa.k_student
     where coalesce(ssa.ssd_duration, 0) = 0
 )
-select errors.*
-from errors errors
+select * from errors
