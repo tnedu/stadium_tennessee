@@ -15,8 +15,8 @@
 select fteada.k_lea,
     fteada.report_period, 
     fteada.fteada_program,
-    cast((floor(sum(fteada.normalized_fteada) * cast(fteada.fteada_weight as decimal(8,5)) * 100000) / 100000) as decimal(12,5)) as wfteada,
-    cast((floor(sum(fteada.total_duration_fteada) * cast(fteada.fteada_weight as decimal(8,5)) * 100000) / 100000) as decimal(12,5)) as total_duration_wfteada
+    cast((floor(sum(fteada.normalized_fteada) * cast(fteada.fteada_weight as decimal(8,5)) * 100000) / 100000) as decimal(20,5)) as wfteada,
+    cast((floor(sum(fteada.total_duration_fteada) * cast(fteada.fteada_weight as decimal(8,5)) * 100000) / 100000) as decimal(20,5)) as total_duration_wfteada
 from {{ ref('fct_student_fte_ada') }} fteada
 where fteada.is_primary_school = true
     and fteada.fteada_program is not null
