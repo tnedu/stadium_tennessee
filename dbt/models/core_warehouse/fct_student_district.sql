@@ -118,7 +118,7 @@ formatted as (
     left join stu_cohort_year
         on stu_immutable_demos.k_student = stu_cohort_year.k_student
         and stu_immutable_demos.ed_org_id = stu_cohort_year.ed_org_id
-    left join seoa
+    join seoa
         on stg_student.k_student = seoa.k_student
         and stu_immutable_demos.ed_org_id = seoa.ed_org_id
         and stg_student.api_year = seoa.api_year

@@ -19,27 +19,28 @@ with brule as (
     and rule_model = '{{ this.identifier }}'
 ),
 stg_student_edorgs as (
-    select *
+    select 
+    seoa.*,
+    brule.tdoe_error_code,
+    brule.tdoe_severity
     from {{ ref('stg_ef3__student_education_organization_associations') }} seoa
-    where k_lea is not null
-        and exists (
-        select 1
-        from brule
-        where cast(seoa.school_year as int) between brule.error_school_year_start and brule.error_school_year_end
-    )
+    join brule
+        on cast(seoa.school_year as int)
+           between brule.error_school_year_start and brule.error_school_year_end
+    where seoa.k_lea is not null
 ),
 errors as (
     select se.k_student, se.k_lea, se.k_school, se.school_year, se.ed_org_id, se.student_unique_id,
         s.state_student_id as legacy_state_student_id,
-        brule.tdoe_error_code as error_code,
+        se.tdoe_error_code as error_code,
         concat('Immigrant Student ', 
             se.student_unique_id, ' (', coalesce(s.state_student_id, '[no value]'), ') ',
-            'requires Date Entered US on District level Student/EdOrg Association.') as error
+            'requires Date Entered US on District level Student/EdOrg Association.') as error,
+        {{ severity_to_severity_code_case_clause('se.tdoe_severity') }},
+        se.tdoe_severity
     from stg_student_edorgs se
     join {{ ref('edu_edfi_source', 'stg_ef3__students') }} s
         on se.k_student = s.k_student
-    join brule
-        on se.school_year between brule.error_school_year_start and brule.error_school_year_end
     where se.dateEnteredUS is null
     and exists (
             select 1
@@ -49,9 +50,5 @@ errors as (
                 and sc.student_characteristic = 'IMMG'
         )
 )
-select errors.*,
-    {{ severity_to_severity_code_case_clause('brule.tdoe_severity') }},
-    brule.tdoe_severity
-from errors errors
-join brule
-    on errors.school_year between brule.error_school_year_start and brule.error_school_year_end
+select *
+from errors 
