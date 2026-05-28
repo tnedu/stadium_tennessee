@@ -18,25 +18,32 @@ with brule as (
     where br.tdoe_error_code = {{ error_code }}
     and rule_model = '{{this.identifier}}'
 ),
-ssa_ssd as (
-        select ssa.k_student, ssa.k_school, ssa.k_school_calendar, 
-        cast(ssa.school_id as int) as school_id, ssa.student_unique_id, cast (ssa.school_year as int) as school_year,
-        ssa.entry_date,
-        ssa.exit_withdraw_date,
-        ssa.entry_grade_level,
-        ssa.calendar_code,
-        sd.col.effectiveDate::date as ssd_date_start,
-        sd.col.studentStandardDayDuration::int as ssd_duration
+ssas as (
+    select 
+        ssa.k_student, ssa.k_school, ssa.k_school_calendar, cast(ssa.school_id as int) as school_id,
+        ssa.student_unique_id, cast(ssa.school_year as int) as school_year, ssa.entry_date, 
+        ssa.exit_withdraw_date, ssa.entry_grade_level, ssa.calendar_code
     from {{ ref('stg_ef3__student_school_associations') }} ssa
-    lateral view outer explode(studentStandardDays) sd
+    join brule brule
+        on cast(ssa.school_year as int) between brule.error_school_year_start and brule.error_school_year_end
+    /* Valid enrollments only. We have to edit this once the zero-day early grads goes to prod. */
     where exists (
         select 1
-        from brule
-        where cast(ssa.school_year as int) between brule.error_school_year_start and brule.error_school_year_end
-    )
-    qualify row_number() over (
-        partition by ssa.k_student, ssa.k_school, sd.col.effectiveDate 
-        order by sd.col.studentStandardDayDuration desc) = 1
+        from {{ ref('valid_enrollments') }} ve
+        where ve.k_student = ssa.k_student
+            and ve.k_school = ssa.k_school
+            and ve.k_school_calendar = ssa.k_school_calendar
+            /* to add when zero-day early grads goes to prod. */
+            /*and ve.is_zeroday_early_graduate = 0 */
+        )
+),
+ssa_ssd as (
+    select 
+        ssas.*,
+        sd.col.effectiveDate::date as ssd_date_start,
+        sd.col.studentStandardDayDuration::int as ssd_duration
+    from ssas
+    lateral view outer explode(studentStandardDays) sd
 ),
 errors as (
     select 
