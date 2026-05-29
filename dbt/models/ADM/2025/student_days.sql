@@ -129,9 +129,18 @@ with q as (
         and attendance.k_school = fssa.k_school
         and attendance.calendar_date = dcd.calendar_date
         and attendance.is_absent > 0.0
-    where 
-        not (fssa.entry_date = fssa.exit_withdraw_date
-            and fssa.exit_withdraw_type = '12: Early Graduate')
+    where exists (
+            /* We only care about student days for valid enrollments
+               that are also not zero-day enrollments. */
+            select 1
+            from {{ ref('valid_enrollments') }} ve
+            where ve.k_student = fssa.k_student
+                and ve.k_school = fssa.k_school
+                and ve.k_school_calendar = fssa.k_school_calendar
+                and ve.is_primary_school = fssa.is_primary_school
+                and ve.entry_date = fssa.entry_date
+                and ve.is_zeroday_early_graduate = 0
+        )
     group by all
     union
     /* Bring in the zero-day early grads. */
@@ -169,8 +178,17 @@ with q as (
         and econdis.tenant_code = fssa.tenant_code
         and econdis.school_year = fssa.school_year
         and dcd.calendar_date between econdis.begin_date and econdis.end_date
-    where fssa.entry_date = fssa.exit_withdraw_date
-        and fssa.exit_withdraw_type = '12: Early Graduate'
+    where exists (
+            /* We only care about zero-day early grad enrollments. */
+            select 1
+            from {{ ref('valid_enrollments') }} ve
+            where ve.k_student = fssa.k_student
+                and ve.k_school = fssa.k_school
+                and ve.k_school_calendar = fssa.k_school_calendar
+                and ve.is_primary_school = fssa.is_primary_school
+                and ve.entry_date = fssa.entry_date
+                and ve.is_zeroday_early_graduate = 1
+        )
 )
 select k_student, k_lea, k_school, k_school_calendar,
     school_year, is_primary_school, entry_date, exit_withdraw_date,
