@@ -25,6 +25,7 @@ stg_attendance as (
     from {{ ref('stg_ef3__student_school_attendance_events') }} ssae
     join brule brule
         on cast(ssae.school_year as int) between brule.error_school_year_start and brule.error_school_year_end
+    where attendance_event_category = 'Student Standard Day'
 ),
 errors as (
     /* Student Standard Day events must be within enrollment period. */
