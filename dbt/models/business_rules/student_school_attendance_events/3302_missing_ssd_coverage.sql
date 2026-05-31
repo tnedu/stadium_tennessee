@@ -20,8 +20,7 @@ with brule as (
 ),
 attendance_events as (
     select 
-        ssae.*,
-        brule.tdoe_error_code, brule.tdoe_severity
+        ssae.*
     from {{ ref('stg_ef3__student_school_attendance_events') }} ssae
     join brule brule
         on cast(ssae.school_year as int) between brule.error_school_year_start and brule.error_school_year_end
@@ -29,10 +28,9 @@ attendance_events as (
 ),
 first_ssd_per_student as (
     select k_student, k_school, cast(school_year as int) as school_year,
-        tdoe_error_code, tdoe_severity, 
         min(attendance_event_date) as attendance_event_date
     from attendance_events 
-    group by k_student, k_school, cast(school_year as int), tdoe_error_code, tdoe_severity
+    group by k_student, k_school, cast(school_year as int)
 ),
 calendar_dates as (
     select cd.k_calendar_date, cd.k_school_calendar, c.k_school, cd.tenant_code,
@@ -57,13 +55,16 @@ calendar_dates as (
 enrollments_and_ssd_date as (
     select ssa.k_student, ssa.k_school, ssa.school_year, ssa.school_id,
         ssa.student_unique_id, ssa.entry_date, ssa.exit_withdraw_date,
-        fssd.attendance_event_date, fssd.tdoe_error_code, fssd.tdoe_severity,
+        fssd.attendance_event_date, brule.tdoe_error_code, brule.tdoe_severity,
         case
             when fssd.attendance_event_date is null then 0
             when fssd.attendance_event_date > ssa.entry_date then 0
             else 1
         end as ssd_good
     from {{ ref('stg_ef3__student_school_associations') }} ssa
+    /* fssd is  aleft join and errors are ssd =0 so joining brule to populate error code and severity. */
+    join brule brule
+        on cast(ssa.school_year as int) between brule.error_school_year_start and brule.error_school_year_end
     left outer join first_ssd_per_student fssd
         on fssd.k_school = ssa.k_school
         and fssd.k_student = ssa.k_student
