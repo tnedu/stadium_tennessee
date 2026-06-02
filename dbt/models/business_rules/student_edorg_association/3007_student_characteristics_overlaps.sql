@@ -53,9 +53,7 @@ errors as (
         concat('Student ', 
             a.student_unique_id, ' (', coalesce(a.state_student_id, '[no value]'), ') ',
             'has overlapping Student Characteristics. Same Student Characteristics are not allowed to overlap. Values received: ',
-            concat(a.student_characteristic, ' [', a.begin_date, ' - ', ifnull(a.end_date, 'null'), ']'),
-            ', ',
-            concat(b.student_characteristic, ' [', b.begin_date, ' - ', ifnull(b.end_date, 'null'), ']')
+            concat(a.student_characteristic, ' [', a.begin_date, ' - ', ifnull(a.end_date, 'null'), ']')
         ) as error
     from characteristics_to_compare a
     join characteristics_to_compare b
@@ -67,6 +65,28 @@ errors as (
         and (a.begin_date <= b.safe_end_date) and (a.safe_end_date >= b.begin_date)
     join brule
         on a.school_year between brule.error_school_year_start and brule.error_school_year_end
+
+    union all
+
+    select b.k_student, b.k_lea, b.k_school, b.school_year, b.ed_org_id, b.student_unique_id,
+        b.state_student_id as legacy_state_student_id,
+        b.student_characteristic, b.begin_date,
+        brule.tdoe_error_code as error_code,
+        concat('Student ', 
+            b.student_unique_id, ' (', coalesce(b.state_student_id, '[no value]'), ') ',
+            'has overlapping Student Characteristics. Same Student Characteristics are not allowed to overlap. Values received: ',
+            concat(b.student_characteristic, ' [', b.begin_date, ' - ', ifnull(b.end_date, 'null'), ']')
+        ) as error
+    from characteristics_to_compare a
+    join characteristics_to_compare b
+        on b.k_lea = a.k_lea
+        and b.k_student = a.k_student
+        and b.student_characteristic = a.student_characteristic
+        and b.begin_date > a.begin_date
+        /* This looks for overlapping dates. */
+        and (a.begin_date <= b.safe_end_date) and (a.safe_end_date >= b.begin_date)
+    join brule
+        on b.school_year between brule.error_school_year_start and brule.error_school_year_end
 )
 select errors.*,
     {{ severity_to_severity_code_case_clause('brule.tdoe_severity') }},
