@@ -29,10 +29,10 @@ select k_student, k_lea, k_school, k_school_calendar, school_year, is_primary_sc
                 when ssd_duration is null or ssd_duration = 0 then 0
                 when total_duration is null then 0
                 when isa_member = 1 then
-                    cast(total_duration as decimal(12,8)) / cast(ssd_duration as decimal(12,8))
+                    cast(total_duration as decimal(20,8)) / cast(ssd_duration as decimal(38,8))
                 else 0
             end) * 100000.0) / 100000.0)
-        as decimal(8,5)
+        as decimal(38,5)
     ) as membership,
     cast(
         (floor(
@@ -42,10 +42,10 @@ select k_student, k_lea, k_school, k_school_calendar, school_year, is_primary_sc
                 when ssd_duration is null or ssd_duration = 0 then 0
                 when total_duration is null then 0
                 when isa_member = 1 then
-                    cast(total_duration as decimal(12,8)) / cast(ssd_duration as decimal(12,8))
+                    cast(total_duration as decimal(20,8)) / cast(ssd_duration as decimal(38,8))
                 else 0
             end) * 100000.0) / 100000.0)
-        as decimal(8,5)
+        as decimal(38,5)
     ) as sped_membership,
     cast(
         (floor(
@@ -55,10 +55,10 @@ select k_student, k_lea, k_school, k_school_calendar, school_year, is_primary_sc
                 when ssd_duration is null or ssd_duration = 0 then 0
                 when total_duration is null then 0
                 when isa_member = 1 then
-                    cast(total_duration as decimal(12,8)) / cast(ssd_duration as decimal(12,8))
+                    cast(total_duration as decimal(20,8)) / cast(ssd_duration as decimal(38,8))
                 else 0
             end) * 100000.0) / 100000.0)
-        as decimal(8,5)
+        as decimal(38,5)
     ) as ed_membership,
     cast(
         (floor(
@@ -68,10 +68,10 @@ select k_student, k_lea, k_school, k_school_calendar, school_year, is_primary_sc
                 when ssd_duration is null or ssd_duration = 0 then 0
                 when total_duration is null then 0
                 when isa_member = 1 then
-                    cast(total_duration as decimal(12,8)) / cast(ssd_duration as decimal(12,8))
+                    cast(total_duration as decimal(20,8)) / cast(ssd_duration as decimal(38,8))
                 else 0
             end) * 100000.0) / 100000.0)
-        as decimal(8,5)
+        as decimal(38,5)
     ) as el_membership,
     cast(
         (floor(
@@ -81,10 +81,10 @@ select k_student, k_lea, k_school, k_school_calendar, school_year, is_primary_sc
                 when ssd_duration is null or ssd_duration = 0 then 0
                 when total_duration is null then 0
                 when isa_member = 1 then
-                    cast(total_duration as decimal(12,8)) / cast(ssd_duration as decimal(12,8))
+                    cast(total_duration as decimal(20,8)) / cast(ssd_duration as decimal(38,8))
                 else 0
             end) * 100000.0) / 100000.0)
-        as decimal(8,5)
+        as decimal(38,5)
     ) as dyslexic_membership,
     courses,
     tdoe_severity_code,
