@@ -5,7 +5,7 @@
   )
 }}
 
-{% set error_code = 1007 %}
+{% set error_code = 1008 %}
 
 with brule as (
     select tdoe_error_code, 
@@ -23,12 +23,7 @@ specific_events as (
     from {{ ref('wrk_calendar_events') }} c
     join brule brule
         on cast(c.school_year as int) between brule.error_school_year_start and brule.error_school_year_end
-    where c.is_parent_teacher_day = true
-),
-xwalk_calendar_events as (
-    select *
-    from {{ ref('xwalk_calendar_events') }}
-    where is_parent_teacher_day = true
+    where c.is_discretionary_day = true
 ),
 sum_event_parts as (
     /* We need to sum up the event values. 
@@ -52,13 +47,13 @@ sum_event_parts as (
     group by k_school, k_school_calendar, tenant_code, api_year, school_year, school_id, calendar_code,
         potential_tdoe_error_code, potential_tdoe_severity
 )
-/* There must be at least 1 Parent/Teacher days. */
+/* There must be at least 4 Discretionary days. */
 select sep.k_school, sep.k_school_calendar, sep.school_year, sep.school_id, sep.calendar_code, 
     potential_tdoe_error_code as error_code,
-    concat('Calendar ', sep.calendar_code, ' has total calculated Parent/Teacher days less than the minimum of 1.0. Total days calculated: ',
+    concat('Calendar ', sep.calendar_code, ' has total calculated Discretionary days more than the maximum of 4.0. Total days calculated: ',
         coalesce(sep.sum_event_values, 0), ' (', sep.count_events, ' events on ', count_days, ' days).') as error,
     {{ severity_to_severity_code_case_clause('potential_tdoe_severity') }},
     potential_tdoe_severity as tdoe_severity
 from sum_event_parts sep
-where coalesce(sep.sum_event_values, 0) < 1
+where coalesce(sep.sum_event_values, 0) > 4
 order by 3, 4, 5
