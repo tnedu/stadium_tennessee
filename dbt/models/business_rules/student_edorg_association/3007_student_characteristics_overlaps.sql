@@ -48,6 +48,7 @@ characteristics_to_compare as (
 errors as (
     select a.k_student, a.k_lea, a.k_school, a.school_year, a.ed_org_id, a.student_unique_id,
         a.state_student_id as legacy_state_student_id,
+        a.student_characteristic, a.begin_date,
         brule.tdoe_error_code as error_code,
         concat('Student ', 
             a.student_unique_id, ' (', coalesce(a.state_student_id, '[no value]'), ') ',
