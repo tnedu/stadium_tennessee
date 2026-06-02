@@ -24,7 +24,8 @@ clean-targets:         # directories to be removed by `dbt clean`
 on-run-end: "{% if target.name == 'prod' %}{{ dbt_artifacts.upload_results(results) }}{% endif %}"
 
 flags:
-  use_materialization_v2: false
+  use_materialization_v2: False
+  require_ref_prefers_node_package_to_root: True
 
 models:
   edu_wh:
