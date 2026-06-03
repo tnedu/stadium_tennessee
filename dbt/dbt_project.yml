@@ -25,7 +25,7 @@ on-run-end: "{% if target.name == 'prod' %}{{ dbt_artifacts.upload_results(resul
 
 flags:
   use_materialization_v2: False
-  require_ref_prefers_node_package_to_root: True
+  require_ref_searches_node_package_before_root: True
 
 models:
   edu_wh:
