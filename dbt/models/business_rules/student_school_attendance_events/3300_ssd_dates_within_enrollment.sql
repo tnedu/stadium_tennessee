@@ -32,7 +32,7 @@ errors as (
     select ssd.k_student, ssd.k_school, ssd.k_session, ssd.school_year, cast(ssd.school_id as int) as school_id, ssd.student_unique_id,
         ssd.attendance_event_date, ssd.attendance_event_category,
         s.state_student_id as legacy_state_student_id,
-        ssd.tdoe_error_code, 
+        ssd.tdoe_error_code as error_code, 
         concat('Student Standard Day for Student ', 
             ssd.student_unique_id, ' (', coalesce(s.state_student_id, '[no value]'), ') ',
             'does not fall within Enrollment Period. Enrollment Start Date: ',
