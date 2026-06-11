@@ -28,14 +28,15 @@ ssas as (
     join brule brule
         on cast(ssa.school_year as int) between brule.error_school_year_start and brule.error_school_year_end
     /* Valid enrollments only. We have to edit this once the zero-day early grads goes to prod. */
-    where exists (
-        select 1
-        from {{ ref('valid_enrollments') }} ve
-        where ve.k_student = ssa.k_student
-            and ve.k_school = ssa.k_school
-            and ve.k_school_calendar = ssa.k_school_calendar
-            /* to add when zero-day early grads goes to prod. */
-            /*and ve.is_zeroday_early_graduate = 0 */
+    where ssa.studentStandardDays is not null
+        and exists (
+            select 1
+            from {{ ref('valid_enrollments') }} ve
+            where ve.k_student = ssa.k_student
+                and ve.k_school = ssa.k_school
+                and ve.k_school_calendar = ssa.k_school_calendar
+                /* to add when zero-day early grads goes to prod. */
+                /*and ve.is_zeroday_early_graduate = 0 */
         )
 ),
 ssa_ssd as (
@@ -69,6 +70,6 @@ errors as (
     from ssa_ssd ssa
     join {{ ref('stg_ef3__students') }} s
         on s.k_student = ssa.k_student
-    where coalesce(ssa.ssd_duration, 0) = 0
+    where coalesce(ssa.ssd_duration, 0) <= 0
 )
 select * from errors
