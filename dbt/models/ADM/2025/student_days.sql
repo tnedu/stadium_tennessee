@@ -11,6 +11,7 @@ This is needed to determine the membership calculation, so the main column here 
 */
 
 with q as (
+    /* These are the normal enrollments. Zero Day Early Grads will be below. */
     select fssa.k_student, fssa.k_lea, fssa.k_school, fssa.k_school_calendar,
         fssa.school_year, fssa.is_primary_school, fssa.entry_date, fssa.exit_withdraw_date,
         gl.grade_level_short as grade_level, gl.grade_level_adm,
@@ -18,6 +19,7 @@ with q as (
             when fssa.exit_withdraw_type = '12: Early Graduate' then 1
             else 0
         end as is_early_graduate, 
+        0 as is_zeroday_early_graduate, 
         ssd.ssd_duration,
         dcd.calendar_date, dcd.day_of_school_year, 
         dcd.report_period, dcd.report_period_begin_date, dcd.report_period_end_date,
@@ -129,11 +131,71 @@ with q as (
         and attendance.calendar_date >= fssa.entry_date
         and (fssa.exit_withdraw_date is null or attendance.calendar_date < fssa.exit_withdraw_date)
         and attendance.is_absent > 0.0
+    where exists (
+            /* We only care about student days for valid enrollments
+               that are also not zero-day enrollments. */
+            select 1
+            from {{ ref('valid_enrollments') }} ve
+            where ve.k_student = fssa.k_student
+                and ve.k_school = fssa.k_school
+                and ve.k_school_calendar = fssa.k_school_calendar
+                and ve.is_primary_school = fssa.is_primary_school
+                and ve.entry_date = fssa.entry_date
+                and ve.is_zeroday_early_graduate = 0
+        )
     group by all
+    union
+    /* Bring in the zero-day early grads. */
+    select fssa.k_student, fssa.k_lea, fssa.k_school, fssa.k_school_calendar,
+        fssa.school_year, fssa.is_primary_school, fssa.entry_date, fssa.exit_withdraw_date,
+        gl.grade_level_short as grade_level, gl.grade_level_adm,
+        1 as is_early_graduate, 
+        1 as is_zeroday_early_graduate, 
+        null ssd_duration,
+        dcd.calendar_date, dcd.day_of_school_year, 
+        dcd.report_period, dcd.report_period_begin_date, dcd.report_period_end_date,
+        dcd.days_in_report_period,
+        0 as is_SPED,
+        0 as is_funding_ineligible,
+        0 as is_expelled,
+        0 as is_suspended,
+        case
+            when econdis.begin_date is not null then 1
+            else 0
+        end as is_EconDis,
+        0 as is_EL,
+        0 as is_Dyslexic,
+        0 as is_absent,
+        greatest(coalesce(fssa.tdoe_severity_code, 0), coalesce(dcd.tdoe_severity_code, 0)) as tdoe_severity_code,
+        {{ severity_code_to_severity_case_clause('greatest(coalesce(fssa.tdoe_severity_code, 0), coalesce(dcd.tdoe_severity_code, 0))') }}
+    from {{ ref('fct_student_school_association') }} fssa
+    join {{ ref('xwalk_grade_levels') }} gl
+        on upper(gl.grade_level) = upper(fssa.entry_grade_level)
+    join {{ ref('dim_calendar_date') }} dcd
+        on dcd.k_school_calendar = fssa.k_school_calendar
+        and dcd.is_school_day = true
+    left outer join {{ ref('bld_econdis_safe_ranges') }} econdis
+        on econdis.k_lea = fssa.k_lea
+        and econdis.k_student = fssa.k_student
+        and econdis.tenant_code = fssa.tenant_code
+        and econdis.school_year = fssa.school_year
+        and dcd.calendar_date between econdis.begin_date and econdis.end_date
+    where exists (
+            /* We only care about zero-day early grad enrollments. */
+            select 1
+            from {{ ref('valid_enrollments') }} ve
+            where ve.k_student = fssa.k_student
+                and ve.k_school = fssa.k_school
+                and ve.k_school_calendar = fssa.k_school_calendar
+                and ve.is_primary_school = fssa.is_primary_school
+                and ve.entry_date = fssa.entry_date
+                and ve.is_zeroday_early_graduate = 1
+        )
 )
 select k_student, k_lea, k_school, k_school_calendar,
     school_year, is_primary_school, entry_date, exit_withdraw_date,
-    grade_level, grade_level_adm, coalesce(is_early_graduate,0) as is_early_graduate, ssd_duration,
+    grade_level, grade_level_adm, coalesce(is_early_graduate,0) as is_early_graduate, 
+    coalesce(is_zeroday_early_graduate,0) as is_zeroday_early_graduate, ssd_duration,
     calendar_date, day_of_school_year, report_period, report_period_begin_date,
     report_period_end_date, days_in_report_period, 
     coalesce(is_sped,0) as is_sped,

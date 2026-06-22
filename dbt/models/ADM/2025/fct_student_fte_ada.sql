@@ -62,6 +62,7 @@ student_fteada as (
         tdoe_severity_code
     from aggregate_before_explosion sds
     lateral view outer explode(sds.courses) as course
+    where sds.grade_level_adm in ('K', '01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12')
 ),
 grouped_by_program as (
     select k_student, k_school, k_lea, k_school_calendar, school_year, is_primary_school, entry_date, 

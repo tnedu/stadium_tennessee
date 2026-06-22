@@ -20,10 +20,32 @@ union
 select *
 from {{ ref('3005_cohort_year') }}
 union
-select *
+select 
+    k_student, 
+    k_lea,
+    k_school,
+    school_year, 
+    ed_org_id, 
+    student_unique_id,
+    legacy_state_student_id,
+    error_code,
+    error,
+    tdoe_severity_code,
+    tdoe_severity
 from {{ ref('3006_student_characteristics_end_date') }}
 union
-select *
+select 
+    k_student,
+    k_lea,
+    k_school,
+    school_year,
+    ed_org_id,
+    student_unique_id,
+    legacy_state_student_id,
+    error_code,
+    error,
+    tdoe_severity_code,
+    tdoe_severity
 from {{ ref('3007_student_characteristics_overlaps') }}
 union
 select *

@@ -52,6 +52,11 @@ calendar_dates as (
         on cd.k_calendar_date = summarize_calendar_events.k_calendar_date
     where summarize_calendar_events.is_school_day = true
 ),
+valid_enrollents_minus_zeroday_early_grads as (
+    select *
+    from {{ ref('valid_enrollments') }}
+    where is_zeroday_early_graduate = 0
+),
 enrollments_and_ssd_date as (
     select ssa.k_student, ssa.k_school, ssa.school_year, ssa.school_id,
         ssa.student_unique_id, ssa.entry_date, ssa.exit_withdraw_date,
@@ -67,14 +72,15 @@ enrollments_and_ssd_date as (
         and fssd.k_student = ssa.k_student
         and fssd.school_year = ssa.school_year
     where 
-        /* Enrollment dates must include at least one school day. This eliminates no shows. */
+        /* We only want this rule to fire if there exists an enrollment that is non-zero-day early grad. */
         exists (
             select 1
-            from calendar_dates cd
-            where cd.k_school = ssa.k_school
-                and cd.school_year = ssa.school_year
-                and cd.calendar_date >= ssa.entry_date
-                and (ssa.exit_withdraw_date is null or cd.calendar_date < ssa.exit_withdraw_date)
+            from valid_enrollents_minus_zeroday_early_grads x
+            where ssa.k_student = x.k_student
+                and ssa.k_school = x.k_school
+                and ssa.k_school_calendar = x.k_school_calendar
+                and ssa.entry_date = x.entry_date
+                and ssa.is_primary_school = x.is_primary_school
         )
 ),
 errors as (

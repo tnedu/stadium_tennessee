@@ -37,7 +37,7 @@ all_calendar_events as (
 xwalk_calendar_events as (
     select *
     from {{ ref('xwalk_calendar_events') }}
-    where is_funded_day = true
+    where is_statutory_day = true
 ),
 calendar_events as (
     select distinct k_school, k_school_calendar, school_year, school_id, calendar_code, calendar_date
