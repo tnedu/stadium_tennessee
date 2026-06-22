@@ -5,20 +5,7 @@
   )
 }}
 
-with school_day_events as (
-    select *
-    from {{ ref('xwalk_calendar_events') }}
-    where is_school_day = true
-),
-instructional_days as (
-    select cd.k_school_calendar, cd.tenant_code, cd.calendar_date
-    from {{ ref('stg_ef3__calendar_dates') }} cd
-    join {{ ref('stg_ef3__calendar_dates__calendar_events') }} cde
-        on cde.k_school_calendar = cd.k_school_calendar
-        and cde.k_calendar_date = cd.k_calendar_date
-        and cde.tenant_code = cd.tenant_code
-        and cde.calendar_event in (select calendar_event_descriptor from school_day_events)
-)
+/* No show enrollments are simply any non-valid enrollments, I guess. */
 select ssa.k_student, ssa.k_school, ssa.k_school_calendar,
     ssa.tenant_code, ssa.api_year, ssa.school_id, ssa.student_unique_id,
     ssa.school_year, ssa.is_primary_school, ssa.entry_date, ssa.exit_withdraw_date,
@@ -27,9 +14,11 @@ from {{ ref('stg_ef3__student_school_associations') }} ssa
 where 
     not exists (
         select 1
-        from instructional_days cal
-        where cal.k_school_calendar = ssa.k_school_calendar
-            and cal.tenant_code = ssa.tenant_code
-            and cal.calendar_date >= ssa.entry_date 
-            and cal.calendar_date < coalesce(ssa.exit_withdraw_date, to_date(concat(ssa.school_year, '-07-01')))
+        from {{ ref('valid_enrollments') }} x
+        where x.k_student = ssa.k_student
+            and x.k_school = ssa.k_school
+            and x.k_school_calendar = ssa.k_school_calendar
+            and x.school_year = ssa.school_year
+            and x.is_primary_school = ssa.is_primary_school
+            and x.entry_date = ssa.entry_date
     )

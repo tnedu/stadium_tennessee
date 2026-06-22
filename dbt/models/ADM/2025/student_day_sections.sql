@@ -17,7 +17,7 @@ student_classes as (
     Early Grads Dates don't have classes, so we'll take care of them later. */
     select sm.k_student, sm.k_lea, sm.k_school, sm.k_school_calendar, sm.school_year,
         sm.is_primary_school, sm.entry_date, sm.exit_withdraw_date, sm.grade_level, sm.grade_level_adm,
-        sm.is_early_graduate, sm.calendar_date, sm.isa_member,
+        sm.is_early_graduate, sm.is_zeroday_early_graduate, sm.calendar_date, sm.isa_member,
         sm.is_sped, sm.is_funding_ineligible, sm.is_expelled, sm.is_suspended, sm.is_EconDis, sm.is_EL, sm.is_Dyslexic, sm.is_absent,
         sm.is_early_grad_date,
         sm.ssd_duration,
@@ -64,7 +64,7 @@ student_classes as (
     where sm.is_early_grad_date = 0
     group by sm.k_student, sm.k_lea, sm.k_school, sm.k_school_calendar, sm.school_year,
         sm.is_primary_school, sm.entry_date, sm.exit_withdraw_date, sm.grade_level, sm.grade_level_adm,
-        sm.is_early_graduate, sm.calendar_date, sm.isa_member,
+        sm.is_early_graduate, sm.is_zeroday_early_graduate, sm.calendar_date, sm.isa_member,
         sm.is_sped, sm.is_funding_ineligible, sm.is_expelled, sm.is_suspended, sm.is_EconDis, sm.is_EL, sm.is_Dyslexic, sm.is_absent,
         sm.is_early_grad_date,
         sm.ssd_duration,
@@ -77,7 +77,7 @@ student_classes as (
 detect_overlaps as (
     select k_student, k_lea, k_school, k_school_calendar, school_year,
         is_primary_school, entry_date, exit_withdraw_date, grade_level, grade_level_adm,
-        is_early_graduate, calendar_date, isa_member,
+        is_early_graduate, is_zeroday_early_graduate, calendar_date, isa_member,
         is_sped, is_funding_ineligible, is_expelled, is_suspended, is_EconDis, is_EL, is_Dyslexic, is_absent,
         is_early_grad_date,
         ssd_duration,
@@ -99,7 +99,7 @@ detect_overlaps as (
 student_courses_aggregated as (
     select k_student, k_lea, k_school, k_school_calendar, school_year,
         is_primary_school, entry_date, exit_withdraw_date, grade_level, grade_level_adm,
-        is_early_graduate, calendar_date, isa_member,
+        is_early_graduate, is_zeroday_early_graduate, calendar_date, isa_member,
         is_sped, is_funding_ineligible, is_expelled, is_suspended, is_EconDis, is_EL, is_Dyslexic, is_absent,
         is_early_grad_date,
         ssd_duration,
@@ -130,7 +130,7 @@ student_courses_aggregated as (
     from detect_overlaps
     group by k_student, k_lea, k_school, k_school_calendar, school_year,
         is_primary_school, entry_date, exit_withdraw_date, grade_level, grade_level_adm,
-        is_early_graduate, calendar_date, isa_member,
+        is_early_graduate, is_zeroday_early_graduate, calendar_date, isa_member,
         is_sped, is_funding_ineligible, is_expelled, is_suspended, is_EconDis, is_EL, is_Dyslexic, is_absent,
         is_early_grad_date,
         ssd_duration,
@@ -141,7 +141,7 @@ student_courses_aggregated as (
 student_daily_schedule as (
     select k_student, k_lea, k_school, k_school_calendar, school_year,
         is_primary_school, entry_date, exit_withdraw_date, grade_level, grade_level_adm,
-        is_early_graduate, calendar_date, isa_member,
+        is_early_graduate, is_zeroday_early_graduate, calendar_date, isa_member,
         is_sped, is_funding_ineligible, is_expelled, is_suspended, is_EconDis, is_EL, is_Dyslexic, is_absent,
         is_early_grad_date,
         ssd_duration,
@@ -180,7 +180,7 @@ student_daily_schedule as (
     from student_courses_aggregated
     group by k_student, k_lea, k_school, k_school_calendar, school_year,
         is_primary_school, entry_date, exit_withdraw_date, grade_level, grade_level_adm,
-        is_early_graduate, calendar_date, isa_member,
+        is_early_graduate, is_zeroday_early_graduate, calendar_date, isa_member,
         is_sped, is_funding_ineligible, is_expelled, is_suspended, is_EconDis, is_EL, is_Dyslexic, is_absent,
         is_early_grad_date,
         ssd_duration,
@@ -190,7 +190,7 @@ student_daily_schedule as (
 /* Here's the Early Grad Dates. They don't have classes, so they don't have period durations. */
 select sm.k_student, sm.k_lea, sm.k_school, sm.k_school_calendar, sm.school_year,
     sm.is_primary_school, sm.entry_date, sm.exit_withdraw_date, sm.grade_level, sm.grade_level_adm,
-    sm.is_early_graduate, sm.calendar_date, sm.isa_member,
+    sm.is_early_graduate, sm.is_zeroday_early_graduate, sm.calendar_date, sm.isa_member,
     is_sped, is_funding_ineligible, is_expelled, is_suspended, is_EconDis, is_EL, is_Dyslexic, is_absent,
     sm.is_early_grad_date,
     sm.ssd_duration,

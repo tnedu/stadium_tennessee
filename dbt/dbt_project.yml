@@ -159,11 +159,21 @@ vars:
         tdoe_severity: { as: tdoe_severity, default: "'good'" }
 
   'tdoe:student_characteristics:custom_data_sources':
-    cds_default_severity_columns:
-      joins: [true]
+    # cds_default_severity_columns:
+    #   joins: [true]
+    #   cds_additional_cols:
+    #     tdoe_severity_code: { as: tdoe_severity_code, default: 0 }
+    #     tdoe_severity: { as: tdoe_severity, default: "'good'" }
+    cds_fct_student_characteristics_statuses:
+      joins:
+        - cds_fct_student_characteristics_statuses.k_student = c.k_student
+        - cds_fct_student_characteristics_statuses.k_lea = c.k_lea
+        - cds_fct_student_characteristics_statuses.student_characteristic = c.student_characteristic
+        - cds_fct_student_characteristics_statuses.begin_date = c.begin_date        
       cds_additional_cols:
         tdoe_severity_code: { as: tdoe_severity_code, default: 0 }
         tdoe_severity: { as: tdoe_severity, default: "'good'" }
+
 
   'tdoe:student_standard_day:custom_data_sources':
     cds_ssd_statuses:

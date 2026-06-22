@@ -26,7 +26,7 @@ with raw_ed_adm as (
         cast(right(cast(school.school_id as string), 4) as int) as school_id, school.school_name,
         s.student_unique_id,
         sm.is_primary_school, sm.entry_date,
-        sm.exit_withdraw_date, sm.grade_level, sm.grade_level_adm, sm.is_early_graduate, 
+        sm.exit_withdraw_date, sm.grade_level, sm.grade_level_adm, sm.is_early_graduate, sm.is_zeroday_early_graduate, 
         sm.report_period, sm.report_period_begin_date, sm.report_period_end_date, sm.days_in_report_period,
         max(sm.has_vocational_courses) as has_vocational_courses,
         sum(sm.is_sped) as days_sped,
@@ -41,9 +41,9 @@ with raw_ed_adm as (
                 (case
                     when sm.days_in_report_period is null or sm.days_in_report_period = 0 then 0
                     when sum(sm.ed_membership) is null or sum(sm.ed_membership) = 0 then 0
-                    else sum(sm.ed_membership) / cast(sm.days_in_report_period as decimal(12,8))
+                    else sum(sm.ed_membership) / cast(sm.days_in_report_period as decimal(38,8))
                 end) * 100000) / 100000)
-            as decimal(8,5)
+            as decimal(38,5)
         ) as actual_ed_adm,
         cast(
             (floor(
@@ -52,9 +52,9 @@ with raw_ed_adm as (
                     when sum(sm.ed_membership) is null or sum(sm.ed_membership) = 0 then 0
                     else least(
                             sum(least(sm.ed_membership, 1.0)) / 
-                                cast(least(sm.days_in_report_period,20) as decimal(12,8)), 1.0)
+                                cast(least(sm.days_in_report_period,20) as decimal(38,8)), 1.0)
                 end) * 100000) / 100000)
-            as decimal(8,5)
+            as decimal(38,5)
         ) as normalized_ed_adm,
         max(sm.tdoe_severity_code) as tdoe_severity_code,
         {{ severity_code_to_severity_case_clause('max(sm.tdoe_severity_code)') }}
@@ -69,7 +69,7 @@ with raw_ed_adm as (
         l.lea_id, l.lea_name, cast(right(cast(school.school_id as string), 4) as int), school.school_name,
         s.student_unique_id,
         sm.is_primary_school, sm.entry_date,
-        sm.exit_withdraw_date, sm.grade_level, sm.grade_level_adm, sm.is_early_graduate, 
+        sm.exit_withdraw_date, sm.grade_level, sm.grade_level_adm, sm.is_early_graduate, sm.is_zeroday_early_graduate, 
         sm.report_period, sm.report_period_begin_date, sm.report_period_end_date, sm.days_in_report_period
 ),
 ed_ranges as (

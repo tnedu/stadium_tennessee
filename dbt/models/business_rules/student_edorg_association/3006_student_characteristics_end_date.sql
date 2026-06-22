@@ -29,6 +29,7 @@ stg_student_edorgs as (
 errors as (
     select se.k_student, se.k_lea, se.k_school, se.school_year, se.ed_org_id, se.student_unique_id,
         s.state_student_id as legacy_state_student_id,
+        sc.student_characteristic, sc.begin_date,
         brule.tdoe_error_code as error_code,
         concat('Student Characteristics End Date for Student ', 
             se.student_unique_id, ' (', coalesce(s.state_student_id, '[no value]'), ') ',
