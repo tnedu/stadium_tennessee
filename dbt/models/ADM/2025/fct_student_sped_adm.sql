@@ -39,9 +39,9 @@ with raw_el_adm as (
                 (case
                     when sm.days_in_report_period is null or sm.days_in_report_period = 0 then 0
                     when sum(sm.sped_membership) is null or sum(sm.sped_membership) = 0 then 0
-                    else sum(sm.sped_membership) / cast(sm.days_in_report_period as decimal(12,8))
+                    else sum(sm.sped_membership) / cast(sm.days_in_report_period as decimal(38,8))
                 end) * 100000) / 100000)
-            as decimal(8,5)
+            as decimal(38,5)
         ) as actual_sped_adm,
         cast(
             (floor(
@@ -50,9 +50,9 @@ with raw_el_adm as (
                     when sum(sm.sped_membership) is null or sum(sm.sped_membership) = 0 then 0
                     else least(
                             sum(least(sm.sped_membership, 1.0)) / 
-                                cast(least(sm.days_in_report_period,20) as decimal(12,8)), 1.0)
+                                cast(least(sm.days_in_report_period,20) as decimal(38,8)), 1.0)
                 end) * 100000) / 100000)
-            as decimal(8,5)
+            as decimal(38,5)
         ) as normalized_sped_adm,
         sped.primary_indicator,
         sped.participation_status,
