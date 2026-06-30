@@ -62,7 +62,7 @@ errors as (
         on b.k_lea = a.k_lea
         and b.k_student = a.k_student
         and b.student_characteristic = a.student_characteristic
-        and b.begin_date > a.begin_date
+        and b.begin_date != a.begin_date
         /* This looks for overlapping dates. */
         and (a.begin_date <= b.safe_end_date) and (a.safe_end_date >= b.begin_date)
     join brule

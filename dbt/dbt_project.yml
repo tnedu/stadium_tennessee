@@ -24,7 +24,8 @@ clean-targets:         # directories to be removed by `dbt clean`
 on-run-end: "{% if target.name == 'prod' %}{{ dbt_artifacts.upload_results(results) }}{% endif %}"
 
 flags:
-  use_materialization_v2: false
+  use_materialization_v2: False
+  require_ref_searches_node_package_before_root: True
 
 models:
   edu_wh:
@@ -112,6 +113,14 @@ vars:
       state_student_id:
         name: 'tdoe:stateStudentId'
         dtype: 'bigint'
+    stg_ef3__student_school_associations:
+      studentStandardDays:
+        name: 'tdoe:studentStandardDays'
+        dtype: 'array<struct<effectiveDate:date, studentStandardDayDuration:int>>'
+    stg_ef3__student_education_organization_associations:
+      dateEnteredUS:
+        name: 'tdoe:dateEnteredUS'
+        dtype: 'date'
 
   descriptors:
     exitWithdrawTypeDescriptor:
@@ -170,8 +179,8 @@ vars:
   'tdoe:student_standard_day:custom_data_sources':
     cds_ssd_statuses:
       joins: 
-        - cds_ssd_statuses.k_student = ssae.k_student
-        - cds_ssd_statuses.k_school = ssae.k_school
+        - cds_ssd_statuses.k_student = ssd.k_student
+        - cds_ssd_statuses.k_school = ssd.k_school
       cds_additional_cols:
         tdoe_severity_code: { as: tdoe_severity_code, default: 0 }
         tdoe_severity: { as: tdoe_severity, default: "'good'" }

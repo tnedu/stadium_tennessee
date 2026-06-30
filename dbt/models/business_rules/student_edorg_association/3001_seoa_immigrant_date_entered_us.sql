@@ -19,33 +19,29 @@ with brule as (
     and rule_model = '{{ this.identifier }}'
 ),
 stg_student_edorgs as (
-    select *
+    select 
+    seoa.*,
+    brule.tdoe_error_code,
+    brule.tdoe_severity
     from {{ ref('stg_ef3__student_education_organization_associations') }} seoa
-    where k_lea is not null
-        and exists (
-        select 1
-        from brule
-        where cast(seoa.school_year as int) between brule.error_school_year_start and brule.error_school_year_end
-    )
-),
-valid_enrollents_minus_zeroday_early_grads as (
-    select *
-    from {{ ref('valid_enrollments') }}
-    where is_zeroday_early_graduate = 0
+    join brule
+        on cast(seoa.school_year as int)
+           between brule.error_school_year_start and brule.error_school_year_end
+    where seoa.k_lea is not null
 ),
 errors as (
     select se.k_student, se.k_lea, se.k_school, se.school_year, se.ed_org_id, se.student_unique_id,
         s.state_student_id as legacy_state_student_id,
-        brule.tdoe_error_code as error_code,
+        se.tdoe_error_code as error_code,
         concat('Immigrant Student ', 
             se.student_unique_id, ' (', coalesce(s.state_student_id, '[no value]'), ') ',
-            'requires Date Entered US on District level Student/EdOrg Association.') as error
+            'requires Date Entered US on District level Student/EdOrg Association.') as error,
+        {{ severity_to_severity_code_case_clause('se.tdoe_severity') }},
+        se.tdoe_severity
     from stg_student_edorgs se
     join {{ ref('edu_edfi_source', 'stg_ef3__students') }} s
         on se.k_student = s.k_student
-    join brule
-        on se.school_year between brule.error_school_year_start and brule.error_school_year_end
-    where s.date_entered_us is null
+    where se.dateEnteredUS is null
     and exists (
             select 1
             from {{ ref('stg_ef3__stu_ed_org__characteristics') }} sc
@@ -53,17 +49,6 @@ errors as (
                 and sc.k_student = se.k_student
                 and sc.student_characteristic = 'IMMG'
         )
-        /* We only want this rule to fire if there exists an enrollment that is non-zero-day early grad. */
-        and exists (
-            select 1
-            from valid_enrollents_minus_zeroday_early_grads x
-            where se.k_student = x.k_student
-                and se.k_lea = x.k_lea
-        )
 )
-select errors.*,
-    {{ severity_to_severity_code_case_clause('brule.tdoe_severity') }},
-    brule.tdoe_severity
-from errors errors
-join brule
-    on errors.school_year between brule.error_school_year_start and brule.error_school_year_end
+select *
+from errors 
