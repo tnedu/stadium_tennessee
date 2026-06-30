@@ -1,60 +1,64 @@
-tdoe_error_code,end_point,error_school_year_start,error_school_year_end,tdoe_severity,tdoe_error_description
-1000,calendars,2025,,error,Instructional Day count must be at least 180.
-1001,calendars,2025,,various,Generic Calendar coexistence rule using the calendar event coexistence seed.
-1003,calendars,2025,,critical,Calendar Event Date must be within the school year.
-1004,calendars,2025,,error,"AS, AE, CS, CE are required."
-1005,calendars,2025,,potential,In Service Days cannot be less than 5.
-1006,calendars,2025,,potential,Stockpile days must be less than or equal to 13.
-1007,calendars,2025,,potential,Parent Teacher Days cannot be less than 1.
-1008,calendars,2025,,potential,Discrectionary Days cannot be more than 4.
-1009,calendars,2025,,potential,Instructional Day dates must be found in any Bell Schedule Dates.
-1010,calendars,2025,,potential,Teacher Vacation Days cannot be less than 10.
-2001,sessions,2025,,critical,Session Begin Date must be within the school year.
-2002,sessions,2025,,critical,Session End Date must be within the school year.
-2003,sessions,2025,,critical,Session Begin Date must be less than or equal to End Date.
-2004,sections,1900,1900,critical,"Sections only get one of Honors, Statewide Dual Credit, Local Dual Credit, Dual Enrollment."
-2005,sections,2025,,critical,Sections only get one of Fall Block or Spring Block or Year-long.
-2006,sections,2025,,critical,Sections that are not Pull Out must have a meeting time duration.
-2010,sections,2025,,critical,Sections must have an educational_environment_type.
-2012,sections,2025,,potential,Post Secondary Institution must be submitted for LDC / DE sections.
-2007,classPeriods,2025,,critical,Class Periods cannot have more than one meeting time.
-2009,classPeriods,2025,,critical,Class Periods must have a positive meeting time duration.
-2011,classPeriods,2025,,critical,Class Periods must be tied to a Bell Schedule.
-2008,bellSchedules,2025,,critical,Bell Schedules must have dates.
-2015,bellSchedules,2025,,potential,Bell Schedule date must be a School Calendar instructional day.
-3001,studentEducationOrganizationAssociations,2025,,critical,Date Entered US cannot be missing for an immigrant student.
-3002,studentEducationOrganizationAssociations,2025,,error,"Date Entered US must exist for students with English Language Background code L,W,1,2,3,4,F,N."
-3003,studentEducationOrganizationAssociations,2025,,error,Native Language must exist for students.
-3004,studentEducationOrganizationAssociations,2025,,critical,Race must exist for students.
-3005,studentEducationOrganizationAssociations,2025,,warning,Cohort Year must exist for Students with instructional grade greater than 8.
-3006,studentEducationOrganizationAssociations,2025,,critical,Student Characteristics End Date must be greater than or equal to Begin Date.
-3007,studentEducationOrganizationAssociations,2025,,error,Student cannot have overlapping Student Characteristics records for the same characteristics.
-3008,studentEducationOrganizationAssociations,2025,,potential,Student cannot have missing Student Education Organization Association at the District level when Student School Association exists.
-3101,studentSchoolAssociations,2025,,critical,Entry Date must be within the school year.
-3102,studentSchoolAssociations,2025,,critical,Withdrawal Date must be within the school year.
-3103,studentSchoolAssociations,2025,,critical,Withdrawal Date must be greater than or equal to Entry Date.
-3104,studentSchoolAssociations,2025,,critical,No primary enrollment exists but secondary enrollment does exist.
-3105,studentSchoolAssociations,2025,,critical,Student cannot have overlapping Primary enrollments.
-3106,studentSchoolAssociations,2025,,warning,Student cannot have more than one School Association with Enrollment Reason Code of E or E1 in a single school year.
-3107,studentSchoolAssociations,2025,,warning,Student cannot have TR Enrollment Reason Code if there is not existing E or E1 at a different school in a single school year.
-3108,studentSchoolAssociations,2025,,warning,Student cannot have more than one enrollment reason code in a single school year.
-3110,studentSchoolAssociations,2025,,potential,Calendar code missing on Student School Association record.
-3109,studentHomelessProgramAssociations,2025,,critical,Homeless students must have homeless primary nighttime residence.
-3200,disciplineActions,2025,,critical,Discipline Date must be within the school year.
-3201,disciplineActions,2025,,critical,Discipline Incident Date cannot be after Discipline Action Date.
-3202,disciplineActions,1900,1900,warning,Discipline Actions for a Student are not allowed to overlap.
-3300,studentSchoolAttendanceEvents,2025,,critical,Student Standard Day must be within enrollment period.
-3301,studentSchoolAttendanceEvents,2025,,critical,Student attendance/absence must be within enrollment period.
-3302,studentSchoolAttendanceEvents,2025,,critical,Student must have SSD for every calendar day of their enrollments.
-3303,studentSchoolAttendanceEvents,2025,,critical,Student SSD duration must be non-zero.
-3400,studentSectionAssociations,2025,,critical,Student Section Begin Date must be within the school year.
-3401,studentSectionAssociations,2025,,critical,Student Section End Date must be within the school year.
-3402,studentSectionAssociations,2025,,critical,Student Section Begin Date must be within the enrollment period.
-3500,studentAcademicRecords,1900,1900,critical,Student Academic Record Completion Date is not within the school year.
-3600,courseTranscripts,2025,,critical,Final Letter Grade must be an acceptable value.
-3601,courseTranscripts,2025,,critical,Final Numeric Grade must be an acceptable value.
-4100,staffEducationOrganizationAssignmentAssociations,2025,,critical,Staff EdOrg Assignment Association Full Time Equivalency must be [null] or between 0 and 1.
-4101,staffEducationOrganizationAssignmentAssociations,1900,1900,critical,"Staff EdOrg Assignment Association Order of Assignment must be [null], 1, 2, or 3."
-4200,staffSectionAssociations,2025,,critical,Staff Section Begin Date must be within the school year.
-4201,staffSectionAssociations,2025,,critical,Staff Section End Date must be null or within the school year.
-4202,staffSectionAssociations,2025,,critical,Staff Section Begin Date greater than Staff Section End Date.
+tdoe_error_code,end_point,rule_model,error_school_year_start,error_school_year_end,tdoe_severity,tdoe_error_description
+1000,calendars,1000_not_enough_instructional_days,2026,,error,Instructional Day count must be at least 180.
+1001,calendars,1001_events_requiring_an_ID_event,2026,,critical,"AS, AE, AD, MS, MD, MA, MU, MH require an ID on the same date."
+1002,calendars,1002_events_that_cannot_have_ID_event,2026,,error,"CH, MI, OH, SH, SI, TV are incorrectly paired with an ID on the same date."
+1003,calendars,1003_calendar_date_not_within_schoolyear,2026,,critical,Calendar Event Date must be within the school year.
+1004,calendars,1004_required_calendar_events,2026,,error,"AS, AE, CS, CE are required."
+1005,calendars,1005_inservice_day_count,1900,1900,critical,In Service Days cannot be less than 5.
+1006,calendars,1006_abbreviated_day_count,1900,1900,critical,Abbreviated Days cannot be greater than 3.
+1007,calendars,1007_parent_teacher_day_count,1900,1900,critical,Parent Teacher Days cannot be less than 1.
+1008,calendars,1008_discrectionary_day_count,1900,1900,critical,Discrectionary Days cannot be greater than 4.
+2001,sessions,2001_begin_date,2026,,critical,Session Begin Date must be within the school year.
+2002,sessions,2002_end_date,2026,,critical,Session End Date must be within the school year.
+2003,sessions,2003_begin_end_date_valid,2026,,critical,Session Begin Date must be less than or equal to End Date.
+2004,sections,2004_course_levels,1900,1900,critical,"Sections only get one of Honors, Statewide Dual Credit, Local Dual Credit, Dual Enrollment."
+2005,sections,2005_test_admin_window,2026,,critical,Sections only get one of Fall Block or Spring Block or Year-long.
+2006,sections,2006_non_pullout_need_duration,2026,,critical,Sections that are not Pull Out must have a meeting time duration.
+2010,sections,2010_educational_environment_type,2026,,critical,Sections must have an educational_environment_type.
+2012,sections,2012_post_secondary_institution,2026,,potential,Post Secondary Institution must be submitted for LDC / DE sections.
+2007,classPeriods,2007_meeting_time_count,2026,,critical,Class Periods cannot have more than one meeting time.
+2009,classPeriods,2009_meeting_time_duration,2026,,critical,Class Periods must have a positive meeting time duration.
+2011,classPeriods,2011_no_bell_schedule_assoc,2026,,critical,Class Periods must be tied to a Bell Schedule.
+2008,bellSchedules,2008_dates_required,2026,,critical,Bell Schedules must have dates.
+2015,bellSchedules,2015_BSdate_not_an_ID_day,2026,,potential,Bell Schedule date must be an School Calendar instructional day.
+3001,studentEducationOrganizationAssociations,3001_immigrant_date_entered_us,2026,2026,critical,Date Entered US cannot be missing for an immigrant student.
+3001,studentEducationOrganizationAssociations,3001_seoa_immigrant_date_entered_us,2027,,critical,Date Entered US cannot be missing for an immigrant student.
+3002,studentEducationOrganizationAssociations,3002_elb_date_entered_us,2026,2026,error,"Date Entered US must exist for students with English Language Background code L,W,1,2,3,4,F,N."
+3002,studentEducationOrganizationAssociations,3002_seoa_elb_date_entered_us,2027,,error,"Date Entered US must exist for students with English Language Background code L,W,1,2,3,4,F,N."
+3003,studentEducationOrganizationAssociations,3003_no_native_language,2026,,error,Native Language must exist for students.
+3004,studentEducationOrganizationAssociations,3004_no_race,2026,,critical,Race must exist for students.
+3005,studentEducationOrganizationAssociations,3005_cohort_year,2026,,warning,Cohort Year must exist for Students with instructional grade greater than 8.
+3006,studentEducationOrganizationAssociations,3006_student_characteristics_end_date,2026,,critical,Student Characteristics End Date must be greater than or equal to Begin Date.
+3007,studentEducationOrganizationAssociations,3007_student_characteristics_overlaps,2026,,error,Student cannot have overlapping Student Characteristics records for the same characteristics.
+3008,studentEducationOrganizationAssociations,3008_no_student_ed_org_association,2026,,potential,Student cannot have missing Student Education Organization Association at the District level when Student School Association exists.
+3101,studentSchoolAssociations,3101_entry_date,2026,,critical,Entry Date must be within the school year.
+3102,studentSchoolAssociations,3102_exit_withdrawal_date,2026,,critical,Withdrawal Date must be within the school year.
+3103,studentSchoolAssociations,3103_entry_exit_withdrawal_date,2026,,critical,Withdrawal Date must be greater than or equal to Entry Date.
+3104,studentSchoolAssociations,3104_S_enrollment_w_no_P_enrollment,2026,,critical,No primary enrollment exists but secondary enrollment does exist.
+3105,studentSchoolAssociations,3105_overlapping_P_enrollments,2026,,critical,Student cannot have overlapping Primary enrollments.
+3106,studentSchoolAssociations,3106_multiple_E_E1_enrollments,2026,,warning,Student cannot have more than one School Association with Enrollment Reason Code of E or E1 in a single school year.
+3107,studentSchoolAssociations,3107_TR_enrollment_w_no_E_E1,2026,,warning,Student cannot have TR Enrollment Reason Code if there is not existing E or E1 at a different school in a single school year.
+3108,studentSchoolAssociations,3108_too_many_entry_types,2026,,warning,Student cannot have more than one enrollment reason code in a single school year.
+3110,studentSchoolAssociations,3110_calendar_code_missing,2026,,potential,Calendar code missing on Student School Association record.
+3300,studentSchoolAssociations,3300_ssa_ssd_dates_within_enrollment,2027,,critical,Student Standard Day must be within enrollment period.
+3302,studentSchoolAssociations,3302_missing_ssa_ssd_coverage,2027,,critical,Student must have SSD for every calendar day of their enrollments.
+3303,studentSchoolAssociations,3303_bad_ssa_ssd_durations,2027,,critical,Student SSD duration must be non-zero.
+3109,studentHomelessProgramAssociations,3109_nighttime_residence,2026,,critical,Homeless students must have homeless primary nighttime residence.
+3200,disciplineActions,3200_discipline_date,2026,,critical,Discipline Date must be within the school year.
+3201,disciplineActions,3201_incidents_after_actions,2026,,critical,Discipline Incident Date cannot be after Discipline Action Date.
+3202,disciplineActions,3202_overlapping_discipline_actions,1900,1900,warning,Discipline Actions for a Student are not allowed to overlap.
+3300,studentSchoolAttendanceEvents,3300_ssd_dates_within_enrollment,2026,2026,critical,Student Standard Day must be within enrollment period.
+3301,studentSchoolAttendanceEvents,3301_attendance_dates_within_enrollment,2026,,critical,Student attendance/absence must be within enrollment period.
+3302,studentSchoolAttendanceEvents,3302_missing_ssd_coverage,2026,2026,critical,Student must have SSD for every calendar day of their enrollments.
+3303,studentSchoolAttendanceEvents,3303_bad_ssd_durations,2026,2026,critical,Student SSD duration must be non-zero.
+3400,studentSectionAssociations,3400_begin_date,2026,,critical,Student Section Begin Date must be within the school year.
+3401,studentSectionAssociations,3401_end_date,2026,,critical,Student Section End Date must be within the school year.
+3402,studentSectionAssociations,3402_section_not_within_enrollment,2026,,critical,Student Section Begin Date must be within the enrollment period.
+3500,studentAcademicRecords,3500_completion_date_not_in_schoolyear,1900,1900,critical,Student Academic Record Completion Date is not within the school year.
+3600,courseTranscripts,3600_invalid_letter_grades,2026,,critical,Final Letter Grade must be an acceptable value.
+3601,courseTranscripts,3601_invalid_final_grade,2026,,critical,Final Numeric Grade must be an acceptable value.
+4100,staffEducationOrganizationAssignmentAssociations,4100_full_time_equivalency_values,2026,,critical,Staff EdOrg Assignment Association Full Time Equivalency must be [null] or between 0 and 1.
+4101,staffEducationOrganizationAssignmentAssociations,4101_order_of_assignment_values,1900,1900,critical,"Staff EdOrg Assignment Association Order of Assignment must be [null], 1, 2, or 3."
+4200,staffSectionAssociations,4200_begin_date,2026,,critical,Staff Section Begin Date must be within the school year.
+4201,staffSectionAssociations,4201_end_date,2026,,critical,Staff Section End Date must be null or within the school year.
+4202,staffSectionAssociations,4202_begin_with_end_invalid,2026,,critical,Staff Section Begin Date greater than Staff Section End Date.
