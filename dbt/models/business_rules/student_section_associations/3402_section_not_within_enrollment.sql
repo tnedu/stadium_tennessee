@@ -35,6 +35,8 @@ errors as (
             ssa.begin_date, 
             ', Enrollment Entry Date: ', ifnull(enrollments.entry_date, '[orphan (probably)]'),
             ', Exit Withdraw Date: ', ifnull(enrollments.exit_withdraw_date, '[null]'),
+            ', Local Course Code: ', ifnull(ssa.local_course_code, '[null]'),
+            ', Section ID: ', ifnull(ssa.section_id, '[null]'),
             '.') as error
     from stg_student_section_associations ssa
     join {{ ref('stg_ef3__students') }} s
