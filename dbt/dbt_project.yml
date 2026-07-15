@@ -469,6 +469,13 @@ vars:
         tdoe_severity: { as: tdoe_severity, default: "'good'" }
   
   'edu:student_cohort_association:custom_data_sources':
+    cds_student_club_ids:
+      joins: 
+        - cds_student_club_ids.k_student = stage.k_student
+        - cds_student_club_ids.k_school = dim_cohort.k_school
+      cds_additional_cols:
+        CTEChapterid: { as: CTE_chapter_id, default: 'Null' }
+        CTEMembershipid: { as: CTE_membership_id, default: 'Null' }
     cds_default_severity_columns:
       joins: [true]
       cds_additional_cols:
