@@ -473,7 +473,7 @@ vars:
       joins: 
         - cds_student_club_ids.k_student = stage.k_student
         - cds_student_club_ids.k_school = dim_cohort.k_school
-        - cds_student_club_ids.assigning_org LIKE '%' || dim_cohort.cohort_id || '%'
+        - cds_student_club_ids.cohort_id = dim_cohort.cohort_id
       cds_additional_cols:
         CTEChapterid: { as: CTE_chapter_id, default: 'Null' }
         CTEMembershipid: { as: CTE_membership_id, default: 'Null' }
