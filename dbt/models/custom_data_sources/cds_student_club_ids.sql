@@ -5,8 +5,8 @@ with cohorts as (
 ),
 school_edorg_ids_cleaned as (
     select ids.k_student, cohort.k_cohort, cohort.cohort_id,
-        case when id_system = 'CTEChapterid' then id_code end as CTEChapterId,
-        case when id_system = 'CTEMembershipid' then id_code end as CTEMembershipId
+        max(case when id_system = 'CTEChapterid' then id_code end) as CTEChapterId,
+        max(case when id_system = 'CTEMembershipid' then id_code end) as CTEMembershipId
     from {{ ref('stg_ef3__stu_ed_org__identification_codes') }} ids
     join cohorts cohort
         on cohort.k_school = ids.k_school
