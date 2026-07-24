@@ -7,7 +7,7 @@
 
 {% set error_code = 3001 %}
 
-/* Students with the IMMG student_characteristic must have Date Entered US populated. */
+/* Students with the IMMIG student_characteristic must have Date Entered US populated. */
 with brule as (
     select tdoe_error_code, 
         cast(error_school_year_start as int) as error_school_year_start, 
@@ -47,7 +47,7 @@ errors as (
             from {{ ref('stg_ef3__stu_ed_org__characteristics') }} sc
             where sc.k_lea = se.k_lea
                 and sc.k_student = se.k_student
-                and sc.student_characteristic = 'IMMG'
+                and sc.student_characteristic = 'IMMIG'
         )
 )
 select *
