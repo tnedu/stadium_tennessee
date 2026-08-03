@@ -3,12 +3,12 @@ tdoe_error_code,end_point,rule_model,error_school_year_start,error_school_year_e
 1001,calendars,1001_calendar_coexistence_issues,2026,,various,Generic Calendar coexistence rule using the calendar event coexistence seed.
 1003,calendars,1003_calendar_date_not_within_schoolyear,2026,,critical,Calendar Event Date must be within the school year.
 1004,calendars,1004_required_calendar_events,2026,,error,"AS, AE, CS, CE are required."
-1005,calendars,1005_inservice_day_count,2026,,potential,In Service Days cannot be less than 5.
-1006,calendars,1006_abbreviated_day_count,2026,,potential,Stockpile days must be less than or equal to 13.
-1007,calendars,1007_parent_teacher_day_count,2026,,potential,Parent Teacher Days cannot be less than 1.
-1008,calendars,1008_discrectionary_day_count,2026,,potential,Discrectionary Days cannot be more than 4.
-1009,calendars,1009_school_day_not_on_bell_schedule,2026,,potential,Instructional Day dates must be found in any Bell Schedule Dates.
-1010,calendars,1010_teacher_vacation_day_count,2026,,potential,Teacher Vacation Days cannot be less than 10.																		
+1005,calendars,1005_inservice_day_count,2026,,error,In Service Days cannot be less than 5.
+1006,calendars,1006_abbreviated_day_count,2026,,error,Stockpile days must be less than or equal to 13.
+1007,calendars,1007_parent_teacher_day_count,2026,,error,Parent Teacher Days cannot be less than 1.
+1008,calendars,1008_discrectionary_day_count,2026,,error,Discrectionary Days cannot be more than 4.
+1009,calendars,1009_school_day_not_on_bell_schedule,2026,,error,Instructional Day dates must be found in any Bell Schedule Dates.
+1010,calendars,1010_teacher_vacation_day_count,2026,,error,Teacher Vacation Days cannot be less than 10.																		
 2001,sessions,2001_begin_date,2026,,critical,Session Begin Date must be within the school year.
 2002,sessions,2002_end_date,2026,,critical,Session End Date must be within the school year.
 2003,sessions,2003_begin_end_date_valid,2026,,critical,Session Begin Date must be less than or equal to End Date.
