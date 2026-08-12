@@ -21,8 +21,7 @@ tdoe_error_code,end_point,rule_model,error_school_year_start,error_school_year_e
 2011,classPeriods,2011_no_bell_schedule_assoc,2026,,critical,Class Periods must be tied to a Bell Schedule.
 2008,bellSchedules,2008_dates_required,2026,,critical,Bell Schedules must have dates.
 2015,bellSchedules,2015_BSdate_not_an_ID_day,2026,,potential,Bell Schedule date must be an School Calendar instructional day.
-3001,studentEducationOrganizationAssociations,3001_immigrant_date_entered_us,2026,2026,critical,Date Entered US cannot be missing for an immigrant student.
-3001,studentEducationOrganizationAssociations,3001_seoa_immigrant_date_entered_us,2027,,critical,Date Entered US cannot be missing for an immigrant student.
+3001,studentEducationOrganizationAssociations,3001_seoa_immigrant_date_entered_us,2027,,error,Date Entered US cannot be missing for an immigrant student.
 3002,studentEducationOrganizationAssociations,3002_elb_date_entered_us,2026,2026,error,"Date Entered US must exist for students with English Language Background code L,W,1,2,3,4,F,N."
 3002,studentEducationOrganizationAssociations,3002_seoa_elb_date_entered_us,2027,,error,"Date Entered US must exist for students with English Language Background code L,W,1,2,3,4,F,N."
 3003,studentEducationOrganizationAssociations,3003_no_native_language,2026,,error,Native Language must exist for students.
