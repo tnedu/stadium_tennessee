@@ -23,12 +23,6 @@ specific_events as (
     from {{ ref('wrk_calendar_events') }} c
     join brule brule
         on cast(c.school_year as int) between brule.error_school_year_start and brule.error_school_year_end
-    where c.is_inservice_day = true
-),
-xwalk_calendar_events as (
-    select *
-    from {{ ref('xwalk_calendar_events') }}
-    where is_inservice_day = true
 ),
 sum_event_parts as (
     /* We need to sum up the event values. 
@@ -40,14 +34,23 @@ sum_event_parts as (
         potential_tdoe_error_code, potential_tdoe_severity,
         cast(
             sum(
-                case pct_of_day
-                    when 0.33 then 2
-                    when 0.5 then 3
-                    when 1 then 6
+                case is_inservice_day
+                    when true then
+                        case pct_of_day
+                            when 0.33 then 2
+                            when 0.5 then 3
+                            when 1 then 6
+                        end
+                    else 0
                 end) / 6.0
         as decimal(10,2)) as sum_event_values,
-        count(*) as count_events,
-        count(distinct calendar_date) as count_days
+        sum(
+            case is_inservice_day
+                when true then 1
+                else 0
+            end 
+        ) as count_events,
+        coalesce(count(distinct calendar_date),0) as count_days
     from specific_events
     group by k_school, k_school_calendar, tenant_code, api_year, school_year, school_id, calendar_code,
         potential_tdoe_error_code, potential_tdoe_severity
