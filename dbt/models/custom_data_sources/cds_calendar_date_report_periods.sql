@@ -67,7 +67,6 @@ from (
                 partition by k_school_calendar, is_school_day
                 order by calendar_date) / 20) as report_period
         from formatted
-        where is_school_day = true
     ) x
 ) x
 
