@@ -64,7 +64,7 @@ from (
     from (
         select k_calendar_date, k_school_calendar, calendar_date,
             ceiling(row_number() over (
-                partition by k_school_calendar, is_school_day
+                partition by k_school_calendar
                 order by calendar_date) / 20) as report_period
         from formatted
     ) x
