@@ -26,7 +26,7 @@ with raw_el_adm as (
         s.student_unique_id,
         sm.is_primary_school, sm.entry_date,
         sm.exit_withdraw_date, sm.grade_level, sm.grade_level_adm, sm.is_early_graduate, 
-        sm.report_period, sm.report_period_begin_date, sm.report_period_end_date, sm.days_in_report_period,
+        sm.report_period, sm.report_period_begin_date, sm.report_period_end_date, sm.school_days_in_report_period,
         max(sm.has_vocational_courses) as has_vocational_courses,
         sum(sm.is_sped) as days_sped,
         sum(sm.is_funding_ineligible) as days_funding_ineligible,
@@ -37,20 +37,20 @@ with raw_el_adm as (
         cast(
             (floor(
                 (case
-                    when sm.days_in_report_period is null or sm.days_in_report_period = 0 then 0
+                    when sm.school_days_in_report_period is null or sm.school_days_in_report_period = 0 then 0
                     when sum(sm.sped_membership) is null or sum(sm.sped_membership) = 0 then 0
-                    else sum(sm.sped_membership) / cast(sm.days_in_report_period as decimal(38,8))
+                    else sum(sm.sped_membership) / cast(sm.school_days_in_report_period as decimal(38,8))
                 end) * 100000) / 100000)
             as decimal(38,5)
         ) as actual_sped_adm,
         cast(
             (floor(
                 (case
-                    when sm.days_in_report_period is null or sm.days_in_report_period = 0 then 0
+                    when sm.school_days_in_report_period is null or sm.school_days_in_report_period = 0 then 0
                     when sum(sm.sped_membership) is null or sum(sm.sped_membership) = 0 then 0
                     else least(
                             sum(least(sm.sped_membership, 1.0)) / 
-                                cast(least(sm.days_in_report_period,20) as decimal(38,8)), 1.0)
+                                cast(least(sm.school_days_in_report_period,20) as decimal(38,8)), 1.0)
                 end) * 100000) / 100000)
             as decimal(38,5)
         ) as normalized_sped_adm,
@@ -80,7 +80,7 @@ with raw_el_adm as (
         s.student_unique_id,
         sm.is_primary_school, sm.entry_date,
         sm.exit_withdraw_date, sm.grade_level, sm.grade_level_adm, sm.is_early_graduate, 
-        sm.report_period, sm.report_period_begin_date, sm.report_period_end_date, sm.days_in_report_period,
+        sm.report_period, sm.report_period_begin_date, sm.report_period_end_date, sm.school_days_in_report_period,
         sped.primary_indicator,
         sped.participation_status,
         sped.option,

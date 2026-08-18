@@ -13,7 +13,7 @@ select sm.k_student, sm.k_lea, sm.k_school, sm.k_school_calendar, sm.school_year
     sm.is_early_grad_date,
     sm.ssd_duration,
     sm.report_period, sm.report_period_begin_date, sm.report_period_end_date,
-    sm.days_in_report_period,
+    sm.school_days_in_report_period,
     sec.k_course_section, sec.begin_date, sec.end_date,
     scpd.course_code, scpd.k_class_period, scpd.period_duration,
     case

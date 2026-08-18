@@ -42,31 +42,74 @@ formatted as (
         on stg_calendar_date.k_school_calendar = dim_school_calendar.k_school_calendar
     join summarize_calendar_events
         on stg_calendar_date.k_calendar_date = summarize_calendar_events.k_calendar_date
-)
-select k_calendar_date,
-    report_period,
-    row_number() over (
-        partition by k_school_calendar, report_period
-        order by calendar_date) day_of_report_period,
-    min(calendar_date) over (
-        partition by k_school_calendar, report_period) as report_period_begin_date,
-    max(calendar_date) over (
-        partition by k_school_calendar, report_period) as report_period_end_date,
-    count(*) over (
-        partition by k_school_calendar, report_period
-        rows between unbounded preceding and unbounded following) as days_in_report_period
-from (
-    select k_calendar_date, k_school_calendar, calendar_date,
+),
+/* Assign report periods for all calendar dates. also if rep_period > 9 then 9. */
+cal_dates_with_report_periods as (
+    select  
+        k_calendar_date, 
+        k_school_calendar, 
+        calendar_date, 
+        is_school_day,
         case
             when report_period <= 9 then report_period
             else 9
         end as report_period
     from (
-        select k_calendar_date, k_school_calendar, calendar_date,
-            ceiling(row_number() over (
-                partition by k_school_calendar
-                order by calendar_date) / 20) as report_period
+        select k_calendar_date, k_school_calendar, calendar_date, is_school_day,
+                ceiling(row_number() over (
+                    partition by k_school_calendar, is_school_day
+                    order by calendar_date) / 20) as report_period
         from formatted
+    )x
+),
+/* Idenitify the report_period_begin_date and report_period_end_date for report_periods. 
+    As Lead takes next row, only rep_periods are collapsed to one row.*/
+cal_report_periods as (
+    select k_school_calendar, 
+            report_period,
+            report_period_begin_date,
+            date_sub(lead(report_period_begin_date) over (
+                partition by k_school_calendar
+                order by report_period), 1) as report_period_end_date
+    from (
+        select distinct
+            k_school_calendar, 
+            report_period,
+            min(calendar_date) over (
+                partition by k_school_calendar, report_period) as report_period_begin_date
+        from cal_dates_with_report_periods
     ) x
-) x
-
+)
+select 
+    formatted.k_school_calendar,
+    formatted.k_calendar_date,
+    rp.report_period,
+    row_number() over (
+        partition by formatted.k_school_calendar, cal_rp.report_period
+        order by formatted.calendar_date) as day_of_report_period,
+    CASE formatted.is_school_day WHEN true THEN
+        row_number() over (
+            partition by formatted.k_school_calendar, cal_rp.report_period, formatted.is_school_day
+            order by formatted.calendar_date) 
+    ELSE NULL END as school_day_of_report_period,
+    rp.report_period_begin_date,
+    coalesce(rp.report_period_end_date, 
+        max(formatted.calendar_date) over (
+        partition by formatted.k_school_calendar, cal_rp.report_period)) as report_period_end_date,
+    CASE formatted.is_school_day WHEN true THEN
+        count(*) over (
+            partition by formatted.k_school_calendar, cal_rp.report_period, formatted.is_school_day
+            rows between unbounded preceding and unbounded following) 
+    ELSE NULL END as school_days_in_report_period,
+    count(*) over (
+            partition by formatted.k_school_calendar, cal_rp.report_period
+            rows between unbounded preceding and unbounded following) as days_in_the_report_period
+    from formatted
+    join cal_with_report_periods cal_rp
+        on formatted.k_school_calendar = cal_rp.k_school_calendar
+        and formatted.k_calendar_date = cal_rp.k_calendar_date
+        and formatted.calendar_date = cal_rp.calendar_date
+        and formatted.is_school_day = cal_rp.is_school_day
+    join cal_report_periods rp
+        on cal_rp.k_school_calendar = rp.k_school_calendar
+        and cal_rp.report_period = rp.report_period

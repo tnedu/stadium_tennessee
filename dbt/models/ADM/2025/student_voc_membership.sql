@@ -21,7 +21,7 @@ select k_student, k_lea, k_school, k_school_calendar, school_year, is_primary_sc
     calendar_date, isa_member, is_sped, is_funding_ineligible, is_expelled, is_EconDis,
     is_absent, is_early_grad_date,
     ssd_duration, report_period, report_period_begin_date, report_period_end_date,
-    days_in_report_period,
+    school_days_in_report_period,
     total_duration, cte_duration, has_overlapping_periods, has_duplicate_course_scheduled,
     course_code, 
     case
