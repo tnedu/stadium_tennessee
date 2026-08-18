@@ -105,7 +105,7 @@ select
             partition by formatted.k_school_calendar, cal_rp.report_period
             rows between unbounded preceding and unbounded following) as days_in_the_report_period
     from formatted
-    join cal_with_report_periods cal_rp
+    join cal_dates_with_report_periods cal_rp
         on formatted.k_school_calendar = cal_rp.k_school_calendar
         and formatted.k_calendar_date = cal_rp.k_calendar_date
         and formatted.calendar_date = cal_rp.calendar_date
