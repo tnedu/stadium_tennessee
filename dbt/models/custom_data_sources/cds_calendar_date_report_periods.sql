@@ -45,22 +45,18 @@ formatted as (
 ),
 /* Assign report periods for all calendar dates. also if rep_period > 9 then 9. */
 cal_dates_with_report_periods as (
-    select  
-        k_calendar_date, 
-        k_school_calendar, 
-        calendar_date, 
-        is_school_day,
-        case
-            when report_period <= 9 then report_period
-            else 9
-        end as report_period
-    from (
-        select k_calendar_date, k_school_calendar, calendar_date, is_school_day,
-                ceiling(row_number() over (
-                    partition by k_school_calendar, is_school_day
-                    order by calendar_date) / 20) as report_period
-        from formatted
-    )x
+    select  *,
+        greatest(
+            least(
+                ceiling(
+                    sum(case when is_school_day then 1 else 0 end) over (
+                        partition by k_school_calendar
+                        order by calendar_date
+                    ) / 20
+                )
+            , 9), 1
+            ) as report_period
+    from formatted
 ),
 /* Idenitify the report_period_begin_date and report_period_end_date for report_periods. 
     As Lead takes next row, only rep_periods are collapsed to one row.*/
@@ -68,17 +64,23 @@ cal_report_periods as (
     select k_school_calendar, 
             report_period,
             report_period_begin_date,
-            date_sub(lead(report_period_begin_date) over (
-                partition by k_school_calendar
-                order by report_period), 1) as report_period_end_date
+            case
+                when report_period = 9 then report_period_end_date
+                else 
+                    cast(dateadd(day, -1,
+                    lead(report_period_begin_date) over (partition by k_school_calendar order by report_period)
+                ) as date)
+            end as report_period_end_date
     from (
         select distinct
             k_school_calendar, 
             report_period,
             min(calendar_date) over (
-                partition by k_school_calendar, report_period) as report_period_begin_date
+                partition by k_school_calendar, report_period) as report_period_begin_date,
+            max(calendar_date) over (
+                partition by k_school_calendar, report_period) as report_period_end_date
         from cal_dates_with_report_periods
-    ) x
+        )x
 )
 select 
     formatted.k_school_calendar,
@@ -93,9 +95,7 @@ select
             order by formatted.calendar_date) 
     ELSE NULL END as school_day_of_report_period,
     rp.report_period_begin_date,
-    coalesce(rp.report_period_end_date, 
-        max(formatted.calendar_date) over (
-        partition by formatted.k_school_calendar, cal_rp.report_period)) as report_period_end_date,
+    rp.report_period_end_date,
     CASE formatted.is_school_day WHEN true THEN
         count(*) over (
             partition by formatted.k_school_calendar, cal_rp.report_period, formatted.is_school_day
