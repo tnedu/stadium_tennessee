@@ -103,7 +103,7 @@ select
     ELSE NULL END as school_days_in_report_period,
     count(*) over (
             partition by formatted.k_school_calendar, cal_rp.report_period
-            rows between unbounded preceding and unbounded following) as days_in_the_report_period
+            rows between unbounded preceding and unbounded following) as days_in_report_period
     from formatted
     join cal_dates_with_report_periods cal_rp
         on formatted.k_school_calendar = cal_rp.k_school_calendar
