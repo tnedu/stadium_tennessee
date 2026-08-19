@@ -194,20 +194,17 @@ vars:
 
   'edu:calendar_date:custom_data_sources':
     cds_calendar_date_report_periods:
-      report_period:
-        where: report_period
-      day_of_report_period:
-        where: day_of_report_period
-      school_day_of_report_period:
-        where: school_day_of_report_period
-      report_period_begin_date:
-        where: report_period_begin_date
-      report_period_end_date:
-        where: report_period_end_date
-      days_in_report_period:
-        where: days_in_report_period
-      school_days_in_report_period:
-        where: school_days_in_report_period
+      joins:
+        - cds_calendar_date_report_periods.k_school_calendar = augmented.k_school_calendar
+        - cds_calendar_date_report_periods.k_calendar_date = augmented.k_calendar_date
+      cds_additional_cols:
+        report_period: { as: report_period, default: 'Null' }
+        day_of_report_period: { as: day_of_report_period, default: 'Null' }
+        school_day_of_report_period: { as: school_day_of_report_period, default: 'Null' }
+        report_period_begin_date: { as: report_period_begin_date, default: 'Null' }
+        report_period_end_date: { as: report_period_end_date, default: 'Null' }
+        days_in_report_period: { as: days_in_report_period, default: 'Null' }
+        school_days_in_report_period: { as: school_days_in_report_period, default: 'Null' }
     cds_calendar_statuses:
       joins: 
         - cds_calendar_statuses.k_school_calendar = augmented.k_school_calendar

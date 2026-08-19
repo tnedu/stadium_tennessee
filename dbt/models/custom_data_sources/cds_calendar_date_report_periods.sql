@@ -82,7 +82,11 @@ final as (
         count(*) over (partition by arp.k_school_calendar, arp.report_period) as days_in_report_period,
         row_number() over (partition by arp.k_school_calendar, arp.report_period order by arp.calendar_date) as day_of_report_period,
         sum(case arp.is_school_day when true then 1 else 0 end) over (partition by arp.k_school_calendar, arp.report_period) as school_days_in_report_period,
-        sum(case arp.is_school_day when true then 1 else 0 end) over (partition by arp.k_school_calendar, arp.report_period order by arp.calendar_date) as school_day_of_report_period
+        case arp.is_school_day
+            when true then 
+                sum(case arp.is_school_day when true then 1 else 0 end) over (partition by arp.k_school_calendar, arp.report_period order by arp.calendar_date)
+            else null
+        end as school_day_of_report_period
     from assign_report_period arp
     join rp_dates rp
         on rp.k_school_calendar = arp.k_school_calendar
