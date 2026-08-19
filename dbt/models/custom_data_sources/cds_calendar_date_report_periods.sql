@@ -86,13 +86,16 @@ select
         else NULL end as school_day_of_report_period,
     rp.report_period_begin_date,
     rp.report_period_end_date,
-    sum(case is_school_day when true then 1 else 0 end) over (
-        partition by c.k_school_calendar, c.report_period) as school_days_in_report_period,
+    sum(case c.is_school_day when true then 1 else 0 end) over (
+        partition by c.k_school_calendar, rp.report_period) as school_days_in_report_period,
     count(*) over (
         partition by c.k_school_calendar, rp.report_period
         rows between unbounded preceding and unbounded following) as days_in_report_period
     from formatted c
+    join assign_report_period arp
+        on arp.k_school_calendar = c.k_school_calendar
+        and arp.k_calendar_date = c.k_calendar_date
+        and arp.is_school_day = c.is_school_day
     join rp_dates rp
-        on c.k_school_calendar = rp.k_school_calendar
-        and c.k_calendar_date = rp.k_calendar_date
-        and c.report_period = rp.report_period
+        on rp.k_school_calendar = arp.k_school_calendar
+        and rp.report_period = arp.report_period
