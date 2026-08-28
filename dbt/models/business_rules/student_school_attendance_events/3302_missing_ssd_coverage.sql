@@ -75,7 +75,6 @@ enrollments_and_ssd_date as (
         and fssd.k_student = ssa.k_student
         and fssd.school_year = ssa.school_year
     where 
-        /* We only want this rule to fire if there exists an enrollment that is non-zero-day early grad. */
         exists (
             select 1
             from valid_enrollents_minus_zeroday_early_grads x
