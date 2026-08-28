@@ -22,7 +22,7 @@ ssas as (
     select 
         ssa.k_student, ssa.k_school, ssa.k_school_calendar, cast(ssa.school_id as int) as school_id,
         ssa.student_unique_id, cast(ssa.school_year as int) as school_year, ssa.entry_date, 
-        ssa.exit_withdraw_date, ssa.entry_grade_level, ssa.calendar_code, ssa.studentStandardDays, 
+        ssa.exit_withdraw_date, ssa.entry_grade_level, ssa.calendar_code, ssa.studentStandardDays, ssa.is_primary_school,
         brule.tdoe_error_code, brule.tdoe_severity
     from {{ ref('stg_ef3__student_school_associations') }} ssa
     join brule brule
@@ -34,8 +34,9 @@ ssas as (
         where ve.k_student = ssa.k_student
             and ve.k_school = ssa.k_school
             and ve.k_school_calendar = ssa.k_school_calendar
-            /* to add when zero-day early grads goes to prod. */
-            /*and ve.is_zeroday_early_graduate = 0 */
+            and ve.entry_date = ssa.entry_date
+            and ve.is_primary_school = ssa.is_primary_school
+            and ve.is_zeroday_early_graduate = 0
         )
 ),
 ssa_ssd as (
@@ -46,10 +47,10 @@ ssa_ssd as (
     lateral view outer explode(studentStandardDays) sd
 ),
 first_ssd_per_student as (
-    select k_student, k_school, cast(school_year as int) as school_year, 
+    select k_student, k_school, cast(school_year as int) as school_year, entry_date, is_primary_school,
         min(ssd_date_start) as ssd_date_start
     from ssa_ssd 
-    group by k_student, k_school, cast(school_year as int)
+    group by k_student, k_school, cast(school_year as int), entry_date, is_primary_school
 ),
 calendar_dates as (
     select cd.k_calendar_date, cd.k_school_calendar, c.k_school, cd.tenant_code,
@@ -86,6 +87,8 @@ enrollments_and_ssd_date as (
         on fssd.k_school = ssa.k_school
         and fssd.k_student = ssa.k_student
         and fssd.school_year = ssa.school_year
+        and fssd.entry_date = ssa.entry_date
+        and fssd.is_primary_school = ssa.is_primary_school
 ),
 errors as (
     select 
