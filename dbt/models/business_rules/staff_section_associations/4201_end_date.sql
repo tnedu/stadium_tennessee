@@ -30,7 +30,7 @@ stg_staff_section_associations as (
     brule.tdoe_error_code as error_code,
     concat('Staff Section Association End Date does not fall within the school year. Value Received: ', ssa.end_date, 
         '. The state school year starts ',
-        concat((ssa.school_year-1), '-07-01'), ' and ends ', concat(ssa.school_year, '-06-30'), 
+        concat((ssa.school_year-1), '-07-01'), ' and ends ', concat(ssa.school_year, '-06-30'),
         ', Local Course Code: ', ssa.local_course_code, ', Section ID: ', ssa.section_id, '.') as error
     from stg_staff_section_associations ssa
     join brule
