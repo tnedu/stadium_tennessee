@@ -80,7 +80,7 @@ ed_ranges as (
             coalesce(end_date,'null'), ')'
         ) as sc_range
     from {{ ref('fct_student_characteristics') }}
-    where student_characteristic in ('I', 'J', 'H', 'U', 'FOS01', 'SN', 'TO')
+    where student_characteristic in ('I', 'J', 'H', 'U', 'FOS01', 'SN', 'TO','MF')
 ),
 contributing_eds as (
     select k_student, k_lea, school_year, report_period,
