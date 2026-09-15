@@ -27,7 +27,7 @@ with raw_adm as (
         s.student_unique_id,
         sm.is_primary_school, sm.entry_date,
         sm.exit_withdraw_date, sm.grade_level, sm.grade_level_adm, sm.is_early_graduate, 
-        sm.report_period, sm.report_period_begin_date, sm.report_period_end_date, sm.days_in_report_period,
+        sm.report_period, sm.report_period_begin_date, sm.report_period_end_date, sm.school_days_in_report_period,
         max(sm.has_vocational_courses) as has_vocational_courses,
         sum(sm.is_sped) as days_sped,
         sum(sm.is_funding_ineligible) as days_funding_ineligible,
@@ -39,20 +39,20 @@ with raw_adm as (
         cast(
             (floor(
                 (case
-                    when sm.days_in_report_period is null or sm.days_in_report_period = 0 then 0
+                    when sm.school_days_in_report_period is null or sm.school_days_in_report_period = 0 then 0
                     when sum(sm.dyslexic_membership) is null or sum(sm.dyslexic_membership) = 0 then 0
-                    else sum(sm.dyslexic_membership) / cast(sm.days_in_report_period as decimal(38))
+                    else sum(sm.dyslexic_membership) / cast(sm.school_days_in_report_period as decimal(38))
                 end) * 100000) / 100000)
             as decimal(38,5)
         ) as actual_dys_adm,
         cast(
             (floor(
                 (case
-                    when sm.days_in_report_period is null or sm.days_in_report_period = 0 then 0
+                    when sm.school_days_in_report_period is null or sm.school_days_in_report_period = 0 then 0
                     when sum(sm.dyslexic_membership) is null or sum(sm.dyslexic_membership) = 0 then 0
                     else least(
                             sum(least(sm.dyslexic_membership, 1.0)) / 
-                                cast(least(sm.days_in_report_period,20) as decimal(38,8)), 1.0)
+                                cast(least(sm.school_days_in_report_period,20) as decimal(38,8)), 1.0)
                 end) * 100000) / 100000)
             as decimal(38,5)
         ) as normalized_dys_adm,
@@ -70,7 +70,7 @@ with raw_adm as (
         s.student_unique_id,
         sm.is_primary_school, sm.entry_date,
         sm.exit_withdraw_date, sm.grade_level, sm.grade_level_adm, sm.is_early_graduate, 
-        sm.report_period, sm.report_period_begin_date, sm.report_period_end_date, sm.days_in_report_period
+        sm.report_period, sm.report_period_begin_date, sm.report_period_end_date, sm.school_days_in_report_period
 )
 select x.*
 from raw_adm x

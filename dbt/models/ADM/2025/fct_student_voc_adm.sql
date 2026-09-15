@@ -24,7 +24,7 @@ with course_sum as (
         sm.is_primary_school, sm.entry_date,
         sm.exit_withdraw_date, sm.grade_level, sm.grade_level_adm, sm.is_early_graduate, 
         sm.calendar_date,
-        sm.report_period, sm.report_period_begin_date, sm.report_period_end_date, sm.days_in_report_period,
+        sm.report_period, sm.report_period_begin_date, sm.report_period_end_date, sm.school_days_in_report_period,
         sm.is_sped, sm.is_funding_ineligible, sm.is_expelled, sm.is_EconDis, sm.ssd_duration,
         sum(sm.voc_membership) as voc_membership,
         sum(sm.voc_class_duration) as voc_class_duration,
@@ -34,7 +34,7 @@ with course_sum as (
         sm.is_primary_school, sm.entry_date,
         sm.exit_withdraw_date, sm.grade_level, sm.grade_level_adm, sm.is_early_graduate, 
         sm.calendar_date,
-        sm.report_period, sm.report_period_begin_date, sm.report_period_end_date, sm.days_in_report_period,
+        sm.report_period, sm.report_period_begin_date, sm.report_period_end_date, sm.school_days_in_report_period,
         sm.is_sped, sm.is_funding_ineligible, sm.is_expelled, sm.is_EconDis, sm.ssd_duration,
         sm.course_code, sm.tdoe_severity_code
 )
@@ -44,7 +44,7 @@ select sm.k_student, sm.k_lea, sm.k_school, sm.k_school_calendar, sm.school_year
     s.student_unique_id,
     sm.is_primary_school, sm.entry_date,
     sm.exit_withdraw_date, sm.grade_level, sm.grade_level_adm, sm.is_early_graduate, 
-    sm.report_period, sm.report_period_begin_date, sm.report_period_end_date, sm.days_in_report_period,
+    sm.report_period, sm.report_period_begin_date, sm.report_period_end_date, sm.school_days_in_report_period,
     sum(sm.is_sped) as days_sped,
     sum(sm.is_funding_ineligible) as days_funding_ineligible,
     sum(sm.is_expelled) as days_expelled,
@@ -56,20 +56,20 @@ select sm.k_student, sm.k_lea, sm.k_school, sm.k_school_calendar, sm.school_year
     cast(
         (floor(
             (case
-                when sm.days_in_report_period is null or sm.days_in_report_period = 0 then 0
+                when sm.school_days_in_report_period is null or sm.school_days_in_report_period = 0 then 0
                 when sum(sm.voc_membership) is null or sum(sm.voc_membership) = 0 then 0
-                else sum(sm.voc_membership) / cast(sm.days_in_report_period as decimal(38,8))
+                else sum(sm.voc_membership) / cast(sm.school_days_in_report_period as decimal(38,8))
             end) * 100000) / 100000)
         as decimal(38,5)
     ) as actual_voc_adm,
     cast(
         (floor(
             (case
-                when sm.days_in_report_period is null or sm.days_in_report_period = 0 then 0
+                when sm.school_days_in_report_period is null or sm.school_days_in_report_period = 0 then 0
                 when sum(sm.voc_membership) is null or sum(sm.voc_membership) = 0 then 0
                 else least(
                         sum(least(sm.voc_membership, 1.0)) / 
-                            cast(least(sm.days_in_report_period,20) as decimal(38,8)), 1.0)
+                            cast(least(sm.school_days_in_report_period,20) as decimal(38,8)), 1.0)
             end) * 100000) / 100000)
         as decimal(38,5)
     ) as normalized_voc_adm,
@@ -87,6 +87,6 @@ group by sm.k_student, sm.k_lea, sm.k_school, sm.k_school_calendar, sm.school_ye
     s.student_unique_id,
     sm.is_primary_school, sm.entry_date,
     sm.exit_withdraw_date, sm.grade_level, sm.grade_level_adm, sm.is_early_graduate, 
-    sm.report_period, sm.report_period_begin_date, sm.report_period_end_date, sm.days_in_report_period,
+    sm.report_period, sm.report_period_begin_date, sm.report_period_end_date, sm.school_days_in_report_period,
     sm.course_code
 order by sm.k_lea, sm.k_school, sm.k_student, sm.report_period

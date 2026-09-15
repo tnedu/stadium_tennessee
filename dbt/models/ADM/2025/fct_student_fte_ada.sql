@@ -40,7 +40,7 @@ with aggregate_before_explosion as (
             partition by k_student, k_school, k_school_calendar, is_primary_school, entry_date, report_period
         ) as suspended_days, 
         report_period, report_period_begin_date, 
-        report_period_end_date, days_in_report_period,
+        report_period_end_date, school_days_in_report_period,
         sum(ssd_duration) over (
             partition by k_student, k_school, k_school_calendar, is_primary_school, entry_date, report_period
         ) as sum_ssd_duration,
@@ -57,7 +57,7 @@ student_fteada as (
         sds.isa_member, sds.is_absent, sds.is_suspended, sds.ssd_duration, sds.total_duration, sds.is_early_grad_date,
         sds.early_grad_days, sds.member_days, sds.funding_ineligible_days, sds.absent_days, sds.suspended_days, sds.sum_ssd_duration, 
         sds.report_period, sds.report_period_begin_date, 
-        sds.report_period_end_date, sds.days_in_report_period,
+        sds.report_period_end_date, sds.school_days_in_report_period,
         course.course_duration, course.fteada_program, course.fteada_weight,
         tdoe_severity_code
     from aggregate_before_explosion sds
@@ -72,7 +72,7 @@ grouped_by_program as (
         isa_member, is_absent, is_suspended, ssd_duration, total_duration, is_early_grad_date,
         early_grad_days, member_days, funding_ineligible_days, absent_days, suspended_days, sum_ssd_duration, 
         report_period, report_period_begin_date, 
-        report_period_end_date, days_in_report_period,
+        report_period_end_date, school_days_in_report_period,
         sum(course_duration) as program_duration, 
         fteada_program, fteada_weight,
         max(tdoe_severity_code) as tdoe_severity_code
@@ -87,7 +87,7 @@ daily_attendance as (
         isa_member, is_absent, is_suspended, ssd_duration, total_duration, is_early_grad_date,
         early_grad_days, member_days, funding_ineligible_days, absent_days, suspended_days, sum_ssd_duration, 
         report_period, report_period_begin_date, 
-        report_period_end_date, days_in_report_period,
+        report_period_end_date, school_days_in_report_period,
         case
             when isa_member = 0 or is_absent = 1 or is_suspended = 1 then 0
             when coalesce(ssd_duration, 0) = 0 then 0
@@ -131,7 +131,7 @@ unioned_eg_schedule as (
         isa_member, is_absent, is_suspended, ssd_duration, total_duration, is_early_grad_date,
         early_grad_days, member_days, funding_ineligible_days, absent_days, suspended_days, sum_ssd_duration, 
         report_period, report_period_begin_date, 
-        report_period_end_date, days_in_report_period, daily_attendance,
+        report_period_end_date, school_days_in_report_period, daily_attendance,
         program_duration, fteada_program, fteada_weight,
         tdoe_severity_code
     from daily_attendance
@@ -145,7 +145,7 @@ unioned_eg_schedule as (
         da.isa_member, da.is_absent, da.is_suspended, da.ssd_duration, da.total_duration, da.is_early_grad_date,
         da.early_grad_days, da.member_days, da.funding_ineligible_days, da.absent_days, da.suspended_days, da.sum_ssd_duration, 
         da.report_period, da.report_period_begin_date, 
-        da.report_period_end_date, da.days_in_report_period, fs.daily_attendance,
+        da.report_period_end_date, da.school_days_in_report_period, fs.daily_attendance,
         fs.program_duration, fs.fteada_program, fs.fteada_weight,
         greatest(da.tdoe_severity_code, fs.tdoe_severity_code) as tdoe_severity_code
     from daily_attendance da
@@ -164,24 +164,24 @@ fteada as (
         grade_level, grade_level_adm,
         early_grad_days, member_days, funding_ineligible_days, absent_days, suspended_days, 
         report_period, report_period_begin_date, 
-        report_period_end_date, days_in_report_period,
+        report_period_end_date, school_days_in_report_period,
         sum_ssd_duration, 
         sum(program_duration) as sum_program_duration,
         cast(
             (floor(
                 (case
-                    when coalesce(days_in_report_period,0) = 0 then 0
+                    when coalesce(school_days_in_report_period,0) = 0 then 0
                     when coalesce(sum(daily_attendance),0) = 0 then 0
-                    else sum(daily_attendance) / cast(days_in_report_period as decimal(38,8))
+                    else sum(daily_attendance) / cast(school_days_in_report_period as decimal(38,8))
                 end) * 100000) / 100000)
             as decimal(38,5)
         ) as actual_fteada,
         cast(
             (floor(
                 (case
-                    when coalesce(days_in_report_period,0) = 0 then 0
+                    when coalesce(school_days_in_report_period,0) = 0 then 0
                     when coalesce(sum(daily_attendance),0) = 0 then 0
-                    else least( sum(least(daily_attendance, 1.0)) / cast(least(days_in_report_period,20) as decimal(38,8)), 1.0 )
+                    else least( sum(least(daily_attendance, 1.0)) / cast(least(school_days_in_report_period,20) as decimal(38,8)), 1.0 )
                 end) * 100000) / 100000)
             as decimal(38,5)
         ) as normalized_fteada,

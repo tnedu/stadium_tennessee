@@ -23,7 +23,7 @@ with q as (
         ssd.ssd_duration,
         dcd.calendar_date, dcd.day_of_school_year, 
         dcd.report_period, dcd.report_period_begin_date, dcd.report_period_end_date,
-        dcd.days_in_report_period,
+        dcd.school_days_in_report_period,
         case
             when sped.participation_status is not null then 1
             else 0
@@ -154,7 +154,7 @@ with q as (
         null ssd_duration,
         dcd.calendar_date, dcd.day_of_school_year, 
         dcd.report_period, dcd.report_period_begin_date, dcd.report_period_end_date,
-        dcd.days_in_report_period,
+        dcd.school_days_in_report_period,
         0 as is_SPED,
         0 as is_funding_ineligible,
         0 as is_expelled,
@@ -197,7 +197,7 @@ select k_student, k_lea, k_school, k_school_calendar,
     grade_level, grade_level_adm, coalesce(is_early_graduate,0) as is_early_graduate, 
     coalesce(is_zeroday_early_graduate,0) as is_zeroday_early_graduate, ssd_duration,
     calendar_date, day_of_school_year, report_period, report_period_begin_date,
-    report_period_end_date, days_in_report_period, 
+    report_period_end_date, school_days_in_report_period, 
     coalesce(is_sped,0) as is_sped,
     coalesce(is_funding_ineligible,0) as is_funding_ineligible,
     coalesce(is_expelled,0) as is_expelled, 

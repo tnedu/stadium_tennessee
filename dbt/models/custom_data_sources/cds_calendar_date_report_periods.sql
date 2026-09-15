@@ -42,32 +42,54 @@ formatted as (
         on stg_calendar_date.k_school_calendar = dim_school_calendar.k_school_calendar
     join summarize_calendar_events
         on stg_calendar_date.k_calendar_date = summarize_calendar_events.k_calendar_date
-)
-select k_calendar_date,
-    report_period,
-    row_number() over (
-        partition by k_school_calendar, report_period
-        order by calendar_date) day_of_report_period,
-    min(calendar_date) over (
-        partition by k_school_calendar, report_period) as report_period_begin_date,
-    max(calendar_date) over (
-        partition by k_school_calendar, report_period) as report_period_end_date,
-    count(*) over (
-        partition by k_school_calendar, report_period
-        rows between unbounded preceding and unbounded following) as days_in_report_period
-from (
-    select k_calendar_date, k_school_calendar, calendar_date,
-        case
-            when report_period <= 9 then report_period
-            else 9
-        end as report_period
+),
+assign_report_period as (
+    select *,
+        greatest(
+            least(
+                ceiling(
+                    sum(case when is_school_day then 1 else 0 end) over (
+                        partition by k_school_calendar
+                        order by calendar_date
+                    ) / 20
+                )
+            , 9)
+        , 1) as report_period
+    from formatted
+),
+rp_dates as (
+    select k_school_calendar, report_period, report_period_begin_date,
+        coalesce(
+            cast(dateadd(day, -1,
+                    lead(report_period_begin_date) over (partition by k_school_calendar order by report_period)
+                ) as date),
+            final_report_period_end_date
+        ) as report_period_end_date
     from (
-        select k_calendar_date, k_school_calendar, calendar_date,
-            ceiling(row_number() over (
-                partition by k_school_calendar, is_school_day
-                order by calendar_date) / 20) as report_period
-        from formatted
-        where is_school_day = true
-    ) x
-) x
-
+        select distinct k_school_calendar, report_period,
+            min(calendar_date) over (partition by k_school_calendar, report_period) as report_period_begin_date,
+            max(calendar_date) over (partition by k_school_calendar) as final_report_period_end_date
+        from assign_report_period
+    )
+),
+final as (
+    select 
+        arp.k_school_calendar,
+        arp.k_calendar_date,
+        arp.report_period,
+        rp.report_period_begin_date,
+        rp.report_period_end_date,
+        count(*) over (partition by arp.k_school_calendar, arp.report_period) as days_in_report_period,
+        row_number() over (partition by arp.k_school_calendar, arp.report_period order by arp.calendar_date) as day_of_report_period,
+        sum(case arp.is_school_day when true then 1 else 0 end) over (partition by arp.k_school_calendar, arp.report_period) as school_days_in_report_period,
+        case arp.is_school_day
+            when true then 
+                sum(case arp.is_school_day when true then 1 else 0 end) over (partition by arp.k_school_calendar, arp.report_period order by arp.calendar_date)
+            else null
+        end as school_day_of_report_period
+    from assign_report_period arp
+    join rp_dates rp
+        on rp.k_school_calendar = arp.k_school_calendar
+        and rp.report_period = arp.report_period
+)
+select * from final

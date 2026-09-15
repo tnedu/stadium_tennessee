@@ -22,7 +22,7 @@ student_classes as (
         sm.is_early_grad_date,
         sm.ssd_duration,
         sm.report_period, sm.report_period_begin_date, sm.report_period_end_date,
-        sm.days_in_report_period,
+        sm.school_days_in_report_period,
         si.course_code, fssa.k_course_section, fssa.begin_date as fssa_begin_date, si.class_period_name, si.bell_schedule_name, si.start_time, si.end_time, coalesce(si.period_duration,0) as period_duration,
         si.is_cte, si.CTE_Cluster,  
         max_by(fteada.statutory_program, fteada.weight) as fteada_program,
@@ -69,7 +69,7 @@ student_classes as (
         sm.is_early_grad_date,
         sm.ssd_duration,
         sm.report_period, sm.report_period_begin_date, sm.report_period_end_date,
-        sm.days_in_report_period,
+        sm.school_days_in_report_period,
         si.course_code, fssa.k_course_section, fssa.begin_date, si.class_period_name, si.bell_schedule_name, si.start_time, si.end_time, coalesce(si.period_duration,0),
         si.is_cte, si.CTE_Cluster,
         greatest(coalesce(sm.tdoe_severity_code,0), coalesce(fssa.tdoe_severity_code,0), coalesce(si.tdoe_severity_code,0))
@@ -82,7 +82,7 @@ detect_overlaps as (
         is_early_grad_date,
         ssd_duration,
         report_period, report_period_begin_date, report_period_end_date,
-        days_in_report_period,
+        school_days_in_report_period,
         course_code, start_time, end_time, period_duration,
         is_cte, CTE_Cluster, fteada_program, fteada_weight,
         case
@@ -104,7 +104,7 @@ student_courses_aggregated as (
         is_early_grad_date,
         ssd_duration,
         report_period, report_period_begin_date, report_period_end_date,
-        days_in_report_period,
+        school_days_in_report_period,
         course_code, 
         count(course_code) as section_classperiod_count,
         sum(period_duration) as course_duration,
@@ -135,7 +135,7 @@ student_courses_aggregated as (
         is_early_grad_date,
         ssd_duration,
         report_period, report_period_begin_date, report_period_end_date,
-        days_in_report_period,
+        school_days_in_report_period,
         course_code
 ),
 student_daily_schedule as (
@@ -146,7 +146,7 @@ student_daily_schedule as (
         is_early_grad_date,
         ssd_duration,
         report_period, report_period_begin_date, report_period_end_date,
-        days_in_report_period,
+        school_days_in_report_period,
         sum(course_duration) as total_duration,
         sum(
             case
@@ -185,7 +185,7 @@ student_daily_schedule as (
         is_early_grad_date,
         ssd_duration,
         report_period, report_period_begin_date, report_period_end_date,
-        days_in_report_period
+        school_days_in_report_period
 )
 /* Here's the Early Grad Dates. They don't have classes, so they don't have period durations. */
 select sm.k_student, sm.k_lea, sm.k_school, sm.k_school_calendar, sm.school_year,
@@ -195,7 +195,7 @@ select sm.k_student, sm.k_lea, sm.k_school, sm.k_school_calendar, sm.school_year
     sm.is_early_grad_date,
     sm.ssd_duration,
     sm.report_period, sm.report_period_begin_date, sm.report_period_end_date,
-    sm.days_in_report_period,
+    sm.school_days_in_report_period,
     null as total_duration, null as cte_duration, 
     0 as has_overlapping_periods, 0 as has_duplicate_course_scheduled,
     null as courses,
