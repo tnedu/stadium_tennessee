@@ -107,6 +107,8 @@ with q as (
         on ilp.k_school = fssa.k_school
         and ilp.k_student = fssa.k_student
         and ilp.school_year = fssa.school_year
+        /* The purpose for the below nonsense is because The Business wanted to retroactively give ILP if the 
+           enrollment date was within 60 days of the ILP active date. I don't know why. */
         and (
                 (ilp.seq = 1
                     and dcd.calendar_date between 
@@ -120,9 +122,14 @@ with q as (
                     and dcd.calendar_date between ilp.status_begin_date and ilp.status_end_date
                 )
             )
+    /* Get the correct source location for the ILPD stuff. */
+    left outer join {{ ref('ilpd_schoolyear_sources') }} ilpd_source_years
+        on fssa.school_year >= ilpd_source_years.source_school_year_start
+        and (ilpd_source_years.source_school_year_end is null or fssa.school_year <= ilpd_source_years.source_school_year_end)
     left outer join {{ ref('bld_ilpd_safe_ranges') }} ilpd
         on ilpd.k_school = fssa.k_school
         and ilpd.k_student = fssa.k_student
+        and ilpd.source_location = ilpd_source_years.source_location
         and dcd.calendar_date between ilpd.service_begin_date and ilpd.service_end_date
     left outer join {{ ref('fct_student_daily_attendance') }} attendance
         on attendance.k_student = fssa.k_student
