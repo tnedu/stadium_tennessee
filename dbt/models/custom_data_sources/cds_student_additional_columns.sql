@@ -7,7 +7,9 @@
 
 select s.k_student, 
     s.state_student_id as stateStudentId,
-    s.date_entered_us as dateenteredus
+    s.date_entered_us as dateenteredus,
+    s.generation_code_suffix as student_name_suffix
 from {{ ref('stg_ef3__students') }} s
 where s.state_student_id is not null
     or s.date_entered_us is not null
+    or s.generation_code_suffix is not null
