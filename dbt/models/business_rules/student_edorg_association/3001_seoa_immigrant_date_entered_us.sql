@@ -30,10 +30,9 @@ stg_student_edorgs as (
     where seoa.k_lea is not null
 ),
 enrollents_minus_sped as (
-    select ssa.k_student, school.k_lea, school.lea_id, ssa.k_school, ssa.k_school_calendar,
-        ssa.tenant_code, ssa.api_year, ssa.school_id, ssa.student_unique_id,
-        ssa.school_year, ssa.is_primary_school, ssa.entry_date, ssa.exit_withdraw_date,
-        ssa.calendar_code, ssa.entry_type, ssa.exit_withdraw_type
+    select ssa.k_student, school.k_lea, school.lea_id, ssa.k_school, ssa.school_id, ssa.k_school_calendar,
+        ssa.tenant_code, ssa.api_year,  ssa.student_unique_id,ssa.school_year, ssa.is_primary_school,
+        ssa.entry_date, ssa.exit_withdraw_date, ssa.calendar_code
     from {{ ref('stg_ef3__student_school_associations') }} ssa
     join {{ ref('stg_ef3__schools')}} school
     on school.k_school = ssa.k_school
