@@ -29,12 +29,16 @@ stg_student_edorgs as (
            between brule.error_school_year_start and brule.error_school_year_end
     where seoa.k_lea is not null
 ),
-valid_enrollents_minus_zeroday_early_grads_minus_sped as (
-    select *
-    from {{ ref('valid_enrollments') }}
-    where is_zeroday_early_graduate = 0
-        and  (cast(right(right(concat('00000000', school_id), 8), 4) as int)  <= 4800 
-                or cast(right(right(concat('00000000', school_id), 8), 4) as int) >= 4999)
+enrollents_minus_sped as (
+    select ssa.k_student, school.k_lea, school.lea_id, ssa.k_school, ssa.k_school_calendar,
+        ssa.tenant_code, ssa.api_year, ssa.school_id, ssa.student_unique_id,
+        ssa.school_year, ssa.is_primary_school, ssa.entry_date, ssa.exit_withdraw_date,
+        ssa.calendar_code, ssa.entry_type, ssa.exit_withdraw_type
+    from {{ ref('stg_ef3__student_school_associations') }} ssa
+    join {{ ref('stg_ef3__schools')}} school
+    on school.k_school = ssa.k_school
+    where (cast(right(right(concat('00000000', ssa.school_id), 8), 4) as int)  <= 4800 
+                or cast(right(right(concat('00000000', ssa.school_id), 8), 4) as int) >= 4999)
 ),
 errors as (
     select se.k_student, se.k_lea, se.k_school, se.school_year, se.ed_org_id, se.student_unique_id,
@@ -56,10 +60,10 @@ errors as (
                 and sc.k_student = se.k_student
                 and sc.student_characteristic = 'IMMIG'
         )
-     /* We only want this rule to fire if there exists an enrollment that is non-zero-day early grad and not in SPED. */
+     /* We only want this rule to fire for enrollments not in SPED schools. */
     and exists (
         select 1
-        from valid_enrollents_minus_zeroday_early_grads_minus_sped x
+        from enrollents_minus_sped x
         where se.k_student = x.k_student
             and se.k_lea = x.k_lea
     )
