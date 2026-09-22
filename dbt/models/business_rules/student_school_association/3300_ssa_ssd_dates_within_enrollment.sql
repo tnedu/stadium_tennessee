@@ -13,7 +13,7 @@ with brule as (
         cast(ifnull(error_school_year_end, 9999) as int) as error_school_year_end,
         tdoe_severity,
         rule_model
-    from {{ ref('business_rules_year_ranges') }} br
+    from {{ source('stadium_tennessee', 'business_rules_year_ranges') }} br
     where br.tdoe_error_code = {{ error_code }}
     and rule_model = '{{this.identifier}}'
 ),
