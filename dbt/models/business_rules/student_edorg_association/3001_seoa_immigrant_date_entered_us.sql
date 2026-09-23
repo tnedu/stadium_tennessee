@@ -31,8 +31,8 @@ stg_student_edorgs as (
 ),
 enrollments_minus_sped_sch_enroll as (
     select ssa.k_student, school.k_lea, school.lea_id, ssa.k_school, ssa.school_id, ssa.k_school_calendar,
-        ssa.tenant_code, ssa.api_year,  ssa.student_unique_id,ssa.school_year, ssa.is_primary_school,
-        ssa.entry_date, ssa.exit_withdraw_date, ssa.calendar_code
+            ssa.tenant_code, ssa.api_year, ssa.student_unique_id, ssa.school_year, ssa.is_primary_school,
+            ssa.entry_date, ssa.exit_withdraw_date, ssa.calendar_code
     from {{ ref('stg_ef3__student_school_associations') }} ssa
     join {{ ref('stg_ef3__schools') }} school
         on ssa.k_school = school.k_school
