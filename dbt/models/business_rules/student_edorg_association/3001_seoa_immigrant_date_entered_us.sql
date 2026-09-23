@@ -29,6 +29,20 @@ stg_student_edorgs as (
            between brule.error_school_year_start and brule.error_school_year_end
     where seoa.k_lea is not null
 ),
+enrollments_minus_sped_sch_enroll as (
+    select ssa.k_student, school.k_lea, school.lea_id, ssa.k_school, ssa.school_id, ssa.k_school_calendar,
+        ssa.tenant_code, ssa.api_year,  ssa.student_unique_id,ssa.school_year, ssa.is_primary_school,
+        ssa.entry_date, ssa.exit_withdraw_date, ssa.calendar_code
+    from {{ ref('stg_ef3__student_school_associations') }} ssa
+    join {{ ref('stg_ef3__schools') }} school
+        on ssa.k_school = school.k_school
+    /* we want to ignore service schools for this rule */
+    where not exists (
+        select 1
+        from service_schools ss
+        where ssa.k_school = ss.k_school
+    ) 
+),
 errors as (
     select se.k_student, se.k_lea, se.k_school, se.school_year, se.ed_org_id, se.student_unique_id,
         s.state_student_id as legacy_state_student_id,
@@ -49,6 +63,13 @@ errors as (
                 and sc.k_student = se.k_student
                 and sc.student_characteristic = 'IMMIG'
         )
+         /* We only want this rule to fire for enrollments not in SPED schools. */
+    and exists (
+            select 1
+            from  enrollments_minus_sped_sch_enroll x
+            where se.k_student = x.k_student
+                and se.k_lea = x.k_lea
+    )
 )
 select *
 from errors 
