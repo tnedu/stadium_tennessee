@@ -26,12 +26,12 @@ stg_student_edorgs as (
     where k_lea is not null      
 ),
 valid_enrollments_minus_service_sch as (
-    select * from {{ ref('valid_enrollments') }}
+    select * from {{ ref('valid_enrollments') }} ve
         /* we want to ignore service schools for this rule */
-        and not exists (
+        where not exists (
             select 1
             from {{ ref('service_schools') }} ss
-            where ssa.k_school = ss.k_school
+            where ve.k_school = ss.k_school
         )  
 ),
 errors as (
