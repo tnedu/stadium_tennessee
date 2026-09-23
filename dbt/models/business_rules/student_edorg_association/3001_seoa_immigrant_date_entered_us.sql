@@ -39,7 +39,7 @@ enrollments_minus_sped_sch_enroll as (
     /* we want to ignore service schools for this rule */
     where not exists (
         select 1
-        from service_schools ss
+        from {{ ref('service_schools') }} ss
         where ssa.k_school = ss.k_school
     ) 
 ),
@@ -63,7 +63,7 @@ errors as (
                 and sc.k_student = se.k_student
                 and sc.student_characteristic = 'IMMIG'
         )
-         /* We only want this rule to fire for enrollments not in SPED schools. */
+    /* We only want this rule to fire for enrollments not in SPED schools. */
     and exists (
             select 1
             from  enrollments_minus_sped_sch_enroll x
