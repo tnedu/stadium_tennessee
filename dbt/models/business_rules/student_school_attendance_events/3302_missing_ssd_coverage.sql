@@ -22,6 +22,8 @@ attendance_events as (
     select 
         ssae.*
     from {{ ref('stg_ef3__student_school_attendance_events') }} ssae
+    join brule brule
+        on cast(ssae.school_year as int) between brule.error_school_year_start and brule.error_school_year_end
     where ssae.attendance_event_category = 'Student Standard Day'
 ),
 first_ssd_per_student as (
@@ -50,16 +52,10 @@ calendar_dates as (
         on cd.k_calendar_date = summarize_calendar_events.k_calendar_date
     where summarize_calendar_events.is_school_day = true
 ),
-valid_enrollents_minus_zeroday_early_grads_minus_sped as (
+valid_enrollents_minus_zeroday_early_grads as (
     select *
     from {{ ref('valid_enrollments') }}
     where is_zeroday_early_graduate = 0
-        /* Service schools must be ignored for this rule.*/
-        and not exists (
-            select 1
-            from {{ ref('service_schools') }} ss
-            where valid_enrollments.k_school = ss.k_school
-        )
 ),
 enrollments_and_ssd_date as (
     select ssa.k_student, ssa.k_school, ssa.school_year, ssa.school_id,
@@ -81,7 +77,7 @@ enrollments_and_ssd_date as (
     where 
         exists (
             select 1
-            from valid_enrollents_minus_zeroday_early_grads_minus_sped x
+            from valid_enrollents_minus_zeroday_early_grads x
             where ssa.k_student = x.k_student
                 and ssa.k_school = x.k_school
                 and ssa.k_school_calendar = x.k_school_calendar

@@ -48,11 +48,7 @@ errors as (
         and ssa.school_year = cast(x.school_year as int)
     join {{ ref('stg_ef3__students') }} s
         on s.k_student = ssa.k_student
-    /* we want to ignore service schools for this rule */
-    where not exists (
-        select 1
-        from {{ ref('service_schools') }} ss
-        where ssa.k_school = ss.k_school
-    )   
+    join brule
+        on x.school_year between brule.error_school_year_start and brule.error_school_year_end
 )
 select * from errors
