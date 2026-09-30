@@ -26,7 +26,7 @@ ssas_minus_sped as (
     from {{ ref('stg_ef3__student_school_associations') }} ssa
     join brule brule
         on cast(ssa.school_year as int) between brule.error_school_year_start and brule.error_school_year_end
-    /* we want to ignore service schools for this rule */
+    /* Service schools must be ignored for this rule.*/
     where not exists (
         select 1
         from {{ ref('service_schools') }} ss

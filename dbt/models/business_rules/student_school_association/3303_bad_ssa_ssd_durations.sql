@@ -27,7 +27,6 @@ ssas_minus_sped as (
     from {{ ref('stg_ef3__student_school_associations') }} ssa
     join brule brule
         on cast(ssa.school_year as int) between brule.error_school_year_start and brule.error_school_year_end
-    /* Valid enrollments only. We have to edit this once the zero-day early grads goes to prod. */
     where ssa.studentStandardDays is not null
         and exists (
             select 1
@@ -35,10 +34,9 @@ ssas_minus_sped as (
             where ve.k_student = ssa.k_student
                 and ve.k_school = ssa.k_school
                 and ve.k_school_calendar = ssa.k_school_calendar
-                /* to add when zero-day early grads goes to prod. */
-                /*and ve.is_zeroday_early_graduate = 0 */
+                and ve.is_zeroday_early_graduate = 0 
         )
-        /* we want to ignore service schools for this rule */
+        /* Service schools must be ignored for this rule.*/
         and not exists (
             select 1
             from {{ ref('service_schools') }} ss
