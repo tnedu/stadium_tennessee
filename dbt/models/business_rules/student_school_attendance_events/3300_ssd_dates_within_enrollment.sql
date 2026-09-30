@@ -57,6 +57,12 @@ errors as (
                     and ifnull(ssa.exit_withdraw_date, to_date('9999-12-31','yyyy-MM-dd')))
                 )
         )
+        /* we want to ignore service schools for this rule */
+        and not exists (
+            select 1
+            from {{ ref('service_schools') }} ss
+            where ssd.k_school = ss.k_school
+        )
         /* The date has to fit between some enrollment period even if it doesn't fit between EVERY enrollment 
             period for a student. */
         and not exists (
@@ -69,6 +75,6 @@ errors as (
                 --and x.entry_date < ifnull(x.exit_withdraw_date, to_date('9999-12-31','yyyy-MM-dd'))
                 and ssd.attendance_event_date between x.entry_date 
                 and ifnull(x.exit_withdraw_date, to_date('9999-12-31','yyyy-MM-dd'))
-        )
+            )
 )
 select * from errors

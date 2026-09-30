@@ -18,7 +18,7 @@ with brule as (
     where br.tdoe_error_code = {{ error_code }}
     and rule_model = '{{this.identifier}}'
 ),
-ssas as (
+ssas_minus_sped as (
     select 
         ssa.k_student, ssa.k_school, ssa.k_school_calendar, cast(ssa.school_id as int) as school_id,
         ssa.student_unique_id, cast(ssa.school_year as int) as school_year, ssa.entry_date, 
@@ -29,27 +29,33 @@ ssas as (
         on cast(ssa.school_year as int) between brule.error_school_year_start and brule.error_school_year_end
     /* Valid enrollments only. We have to edit this once the zero-day early grads goes to prod. */
     where exists (
-        select 1
-        from {{ ref('valid_enrollments') }} ve
-        where ve.k_student = ssa.k_student
-            and ve.k_school = ssa.k_school
-            and ve.k_school_calendar = ssa.k_school_calendar
-            and ve.entry_date = ssa.entry_date
-            and ve.is_primary_school = ssa.is_primary_school
-            and ve.is_zeroday_early_graduate = 0
-        )
+            select 1
+            from {{ ref('valid_enrollments') }} ve
+            where ve.k_student = ssa.k_student
+                and ve.k_school = ssa.k_school
+                and ve.k_school_calendar = ssa.k_school_calendar
+                and ve.entry_date = ssa.entry_date
+                and ve.is_primary_school = ssa.is_primary_school
+                and ve.is_zeroday_early_graduate = 0
+            )
+        /* we want to ignore service schools for this rule */
+        and not exists (
+            select 1
+            from {{ ref('service_schools') }} ss
+            where ssa.k_school = ss.k_school
+        ) 
 ),
-ssa_ssd as (
+ssa_ssd_minus_sped as (
     select 
         ssas.*,
         sd.col.effectiveDate::date as ssd_date_start
-    from ssas
+    from ssas_minus_sped ssas
     lateral view outer explode(studentStandardDays) sd
 ),
 first_ssd_per_student as (
     select k_student, k_school, cast(school_year as int) as school_year, entry_date, is_primary_school,
         min(ssd_date_start) as ssd_date_start
-    from ssa_ssd 
+    from ssa_ssd_minus_sped ssa_ssd 
     group by k_student, k_school, cast(school_year as int), entry_date, is_primary_school
 ),
 calendar_dates as (
@@ -82,7 +88,7 @@ enrollments_and_ssd_date as (
             when fssd.ssd_date_start > ssa.entry_date then 0
             else 1
         end as ssd_good
-    from ssa_ssd ssa
+    from ssa_ssd_minus_sped ssa
     left outer join first_ssd_per_student fssd
         on fssd.k_school = ssa.k_school
         and fssd.k_student = ssa.k_student
