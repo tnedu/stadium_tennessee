@@ -52,10 +52,16 @@ calendar_dates as (
         on cd.k_calendar_date = summarize_calendar_events.k_calendar_date
     where summarize_calendar_events.is_school_day = true
 ),
-valid_enrollents_minus_zeroday_early_grads as (
+valid_enrollents_minus_zeroday_early_grads_minus_sped as (
     select *
     from {{ ref('valid_enrollments') }}
     where is_zeroday_early_graduate = 0
+        /* we want to ignore service schools for this rule */
+        and not exists (
+            select 1
+            from {{ ref('service_schools') }} ss
+            where valid_enrollments.k_school = ss.k_school
+        )
 ),
 enrollments_and_ssd_date as (
     select ssa.k_student, ssa.k_school, ssa.school_year, ssa.school_id,
@@ -77,7 +83,7 @@ enrollments_and_ssd_date as (
     where 
         exists (
             select 1
-            from valid_enrollents_minus_zeroday_early_grads x
+            from valid_enrollents_minus_zeroday_early_grads_minus_sped x
             where ssa.k_student = x.k_student
                 and ssa.k_school = x.k_school
                 and ssa.k_school_calendar = x.k_school_calendar
