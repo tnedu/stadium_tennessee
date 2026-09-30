@@ -22,9 +22,6 @@ attendance_events as (
     select 
         ssae.*
     from {{ ref('stg_ef3__student_school_attendance_events') }} ssae
-    join brule brule
-        on cast(ssae.school_year as int) between brule.error_school_year_start and brule.error_school_year_end
-    where ssae.attendance_event_category = 'Student Standard Day'
 ),
 first_ssd_per_student as (
     select k_student, k_school, cast(school_year as int) as school_year,
@@ -56,7 +53,7 @@ valid_enrollents_minus_zeroday_early_grads_minus_sped as (
     select *
     from {{ ref('valid_enrollments') }}
     where is_zeroday_early_graduate = 0
-        /* we want to ignore service schools for this rule */
+        /* Service schools must be ignored for this rule.*/
         and not exists (
             select 1
             from {{ ref('service_schools') }} ss

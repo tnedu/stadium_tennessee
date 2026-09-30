@@ -28,13 +28,13 @@ stg_student_edorgs as (
 ),
 valid_enrollents_minus_zeroday_early_grads_minus_sped as (
     select *
-    from {{ ref('valid_enrollments') }}
-    where is_zeroday_early_graduate = 0
+    from {{ ref('valid_enrollments') }} ve
+    where ve.is_zeroday_early_graduate = 0
         /* we want to ignore service schools for this rule */
         and not exists (
             select 1
             from {{ ref('service_schools') }} ss
-            where ssa.k_school = ss.k_school
+            where ve.k_school = ss.k_school
         ) 
 ),
 errors as (
