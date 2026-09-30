@@ -22,6 +22,7 @@ attendance_events as (
     select 
         ssae.*
     from {{ ref('stg_ef3__student_school_attendance_events') }} ssae
+    where ssae.attendance_event_category = 'Student Standard Day'
 ),
 first_ssd_per_student as (
     select k_student, k_school, cast(school_year as int) as school_year,
