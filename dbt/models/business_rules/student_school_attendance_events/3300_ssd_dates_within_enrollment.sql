@@ -48,8 +48,6 @@ errors as (
         on ssa.k_student = ssd.k_student
         and ssa.k_school = ssd.k_school
         and ssa.school_year = cast(ssd.school_year as int)
-        /* No shows don't count. */
-        --and ssa.entry_date < ifnull(ssa.exit_withdraw_date, to_date('9999-12-31','yyyy-MM-dd'))
     where (
             ssa.k_student is null
             or (ssa.k_student is not null 
@@ -57,7 +55,7 @@ errors as (
                     and ifnull(ssa.exit_withdraw_date, to_date('9999-12-31','yyyy-MM-dd')))
                 )
         )
-        /* we want to ignore service schools for this rule */
+        /* Service schools must be ignored for this rule.*/
         and not exists (
             select 1
             from {{ ref('service_schools') }} ss
@@ -71,8 +69,6 @@ errors as (
             where x.k_student = ssd.k_student
                 and x.k_school = ssd.k_school
                 and x.school_year = cast(ssd.school_year as int)
-                /* No shows don't count. */
-                --and x.entry_date < ifnull(x.exit_withdraw_date, to_date('9999-12-31','yyyy-MM-dd'))
                 and ssd.attendance_event_date between x.entry_date 
                 and ifnull(x.exit_withdraw_date, to_date('9999-12-31','yyyy-MM-dd'))
             )
