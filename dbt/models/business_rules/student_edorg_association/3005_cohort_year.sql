@@ -17,36 +17,28 @@ with brule as (
     where br.tdoe_error_code = {{ error_code }}
 ),
 stg_student_edorgs as (
-    select 
-        seoa.*,
-        brule.tdoe_error_code,
-        brule.tdoe_severity
-    from {{ ref('stg_ef3__student_education_organization_associations') }} seoa
-    join brule
-        on cast(seoa.school_year as int) between brule.error_school_year_start and brule.error_school_year_end
-    where k_lea is not null
-),
-valid_enrollents_minus_zeroday_early_grads_minus_sped as (
     select *
-    from {{ ref('valid_enrollments') }} ve
-    where ve.is_zeroday_early_graduate = 0
-        /* we want to ignore service schools for this rule */
-        and not exists (
-            select 1
-            from {{ ref('service_schools') }} ss
-            where ve.k_school = ss.k_school
-        ) 
+    from {{ ref('stg_ef3__student_education_organization_associations') }} seoa
+    where k_lea is not null
+        and exists (
+        select 1
+        from brule
+        where cast(seoa.school_year as int) between brule.error_school_year_start and brule.error_school_year_end
+    )
+),
+valid_enrollents_minus_zeroday_early_grads as (
+    select *
+    from {{ ref('valid_enrollments') }}
+    where is_zeroday_early_graduate = 0
 ),
 errors as (
     select se.k_student, se.k_lea, se.k_school, se.school_year, se.ed_org_id, se.student_unique_id,
         s.state_student_id as legacy_state_student_id,
-        se.tdoe_error_code as error_code,
+        brule.tdoe_error_code as error_code,
         concat('A single value of Cohort Year is required on District level Student/EdOrg Associations for Student ', 
             se.student_unique_id, ' (', coalesce(s.state_student_id, '[no value]'), ') ',
             'with instructional grade greater than 8th. Values Received: ', 
-            cast(se.v_cohort_years as String), ', Student Grade: ', ssa.entry_grade_level) as error,
-            {{ severity_to_severity_code_case_clause('se.tdoe_severity') }},
-            se.tdoe_severity
+            cast(se.v_cohort_years as String), ', Student Grade: ', ssa.entry_grade_level) as error
     from stg_student_edorgs se
     join {{ ref('edu_edfi_source', 'stg_ef3__students') }} s
         on se.k_student = s.k_student
@@ -58,15 +50,20 @@ errors as (
     join {{ ref('xwalk_grade_levels') }} gl
         on gl.grade_level = ssa.entry_grade_level
         and gl.grade_level_integer between 9 and 12
+    join brule
+        on se.school_year between brule.error_school_year_start and brule.error_school_year_end
     where size(cast(se.v_cohort_years as array<string>)) != 1
         /* We only want this rule to fire if there exists an enrollment that is non-zero-day early grad. */
         and exists (
             select 1
-            from valid_enrollents_minus_zeroday_early_grads_minus_sped x
+            from valid_enrollents_minus_zeroday_early_grads x
             where se.k_student = x.k_student
                 and se.k_lea = x.k_lea
         )
 )
-select *
-from errors
-
+select errors.*,
+    {{ severity_to_severity_code_case_clause('brule.tdoe_severity') }},
+    brule.tdoe_severity
+from errors errors
+join brule
+    on errors.school_year between brule.error_school_year_start and brule.error_school_year_end
