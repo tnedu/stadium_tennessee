@@ -1,0 +1,37 @@
+# 
+
+version: 1
+
+
+# define source
+sources:
+- name: stadium_tennessee
+  description: Sources for stadium_tennessee specific settings
+  database: |
+    {%- if target.name == 'data_dev' -%} {{ var('st_db', 'teds_dev') }}
+    {%- elif target.name == 'data_qa' -%} {{ var('st_db', 'teds_qa') }}
+    {%- elif target.name == 'data_uat' -%} {{ var('st_db', 'teds_uat') }}
+    {%- elif target.name == 'data_prod' -%} {{ var('st_db', 'teds_prod') }}
+    {%- else -%} {{ var('st_db', target.catalog) }}
+    {%- endif -%}
+  schema: "{{ var('stadium_tennessee_schema', 'stadium_tennessee') }}"
+  tables:
+  - name: business_rules_year_ranges
+    description: >
+      This entity houses the business rules and the school years they are meant to control.
+    enabled: true
+    columns: 
+      - name: tdoe_error_code
+        description: The code assigned to this business rule.
+      - name: end_point
+        description: The endpoint this business rule applies to.
+      - name: rule_model
+        description: The model this business rule applies to.
+      - name: error_school_year_start
+        description: The start year for this business rule.
+      - name: error_school_year_end
+        description: The end year for this business rule.
+      - name: tdoe_severity
+        description: The severity for this business rule.
+      - name: tdoe_error_description
+        description: A description of what this business rule does.
