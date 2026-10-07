@@ -1,7 +1,7 @@
 {{
   config(
-    materialized = "table",
-    schema = "build"
+    materialized="table",
+    schema="build"
   )
 }}
 
@@ -18,7 +18,8 @@ xwalk_calendar_events as (
     select * from {{ ref('xwalk_calendar_events') }}
 ),
 summarize_calendar_events as (
-    select stg_calendar_events.k_calendar_date,
+    select
+        stg_calendar_events.k_calendar_date,
         sum(xwalk_calendar_events.is_school_day::integer) >= {{ var("edu:attendance:num_school_day_calendar_events", 1) }} as is_school_day
     from stg_calendar_events
     join xwalk_calendar_events
@@ -26,8 +27,13 @@ summarize_calendar_events as (
     group by 1
 ),
 formatted as (
-    select stg_calendar_date.k_calendar_date, stg_calendar_date.k_school_calendar, dim_school_calendar.k_school,
-        stg_calendar_date.tenant_code, stg_calendar_date.school_year, stg_calendar_date.calendar_date,
+    select
+        stg_calendar_date.k_calendar_date,
+        stg_calendar_date.k_school_calendar,
+        dim_school_calendar.k_school,
+        stg_calendar_date.tenant_code,
+        stg_calendar_date.school_year,
+        stg_calendar_date.calendar_date,
         summarize_calendar_events.is_school_day
     from stg_calendar_date
     join dim_school_calendar
@@ -65,8 +71,13 @@ rp_dates as (
     )
 ),
 final as (
-    select arp.k_school_calendar, arp.k_calendar_date, arp.report_period,
-        rp.report_period_begin_date, rp.report_period_end_date,
+    select
+        arp.k_school_calendar,
+        arp.k_calendar_date,
+        arp.calendar_date,
+        arp.report_period,
+        rp.report_period_begin_date,
+        rp.report_period_end_date,
         count(*) over (partition by arp.k_school_calendar, arp.report_period) as days_in_report_period,
         row_number() over (partition by arp.k_school_calendar, arp.report_period order by arp.calendar_date) as day_of_report_period,
         sum(case arp.is_school_day when true then 1 else 0 end) over (partition by arp.k_school_calendar, arp.report_period) as school_days_in_report_period,

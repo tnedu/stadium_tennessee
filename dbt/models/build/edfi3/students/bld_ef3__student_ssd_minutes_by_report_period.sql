@@ -20,13 +20,11 @@ student_ssd as (
         ssd.student_unique_id, ssd.school_year, ssd.entry_date, rp.report_period,
         sum(ssd.ssd_duration) as sum_ssd_mins
     from ssa_ssd_ranges ssd
-    join {{ ref('stg_ef3__calendar_dates') }} cd
-        on cd.k_school_calendar = ssd.k_school_calendar
-       and cd.calendar_date >= greatest(ssd.effective_date, ssd.entry_date)
-       and (ssd.next_effective_date is null or cd.calendar_date < ssd.next_effective_date)
-       and (ssd.exit_withdraw_date is null or cd.calendar_date <= ssd.exit_withdraw_date)
     join {{ ref('bld_ef3__calendar_report_periods') }} rp
-        on rp.k_calendar_date = cd.k_calendar_date
+        on rp.k_school_calendar = ssd.k_school_calendar
+       and rp.calendar_date >= greatest(ssd.effective_date, ssd.entry_date)
+       and (ssd.next_effective_date is null or rp.calendar_date < ssd.next_effective_date)
+       and (ssd.exit_withdraw_date is null or rp.calendar_date <= ssd.exit_withdraw_date)
     group by ssd.k_student, ssd.k_school, ssd.k_school_calendar, ssd.school_id,
         ssd.student_unique_id, ssd.school_year, ssd.entry_date, rp.report_period
 )
