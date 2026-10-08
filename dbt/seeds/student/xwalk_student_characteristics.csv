@@ -1,2 +1,5 @@
 characteristic_descriptor,indicator_name
 IMMIG,is_immig
+Economic Disadvantaged,is_economic_disadvantaged
+Foster Care,is_foster
+Homeless,is_homeless
