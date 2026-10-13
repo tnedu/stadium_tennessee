@@ -24,8 +24,8 @@ bad_records as (
         on sess.school_id = ssa.school_id
        and sess.school_year = ssa.school_year
        and sess.session_name = ssa.session_name
-    where ssa.begin_date > sess.session_end_date
-       or (ssa.end_date is not null and ssa.end_date < sess.session_begin_date)
+    where ssa.begin_date < sess.session_begin_date
+       or (ssa.end_date is not null and ssa.end_date > sess.session_end_date)
 ),
 errors as (
     select bad.k_student, bad.k_course_section, bad.school_id, bad.student_unique_id,
