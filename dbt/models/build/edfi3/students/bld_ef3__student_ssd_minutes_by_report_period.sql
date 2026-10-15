@@ -25,6 +25,7 @@ student_ssd as (
        and rp.calendar_date >= greatest(ssd.effective_date, ssd.entry_date)
        and (ssd.next_effective_date is null or rp.calendar_date < ssd.next_effective_date)
        and (ssd.exit_withdraw_date is null or rp.calendar_date <= ssd.exit_withdraw_date)
+       and rp.school_day_of_report_period is not null
     group by ssd.k_student, ssd.k_school, ssd.k_school_calendar, ssd.school_id,
         ssd.student_unique_id, ssd.school_year, ssd.entry_date, rp.report_period
 )
