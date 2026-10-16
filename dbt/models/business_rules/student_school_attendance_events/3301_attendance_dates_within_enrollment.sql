@@ -16,29 +16,34 @@ with brule as (
     where br.tdoe_error_code = {{ error_code }}
 ),
 stg_attendance as (
-    select k_student, k_school, k_session, 
-        cast(school_year as int) as school_year, 
-        school_id, student_unique_id, attendance_event_date, attendance_event_category
+    select ssae.k_student, ssae.k_school, ssae.k_session, cast(ssae.school_year as int) as school_year, 
+        ssae.school_id, ssae.student_unique_id, ssae.attendance_event_date, ssae.attendance_event_category,
+        brule.tdoe_error_code, brule.tdoe_severity
     from {{ ref('stg_ef3__student_school_attendance_events') }} ssae
-    where attendance_event_category != 'Student Standard Day'
-        and exists (
-        select 1
-        from brule
-        where cast(ssae.school_year as int) between brule.error_school_year_start and brule.error_school_year_end
-    )
+    join brule
+        on cast(ssae.school_year as int) between brule.error_school_year_start and brule.error_school_year_end
+    where ssae.attendance_event_category != 'Student Standard Day'
+        /* Ignore service schools for this rule. */
+        and not exists (
+            select 1
+            from {{ ref('service_schools') }} ss
+            where ssd.k_school = ss.k_school
+        ) 
 ),
 errors as (
     /* Student Attendance/Absence events must be within enrollment period. */
     select ssd.k_student, ssd.k_school, ssd.k_session, ssd.school_year, cast(ssd.school_id as int) as school_id, ssd.student_unique_id,
         ssd.attendance_event_date, ssd.attendance_event_category,
         s.state_student_id as legacy_state_student_id,
-        brule.tdoe_error_code as error_code,
+        ssd.tdoe_error_code as error_code,
         concat('Student attendance/absence does not fall within Enrollment Period for Student ', 
             ssd.student_unique_id, ' (', coalesce(s.state_student_id, '[no value]'), ')',
             '. Enrollment Start Date: ',
             ifnull(ssa.entry_date, '[null]'), ', Enrollment End Date: ', 
             ifnull(ssa.exit_withdraw_date, '[null]'), ', Attendance Date: ', 
-            ssd.attendance_event_date, '.') as error
+            ssd.attendance_event_date, '.') as error,
+            {{ severity_to_severity_code_case_clause('ssd.tdoe_severity') }},
+            ssd.tdoe_severity
     from stg_attendance ssd
     join {{ ref('stg_ef3__students') }} s
         on s.k_student = ssd.k_student
@@ -48,8 +53,6 @@ errors as (
         and ssa.school_year = cast(ssd.school_year as int)
         /* No shows don't count. */
         and ssa.entry_date < ifnull(ssa.exit_withdraw_date, to_date('9999-12-31','yyyy-MM-dd'))
-    join brule
-        on ssd.school_year between brule.error_school_year_start and brule.error_school_year_end
     where (
             ssa.k_student is null
             or (ssa.k_student is not null 
@@ -71,9 +74,5 @@ errors as (
                 and ifnull(x.exit_withdraw_date, to_date('9999-12-31','yyyy-MM-dd'))
         )
 )
-select errors.*,
-    {{ severity_to_severity_code_case_clause('brule.tdoe_severity') }},
-    brule.tdoe_severity
-from errors errors
-join brule
-    on errors.school_year between brule.error_school_year_start and brule.error_school_year_end
+select *
+from errors
