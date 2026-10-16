@@ -16,30 +16,31 @@ with brule as (
     where br.tdoe_error_code = {{ error_code }}
 ),
 stg_course_transcripts as (
-    select * from {{ ref('stg_ef3__course_transcripts') }} ct
-    where exists (
-        select 1
-        from brule
-        where cast(ct.school_year as int) between brule.error_school_year_start and brule.error_school_year_end
-    )
+    select  ct.*,
+            brule.tdoe_error_code, brule.tdoe_severity
+    from {{ ref('stg_ef3__course_transcripts') }} ct
+    join brule
+        on cast(ct.school_year as int) between brule.error_school_year_start and brule.error_school_year_end
+    /* Ignore service schools for this rule. */
+    where not exists (
+            select 1
+            from {{ ref('service_schools') }} ss
+            where ct.student_academic_record_ed_org_id = ss.school_id
+        )
 ),
 errors as (
     /* Final Letter Grades must be from a set of accepted values. */
     select ct.k_course, ct.k_student_academic_record, ct.school_year, ct.course_attempt_result, ct.course_code, 
         ct.course_ed_org_id, ct.student_academic_record_ed_org_id, ct.student_unique_id, ct.academic_term,
         ct.alternative_course_code,
-        brule.tdoe_error_code as error_code,
+        ct.tdoe_error_code as error_code,
         concat('Final Letter Grade must be one of A-, A, A+, B-, B, B+, C-, C, C+, D-, D, D+, F, I, P, [null]. Final Letter Grade Received: ',
-            ifnull(ct.final_letter_grade_earned, '[null]'), '.') as error
+            ifnull(ct.final_letter_grade_earned, '[null]'), '.') as error,
+        {{ severity_to_severity_code_case_clause('ct.tdoe_severity') }},
+        ct.tdoe_severity
     from stg_course_transcripts ct
-    join brule
-        on ct.school_year between brule.error_school_year_start and brule.error_school_year_end
     where ct.final_letter_grade_earned is not null
         and ct.final_letter_grade_earned not in ('A-', 'A', 'A+', 'B-', 'B', 'B+', 'C-', 'C', 'C+', 'D-', 'D', 'D+', 'F', 'I', 'P')
 )
-select errors.*,
-    {{ severity_to_severity_code_case_clause('brule.tdoe_severity') }},
-    brule.tdoe_severity
-from errors errors
-join brule
-    on errors.school_year between brule.error_school_year_start and brule.error_school_year_end
+select *
+from errors
