@@ -17,6 +17,8 @@ with ssas as (
         where ve.k_student = ssa.k_student
           and ve.k_school = ssa.k_school
           and ve.k_school_calendar = ssa.k_school_calendar
+          and ve.entry_date = ssa.entry_date
+          and ve.is_primary_school = ssa.is_primary_school
     )
 )
 

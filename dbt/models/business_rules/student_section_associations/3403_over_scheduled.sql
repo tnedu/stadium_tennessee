@@ -15,14 +15,17 @@ with brule as (
       and rule_model = '{{ this.identifier }}'
 ),
 student_schedule as (
-    select * from {{ ref('bld_ef3__student_schedule_minutes_by_report_period') }}
+    select *
+     from {{ ref('bld_ef3__student_schedule_minutes_by_report_period') }}
 ),
 student_ssd as (
     select * from {{ ref('bld_ef3__student_ssd_minutes_by_report_period') }}
 ),
 over_scheduled as (
     select sch.k_student, sch.k_school, sch.k_school_calendar, sch.school_id,
-        sch.student_unique_id, sch.school_year, sch.entry_date, sch.report_period,
+        sch.student_unique_id, sch.school_year, sch.entry_date, sch.exit_withdraw_date,
+        sch.report_period,
+        sch.report_period_begin_date, sch.report_period_end_date,
         sch.sum_class_duration, ssd.sum_ssd_mins
     from student_schedule sch
     join student_ssd ssd
@@ -31,8 +34,14 @@ over_scheduled as (
        and ssd.k_school_calendar = sch.k_school_calendar
        and ssd.school_id = sch.school_id
        and ssd.school_year = sch.school_year
-       and ssd.entry_date = sch.entry_date
        and ssd.report_period = sch.report_period
+       and ssd.report_period_begin_date = sch.report_period_begin_date
+       and ssd.report_period_end_date = sch.report_period_end_date
+       and ((sch.entry_date between ssd.report_period_begin_date and ssd.report_period_end_date)
+            or (sch.entry_date <= ssd.report_period_begin_date and (sch.exit_withdraw_date is null
+                 or sch.exit_withdraw_date between ssd.report_period_begin_date and ssd.report_period_end_date)
+                 )
+            )
     where sch.sum_class_duration > ssd.sum_ssd_mins
 ),
 bad_records as (
