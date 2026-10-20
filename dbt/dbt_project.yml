@@ -160,11 +160,6 @@ vars:
         tdoe_severity: { as: tdoe_severity, default: "'good'" }
 
   'tdoe:student_characteristics:custom_data_sources':
-    # cds_default_severity_columns:
-    #   joins: [true]
-    #   cds_additional_cols:
-    #     tdoe_severity_code: { as: tdoe_severity_code, default: 0 }
-    #     tdoe_severity: { as: tdoe_severity, default: "'good'" }
     cds_fct_student_characteristics_statuses:
       joins:
         - cds_fct_student_characteristics_statuses.k_student = c.k_student
@@ -423,8 +418,12 @@ vars:
         tdoe_severity: { as: tdoe_severity, default: "'good'" }
 
   'tdoe:staff_contact_association:custom_data_sources': 
-    cds_default_severity_columns:
-      joins: [true]
+    cds_fct_staff_contact_association:
+      joins: 
+        - cds_fct_staff_contact_association.k_staff = stg_staff_edorg_contacts.k_staff
+        - cds_fct_staff_contact_association.ed_org_id = stg_staff_edorg_contacts.ed_org_id
+        - cds_fct_staff_contact_association.contact_title = stg_staff_edorg_contacts.contact_title
+        - cds_fct_staff_contact_association.email_address = stg_staff_edorg_contacts.email_address
       cds_additional_cols:
         tdoe_severity_code: { as: tdoe_severity_code, default: 0 }
         tdoe_severity: { as: tdoe_severity, default: "'good'" }
@@ -723,6 +722,7 @@ vars:
       cds_additional_cols:
         tdoe_severity_code: { as: tdoe_severity_code, default: 0 }
         tdoe_severity: { as: tdoe_severity, default: "'good'" }
+
 seeds:
   +schema: seed
   +quote_columns: false

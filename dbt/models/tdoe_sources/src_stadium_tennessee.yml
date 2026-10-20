@@ -19,7 +19,6 @@ sources:
   - name: business_rules_year_ranges
     description: >
       This entity houses the business rules and the school years they are meant to control.
-    enabled: true
     columns: 
       - name: tdoe_error_code
         description: The code assigned to this business rule.
