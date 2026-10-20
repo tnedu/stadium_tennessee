@@ -160,11 +160,6 @@ vars:
         tdoe_severity: { as: tdoe_severity, default: "'good'" }
 
   'tdoe:student_characteristics:custom_data_sources':
-    # cds_default_severity_columns:
-    #   joins: [true]
-    #   cds_additional_cols:
-    #     tdoe_severity_code: { as: tdoe_severity_code, default: 0 }
-    #     tdoe_severity: { as: tdoe_severity, default: "'good'" }
     cds_fct_student_characteristics_statuses:
       joins:
         - cds_fct_student_characteristics_statuses.k_student = c.k_student
@@ -384,10 +379,12 @@ vars:
   # custom data sources for student characteristics. must contain and be unique by `k_student`
   'edu:stu_demos:custom_data_sources': 
     cds_student_additional_columns:
-      state_student_id:
-        where: stateStudentId
-      date_entered_us:
-        where: dateenteredus
+      joins:
+        - cds_student_additional_columns.k_student = stg_student.k_student
+      cds_additional_cols:
+        stateStudentId: { as: state_student_id, default: 'Null' }
+        dateenteredus: { as: date_entered_us, default: 'Null' }
+        student_name_suffix: { as: generation_code_suffix, default: 'Null' }
     cds_student_statuses:
       joins: 
         - cds_student_statuses.k_student = stg_student.k_student
