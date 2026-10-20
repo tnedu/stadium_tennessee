@@ -6,8 +6,8 @@
         "alter table {{ this }} alter column k_student set not null",
         "alter table {{ this }} alter column k_lea set not null",
         "alter table {{ this }} alter column student_characteristic set not null",
-        "alter table {{ this }} alter column begin_date set not null",
-        "alter table {{ this }} add primary key (k_student, k_lea, student_characteristic, begin_date)"
+        "alter table {{ this }} alter column k_student_characteristic set not null",
+        "alter table {{ this }} add primary key (k_student_characteristic)"
     ]
   )
 }}
@@ -16,6 +16,14 @@
 {% set custom_data_sources = var('tdoe:student_characteristics:custom_data_sources', []) %}
 
 select c.tenant_code, c.api_year as school_year, c.k_student, c.k_student_xyear, c.ed_org_id, c.k_lea,
+        {{ dbt_utils.generate_surrogate_key(
+            [
+                'c.k_student',
+                'c.k_lea',
+                'c.student_characteristic',
+                'c.begin_date'
+            ]
+        )}} as k_student_characteristic,
     c.student_characteristic, c.begin_date, c.end_date
     -- custom data sources
     {{ edu_wh.add_cds_columns(custom_data_sources=custom_data_sources) }}
@@ -24,12 +32,6 @@ from {{ ref('stg_ef3__stu_ed_org__characteristics') }} c
 {{ edu_wh.add_cds_joins_v2(custom_data_sources=custom_data_sources) }}
 where c.k_lea is not null
     and c.student_characteristic is not null
-    and c.begin_date is not null
-    and not exists (
-        select 1
-        from {{ ref('xwalk_student_characteristics') }} x
-        where upper(x.characteristic_descriptor) = upper(c.student_characteristic)
-    )
     and exists (
         /* The student must be in dim_student after the business rules are applied. */
         select 1
