@@ -35,17 +35,27 @@ all_calendar_events as (
         and ce.k_calendar_date = cd.k_calendar_date
 ),
 xwalk_calendar_events as (
-    select *
+    /* Full statutory days (ID, SP, WN, WO, SD, SI, SN, SO) plus the partial stockpile days. pct_of_day 0.33 is treated as exactly 1/3. */
+    select calendar_event_descriptor, is_statutory_day,
+        case when cast(pct_of_day as decimal(12,6)) = 0.33 then cast(1 as decimal(12,6)) / 3 else cast(pct_of_day as decimal(12,6)) end as pct_of_day
     from {{ ref('xwalk_calendar_events') }}
     where is_statutory_day = true
+        or trim(split(calendar_event_descriptor, ':')[0]) in ('SP_0.33', 'SP_0.5', 'SD_0.33', 'SD_0.5', 'SI_0.33', 'SI_0.5', 'SN_0.33', 'SN_0.5', 'SO_0.33', 'SO_0.5')
 ),
 calendar_events as (
-    select distinct k_school, k_school_calendar, school_year, school_id, calendar_code, calendar_date
-    from all_calendar_events
-    where calendar_event in (select calendar_event_descriptor from xwalk_calendar_events)
+    /* One row per date. Full-day events on a date count once (1). Each partial event adds its fraction on top, e.g. ID + SP_0.5 = 1.5. */
+    select e.k_school, e.k_school_calendar, e.school_year, e.school_id, e.calendar_code, e.calendar_date,
+        max(case when x.is_statutory_day then 1 else 0 end) + coalesce(sum(case when not x.is_statutory_day then x.pct_of_day end), 0) as day_credit
+    from (
+        select distinct k_school, k_school_calendar, school_year, school_id, calendar_code, calendar_date, calendar_event
+        from all_calendar_events
+    ) e
+    join xwalk_calendar_events x
+        on x.calendar_event_descriptor = e.calendar_event
+    group by e.k_school, e.k_school_calendar, e.school_year, e.school_id, e.calendar_code, e.calendar_date
 ),
 not_enough_dates as (
-    select k_school, k_school_calendar, school_year, school_id, calendar_code, count(*) as instructional_days
+    select k_school, k_school_calendar, school_year, school_id, calendar_code, round(sum(day_credit), 2) as instructional_days
     from calendar_events
     group by k_school, k_school_calendar, school_year, school_id, calendar_code
 ),
@@ -54,7 +64,7 @@ errors as (
     select c.k_school, c.k_school_calendar, c.school_year, c.school_id, c.calendar_code, 
         brule.tdoe_error_code as error_code,
         concat('Calendar ', c.calendar_code, ' has calculated total instructional days is less than the minimum of 180. Total days calculated: ',
-            ifnull(x.instructional_days,0), '.') as error
+            regexp_replace(cast(ifnull(x.instructional_days, 0) as string), '\\.?0+$', ''), '.') as error
     from calendars c
     left outer join not_enough_dates x
         on x.k_school = c.k_school
