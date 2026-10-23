@@ -16,7 +16,7 @@ with brule as (
     where br.tdoe_error_code = {{ error_code }}
 ),
 stg_discipline_actions as (
-    select *,
+    select da.*,
             brule.tdoe_error_code,
             brule.tdoe_severity,
             {{ edu_edfi_source.extract_descriptor('value:disciplineDescriptor::string') }} as discipline_action
