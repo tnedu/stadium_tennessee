@@ -17,13 +17,19 @@ with brule as (
 ),
 stg_discipline_actions as (
     select *,
-        {{ edu_edfi_source.extract_descriptor('value:disciplineDescriptor::string') }} as discipline_action
+            brule.tdoe_error_code,
+            brule.tdoe_severity,
+            {{ edu_edfi_source.extract_descriptor('value:disciplineDescriptor::string') }} as discipline_action
     from {{ ref('stg_ef3__discipline_actions') }} da,
         lateral variant_explode(v_disciplines)
-    where exists (
+    join brule
+        on cast(da.school_year as int)
+           between brule.error_school_year_start and brule.error_school_year_end
+    /* Ignore service schools for this rule */
+    where not exists (
         select 1
-        from brule
-        where cast(da.school_year as int) between brule.error_school_year_start and brule.error_school_year_end
+        from {{ ref('service_schools') }} ss
+        where da.responsibility_school_id = ss.k_school
     )
 ),
 errors as (
@@ -32,24 +38,20 @@ errors as (
         da.discipline_action_id, da.discipline_date, da.responsibility_school_id,
         da.student_unique_id,
         s.state_student_id as legacy_state_student_id,
-        brule.tdoe_error_code as error_code,
+        da.tdoe_error_code as error_code,
         concat('Discipline Date for Student ', 
             da.student_unique_id, ' (', coalesce(s.state_student_id, '[no value]'), ') ',
             'does not fall within the school year. Value Received: ', da.discipline_date, '. The state school year starts ',
-            concat(cast((da.school_year-1) as int), '-07-01'), ' and ends ', concat(cast(da.school_year as int), '-06-30'), '.') as error
+            concat(cast((da.school_year-1) as int), '-07-01'), ' and ends ', concat(cast(da.school_year as int), '-06-30'), '.') as error,
+        {{ severity_to_severity_code_case_clause('da.tdoe_severity') }},
+        da.tdoe_severity
     from stg_discipline_actions da
     join {{ ref('stg_ef3__students') }} s
         on s.k_student = da.k_student
-    join brule
-        on da.school_year between brule.error_school_year_start and brule.error_school_year_end
     where not(da.discipline_date between to_date(concat(cast((da.school_year-1) as int), '-07-01'), 'yyyy-MM-dd') 
             and to_date(concat(cast(da.school_year as int), '-06-30'), 'yyyy-MM-dd'))
         and discipline_action IN ('I','S')
         and discipline_action NOT IN ('R','E')
 )
-select errors.*,
-    {{ severity_to_severity_code_case_clause('brule.tdoe_severity') }},
-    brule.tdoe_severity
-from errors errors
-join brule
-    on errors.school_year between brule.error_school_year_start and brule.error_school_year_end
+select *
+from errors
