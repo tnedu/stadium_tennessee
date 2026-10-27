@@ -27,7 +27,7 @@ stg_attendance as (
         and not exists (
             select 1
             from {{ ref('service_schools') }} ss
-            where ssd.k_school = ss.k_school
+            where ssae.k_school = ss.k_school
         ) 
 ),
 errors as (
