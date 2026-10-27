@@ -31,12 +31,11 @@ specific_events as (
 ),
 sum_day_parts as (
     select k_school, k_school_calendar, calendar_date,
-        max(case when pct_of_day = 1 then 6 else 0 end)
-        + sum(
+        sum(
             case pct_of_day
                 when 0.33 then 2
                 when 0.5 then 3
-                else 0
+                when 1 then 6
             end) as day_parts
     from specific_events
     group by k_school, k_school_calendar, calendar_date
@@ -56,8 +55,7 @@ errors as (
     select c.k_school, c.k_school_calendar, c.school_year, c.school_id, c.calendar_code,
         c.tdoe_error_code as error_code,
         concat('Calendar ', c.calendar_code, ' has calculated total instructional days is less than the minimum of 180. Total days calculated: ',
-            case when coalesce(x.instructional_days, 0) = floor(coalesce(x.instructional_days, 0)) then cast(cast(coalesce(x.instructional_days, 0) as int) as string)
-                else cast(x.instructional_days as string) end, '.') as error,
+            coalesce(cast(x.instructional_days as string), '0.0'), '.') as error,
         {{ severity_to_severity_code_case_clause('c.tdoe_severity') }},
         c.tdoe_severity
     from calendars c
