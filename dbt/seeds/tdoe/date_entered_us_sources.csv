@@ -1,0 +1,4 @@
+source_school_year_start,source_school_year_end,source_location
+2019,2025,stg_ef3__student_education_organization_associations
+2026,2026,stg_ef3__students
+2027,,stg_ef3__student_education_organization_associations

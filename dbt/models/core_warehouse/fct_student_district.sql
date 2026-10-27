@@ -47,14 +47,40 @@ stu_languages as (
 stu_cohort_year as (
     select * from {{ ref('bld_ef3__student_cohort_years_by_district')}}
 ),
-seoa as (
-    select
-        k_student,
-        ed_org_id,
-        api_year,
-        dateEnteredUS
-    from {{ ref('stg_ef3__student_education_organization_associations') }}
-    where k_lea is not null
+date_entered_us_sources as (
+    select *
+    from {{ ref('date_entered_us_sources') }}
+),
+from_students as (
+    select seoa.k_student, seoa.ed_org_id, s.date_entered_us as dateEnteredUS
+    from {{ ref('stg_ef3__student_education_organization_associations') }} seoa
+    join {{ ref('stg_ef3__students') }} s
+        on s.k_student = seoa.k_student
+    where seoa.k_lea is not null
+        and exists (
+            select 1
+            from date_entered_us_sources
+            where date_entered_us_sources.source_location = 'stg_ef3__students'
+                and seoa.school_year between date_entered_us_sources.source_school_year_start 
+                    and coalesce(date_entered_us_sources.source_school_year_end, 9999)
+        )
+),
+from_seoa as (
+    select seoa.k_student, seoa.ed_org_id, seoa.dateEnteredUs
+    from {{ ref('stg_ef3__student_education_organization_associations') }} seoa
+    where seoa.k_lea is not null
+        and exists (
+            select 1
+            from date_entered_us_sources
+            where date_entered_us_sources.source_location = 'stg_ef3__student_education_organization_associations'
+                and seoa.school_year between date_entered_us_sources.source_school_year_start 
+                    and coalesce(date_entered_us_sources.source_school_year_end, 9999)
+        )
+),
+date_entered_us as (
+    select * from from_students
+    union
+    select * from from_seoa
 ),
 formatted as (
     select
@@ -65,7 +91,7 @@ formatted as (
         stg_student.api_year as school_year,
         stg_student.student_unique_id,
         stu_immutable_demos.ed_org_id,
-        seoa.dateEnteredUS,
+        date_entered_us.dateEnteredUS,
         -- student ids
         {{ edu_wh.accordion_columns(
             source_table='bld_ef3__wide_ids_student',
@@ -118,11 +144,9 @@ formatted as (
     left join stu_cohort_year
         on stu_immutable_demos.k_student = stu_cohort_year.k_student
         and stu_immutable_demos.ed_org_id = stu_cohort_year.ed_org_id
-    join seoa
-        on stg_student.k_student = seoa.k_student
-        and stu_immutable_demos.ed_org_id = seoa.ed_org_id
-        and stg_student.api_year = seoa.api_year
-
+    join date_entered_us
+        on stg_student.k_student = date_entered_us.k_student
+        and stu_immutable_demos.ed_org_id = date_entered_us.ed_org_id
 
     -- custom data sources
     {{ edu_wh.add_cds_joins_v2(custom_data_sources=custom_data_sources) }}
