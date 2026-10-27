@@ -121,6 +121,10 @@ vars:
       dateEnteredUS:
         name: 'tdoe:dateEnteredUS'
         dtype: 'date'
+    stg_ef3__student_language_instruction_program_associations:
+      total_years_esl:
+        name: 'tdoe:totalYearsESL'
+        dtype: 'int'
 
   descriptors:
     exitWithdrawTypeDescriptor:
