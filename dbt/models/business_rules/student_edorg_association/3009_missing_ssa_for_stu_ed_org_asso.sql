@@ -5,7 +5,7 @@
   )
 }}
 
-{% set error_code = 3111 %}
+{% set error_code = 3009 %}
 
 /* brule as per standard */
 with brule as (
@@ -34,21 +34,13 @@ stg_student_school_associations as (
     from {{ ref('stg_ef3__student_school_associations') }} ssa
 )
 /* Student/EdOrg Associations that does not have corresponding Student Enrollments. */
-select se.k_student, 
-        null as k_school,
-        null as k_school_calendar,
-        se.ed_org_id,
-        se.student_unique_id,
-        se.school_year, 
-        null as entry_date,
-        null as entry_grade_level,
-        null as calendar_code,
-        s.state_student_id as legacy_state_student_id,
+select distinct se.k_student, se.k_lea, cast( null as int ) as k_school,
+        cast(se.school_year as int) as school_year, se.ed_org_id, s.student_unique_id,
         se.tdoe_error_code as error_code,
         concat('Student ', 
             se.student_unique_id, ' (', coalesce(s.state_student_id, '[no value]'), ') ',
-            'require Student School Association on District ', se.ed_org_id,
-            ' level Student/EdOrg Associations.') as error,
+            'associated with District ', se.ed_org_id, ' requires a Student School Association. Or
+            remove this Student Association at this District.') as error,
         {{severity_to_severity_code_case_clause('se.tdoe_severity') }},
         se.tdoe_severity
     from stg_student_edorgs se

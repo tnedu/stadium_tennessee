@@ -53,3 +53,6 @@ from {{ ref('3007_student_characteristics_overlaps') }}
 union
 select *
 from {{ ref('3008_no_student_ed_org_association') }}
+union
+select *
+from {{ ref('3009_missing_ssa_for_stu_ed_org_asso') }}
