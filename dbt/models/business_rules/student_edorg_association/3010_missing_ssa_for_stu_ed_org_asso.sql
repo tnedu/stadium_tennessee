@@ -5,7 +5,7 @@
   )
 }}
 
-{% set error_code = 3009 %}
+{% set error_code = 3010 %}
 
 /* brule as per standard */
 with brule as (
