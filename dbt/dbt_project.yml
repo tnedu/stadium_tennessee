@@ -37,6 +37,12 @@ models:
   dbt_artifacts:
     +schema: dbt_run__audit
     +tags: ['bypass_rls']
+  edu_edfi_source:
+    staging:
+      edfi_3:
+        stage:
+          stg_ef3__discipline_actions__student_discipline_incident_behaviors:
+            +enabled: false
 
 vars:
   # todo: we need to get rid of this
@@ -261,6 +267,12 @@ vars:
         tdoe_severity: { as: tdoe_severity, default: "'good'" }
   
   'edu:discipline_incident:custom_data_sources':
+    cds_dim_discipline_incident_addl_cols:
+      joins: 
+        - cds_dim_discipline_incident_addl_cols.k_discipline_incident = stg_discipline_incidents.k_discipline_incident
+      cds_additional_cols:
+        tdoe_behavior_array: { as: tdoe_behavior_array, default: 'Null' }
+        has_tdoe_zero_tolerance_behavior: { as: has_tdoe_zero_tolerance_behavior, default: 'False' }
     cds_default_severity_columns:
       joins: [true]
       cds_additional_cols:
@@ -500,6 +512,14 @@ vars:
         tdoe_severity: { as: tdoe_severity, default: "'good'" }
   
   'edu:student_discipline_actions_summary:custom_data_sources':
+    cds_fct_student_discipline_actions_summary_zt_cols:
+      joins: 
+        - cds_fct_student_discipline_actions_summary_zt_cols.k_student = fct_student_discipline_actions.k_student
+        - cds_fct_student_discipline_actions_summary_zt_cols.discipline_action_id = fct_student_discipline_actions.discipline_action_id
+        - cds_fct_student_discipline_actions_summary_zt_cols.discipline_date = fct_student_discipline_actions.discipline_date
+      cds_additional_cols:
+        tdoe_behavior_types_array: { as: tdoe_behavior_types_array, default: 'Null' }
+        has_tdoe_zero_tolerance_behavior: { as: has_tdoe_zero_tolerance_behavior, default: 'False' }
     cds_default_severity_columns:
       joins: [true]
       cds_additional_cols:
@@ -518,7 +538,17 @@ vars:
   'edu:discipline_actions:custom_data_sources':
     cds_student_discipline_action_additional_columns:
       discipline_end_date:
-        where: discipline_end_date
+        where: discipline_end_date  
+    cds_fct_student_discipline_actions_zt_cols:
+      joins: 
+        - cds_fct_student_discipline_actions_zt_cols.tenant_code = stg_discipline_actions.tenant_code
+        - cds_fct_student_discipline_actions_zt_cols.k_student = stg_discipline_actions.k_student
+        - cds_fct_student_discipline_actions_zt_cols.api_year = stg_discipline_actions.api_year
+        - cds_fct_student_discipline_actions_zt_cols.discipline_action_id = stg_discipline_actions.discipline_action_id
+        - cds_fct_student_discipline_actions_zt_cols.discipline_date = stg_discipline_actions.discipline_date
+      cds_additional_cols:
+        tdoe_student_incident_behavior_array: { as: tdoe_student_incident_behavior_array, default: 'Null' }
+        has_tdoe_zero_tolerance_behavior: { as: has_tdoe_zero_tolerance_behavior, default: 'False' }
     cds_student_discipline_actions_statuses:
       joins: 
         - cds_student_discipline_actions_statuses.k_student = stg_discipline_actions.k_student
@@ -529,6 +559,14 @@ vars:
         tdoe_severity: { as: tdoe_severity, default: "'good'" }
   
   'edu:student_discipline_incident_behaviors:custom_data_sources':
+    cds_fct_student_discipline_incident_behaviors_zt_cols:
+      joins: 
+        - cds_fct_student_discipline_incident_behaviors_zt_cols.k_student = stg_stu_discipline_incident_behaviors.k_student
+        - cds_fct_student_discipline_incident_behaviors_zt_cols.k_discipline_incident = stg_stu_discipline_incident_behaviors.k_discipline_incident
+        - cds_fct_student_discipline_incident_behaviors_zt_cols.lower_behavior_type = lower(stg_stu_discipline_incident_behaviors.behavior_type)
+      cds_additional_cols:
+        is_tdoe_zero_tolerance: { as: is_tdoe_zero_tolerance, default: 'False' }
+        k_behavior: { as: k_behavior, default: 'Null' }
     cds_default_severity_columns:
       joins: [true]
       cds_additional_cols:
@@ -543,6 +581,13 @@ vars:
         tdoe_severity: { as: tdoe_severity, default: "'good'" }
   
   'edu:student_discipline_incident_summary:custom_data_sources':
+    cds_fct_student_discipline_incident_summary_zt_cols:
+      joins: 
+        - cds_fct_student_discipline_incident_summary_zt_cols.k_student = fct_student_discipline_incident_behaviors.k_student
+        - cds_fct_student_discipline_incident_summary_zt_cols.k_discipline_incident = fct_student_discipline_incident_behaviors.k_discipline_incident
+      cds_additional_cols:
+        tdoe_student_incident_behavior_array: { as: tdoe_student_incident_behavior_array, default: 'Null' }
+        has_tdoe_zero_tolerance_behavior: { as: has_tdoe_zero_tolerance_behavior, default: 'False' }
     cds_default_severity_columns:
       joins: [true]
       cds_additional_cols:
