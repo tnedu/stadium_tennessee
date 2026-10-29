@@ -27,7 +27,7 @@ stg_discipline_actions as (
     where not exists (
         select 1
         from {{ ref('service_schools') }} ss
-        where da.responsibility_school_id = ss.k_school
+        where da.responsibility_school_id = ss.school_id
     )
 ),
 discipline_incidents_exploded as (
