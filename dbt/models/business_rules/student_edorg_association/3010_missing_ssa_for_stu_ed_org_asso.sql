@@ -36,6 +36,7 @@ stg_student_school_associations as (
 /* Student/EdOrg Associations that does not have corresponding Student Enrollments. */
 select distinct se.k_student, se.k_lea, cast( null as int ) as k_school,
         cast(se.school_year as int) as school_year, se.ed_org_id, s.student_unique_id,
+        s.state_student_id as legacy_state_student_id,
         se.tdoe_error_code as error_code,
         concat('Student ', 
             se.student_unique_id, ' (', coalesce(s.state_student_id, '[no value]'), ') ',
