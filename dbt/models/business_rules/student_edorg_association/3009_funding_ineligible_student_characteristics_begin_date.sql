@@ -6,7 +6,7 @@
 }}
 {% set error_code = 3009 %}
 
-/* FundineligOOS and FundineligI20 Student Characteristics must have a Begin Date. No enrollment validation, same as 3006/3007. */
+/* Funding ineligible Student Characteristics must have a Begin Date. No enrollment validation, same as 3006/3007. */
 with brule as (
     select tdoe_error_code,
         cast(error_school_year_start as int) as error_school_year_start,
@@ -24,14 +24,21 @@ stg_student_edorgs as (
         on cast(seoa.school_year as int) between brule.error_school_year_start and brule.error_school_year_end
     where seoa.k_lea is not null
 ),
+funding_ineligible_characteristics as (
+    /* Which characteristics are funding ineligible, by school year, is controlled by the seed student_characteristics_attributes.is_funding_ineligible. */
+    select student_characteristic,
+        cast(stuchar_school_year_start as int) as stuchar_school_year_start,
+        cast(ifnull(stuchar_school_year_end, 9999) as int) as stuchar_school_year_end
+    from {{ ref('student_characteristics_attributes') }}
+    where is_funding_ineligible = 'Y'
+),
 errors as (
     select se.k_student, se.k_lea, se.k_school, se.school_year, se.ed_org_id, se.student_unique_id,
         s.state_student_id as legacy_state_student_id,
-        sc.student_characteristic, sc.begin_date,
         se.tdoe_error_code as error_code,
-        concat('Missing date range for FundineligOOS / FundineligI20 student characteristic. Student ',
-            se.student_unique_id, ' (', coalesce(s.state_student_id, '[no value]'), ') ',
-            'Value received: ', concat(sc.student_characteristic, ' [', coalesce(cast(sc.begin_date as string), 'null'), ' - ', coalesce(cast(sc.end_date as string), 'null'), ']')) as error,
+        concat('Student ', se.student_unique_id, ' (', coalesce(s.state_student_id, '[no value]'), ') ',
+            'is missing a required begin date for the ', sc.student_characteristic, ' ',
+            'student characteristic.') as error,
         {{ severity_to_severity_code_case_clause('se.tdoe_severity') }},
         se.tdoe_severity
     from stg_student_edorgs se
@@ -40,8 +47,10 @@ errors as (
     join {{ ref('stg_ef3__stu_ed_org__characteristics') }} sc
         on sc.k_lea = se.k_lea
         and sc.k_student = se.k_student
-    where sc.student_characteristic in ('FundineligOOS', 'FundineligI20')
-        and sc.begin_date is null
+    join funding_ineligible_characteristics fic
+        on fic.student_characteristic = sc.student_characteristic
+        and cast(se.school_year as int) between fic.stuchar_school_year_start and fic.stuchar_school_year_end
+    where sc.begin_date is null
 )
 select *
 from errors
