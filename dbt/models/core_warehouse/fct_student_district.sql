@@ -49,15 +49,25 @@ stu_cohort_year as (
 ),
 seoa as (
     select
+        tenant_code,
         k_student,
         ed_org_id,
         api_year,
+        student_unique_id,
         dateEnteredUS
     from {{ ref('stg_ef3__student_education_organization_associations') }}
     where k_lea is not null
 ),
 formatted as (
     select
+        {{ dbt_utils.generate_surrogate_key(
+            [
+                'seoa.tenant_code',
+                'seoa.api_year',
+                'seoa.ed_org_id',
+                'seoa.student_unique_id'
+            ]
+        )}} as k_student_education_organization_association,
         stg_student.k_student,
         stg_student.k_student_xyear,
         stu_immutable_demos.k_lea,
