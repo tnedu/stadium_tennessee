@@ -6,7 +6,5 @@
 }}
 
 select *
-from {{ ref('3600_invalid_letter_grades') }}
-union
-select *
-from {{ ref('3601_invalid_final_grade') }}
+from {{ ref('course_transcripts_errors_unioned') }}
+where tdoe_severity != 'potential'
