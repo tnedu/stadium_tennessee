@@ -1,0 +1,34 @@
+# 
+
+version: 1
+
+
+# define source
+sources:
+- name: identity
+  description: Sources for Identity tables
+  database: |
+    {%- if target.name == 'data_dev' -%} {{ var('identity_db', 'foreign_edfi_identity_prod_catalog') }}
+    {%- elif target.name == 'data_qa' -%} {{ var('identity_db', 'foreign_edfi_identity_prod_catalog') }}
+    {%- elif target.name == 'data_uat' -%} {{ var('identity_db', 'foreign_edfi_identity_prod_catalog') }}
+    {%- elif target.name == 'data_prod' -%} {{ var('identity_db', 'foreign_edfi_identity_prod_catalog') }}
+    {%- else -%} {{ var('identity_db', 'foreign_edfi_identity_prod_catalog') }}
+    {%- endif -%}
+  schema: "{{ var('identity_schema', 'dbo') }}"
+  tables:
+  - name: whitelisteddomains
+    description: >
+      This entity contains all the allowed domain names by District.
+    columns: 
+      - name: Id
+        description: A sequence for the row of data.
+      - name: DistrictNumber
+        description: The District number that the domain name is associated with.
+      - name: EmailDomain
+        description: The email domain name.
+      - name: Active
+        description: Boolean value of whether or not this domain name is active.
+      - name: CreatedDateUTC
+        description: The timestamp this record was created.
+      - name: ModifiedDateUTC
+        description: The timestamp this record was last updated.
