@@ -4,8 +4,6 @@ name: 'stadium_tennessee'
 version: '1.0.0'
 config-version: 2
 
-require-dbt-version: [">=1.0.0", "<2.0.0"]
-
 # This setting configures which "profile" dbt uses for this project.
 profile: 'stadium_tennessee'
 
@@ -24,6 +22,7 @@ clean-targets:         # directories to be removed by `dbt clean`
 on-run-end: "{% if target.name == 'prod' %}{{ dbt_artifacts.upload_results(results) }}{% endif %}"
 
 flags:
+  # We cannot make this True until EA changes how their post_hook stuff works in the warehouse models
   use_materialization_v2: False
   require_ref_searches_node_package_before_root: True
 
@@ -32,6 +31,10 @@ models:
     +materialized: table
     build:
       +schema: build
+      edfi_3:
+        students:
+          bld_ef3__wide_ids_student:
+            +enabled: False
     core_warehouse:
       +schema: wh
   dbt_artifacts:
@@ -39,25 +42,24 @@ models:
     +tags: ['bypass_rls']
 
 vars:
-  # todo: we need to get rid of this
-  'edu:class_period:attempt_military_whatever': false
-
+  # All of these are enrollment vars that impact how data shows in fct_student_school_association
   # keep no shows who exit before the first day of school
-  'edu:enroll:exclude_exit_before_first_day': false
+  'edu:enroll:exclude_exit_before_first_day': False
+  # inclusiveness of enrollment exit withdraw date
+  'edu:enroll:exit_withdraw_date_inclusive': False
+  # if the student exits on the first day of school, they are not considered a valid enrollment
+  'edu:enroll:first_day_exit_date_inclusive': False
+  # withdraw codes that should exclude students from enrollment altogether
+  'edu:enroll:exclude_withdraw_codes': ['No show', 'Invalid enrollment']
+  # will remove enrollments if its school year doesn't match the school year on dim_student
+  'edu:enroll:exclude_cross_year_enrollments': False
+  # Will allow an enrollment to remain after the exit date by the number of days set.
+  'edu:enroll:year_end_active_buffer_days': 0
 
-  # one roster configs
-  'oneroster:active_school_year': 2026
   # labels for generated race/ethnicity groups
   'edu:stu_demos:multiple_races_code': Multiple
   'edu:stu_demos:hispanic_latino_code': Latinx
   'edu:stu_demos:race_unknown_code': Unknown
-
-  # rules for inclusion in 'special education' demographic group
-  # Begin and end dates to use for cutoffs, and a list of program names to exclude
-  'edu:special_ed:start_date_column': program_enroll_begin_date
-  'edu:special_ed:exit_date_column': program_enroll_end_date
-  'edu:special_ed:exclude_programs': Null
-  'edu:special_ed:agg_types': ['annual', 'active']
 
   # rules for inclusion in program associations
   # Begin and end dates to use for cutoffs, and a list of program names to exclude
@@ -71,22 +73,46 @@ vars:
   'edu:language_instruction:exclude_programs': Null
   'edu:language_instruction:agg_types': ['annual', 'active']
 
+  'edu:special_ed:start_date_column': program_enroll_begin_date
+  'edu:special_ed:exit_date_column': program_enroll_end_date
+  'edu:special_ed:exclude_programs': Null
+  'edu:special_ed:agg_types': ['annual', 'active']
+
   'edu:title_i:start_date_column': program_enroll_begin_date
   'edu:title_i:exit_date_column': program_enroll_end_date
   'edu:title_i:exclude_programs': Null
   'edu:title_i:agg_types': ['annual', 'active']
+
+  'edu:cte:start_date_column': program_enroll_begin_date
+  'edu:cte:exit_date_column': program_enroll_end_date
+  'edu:cte:exclude_programs': Null
+  'edu:cte:agg_types': ['annual', 'active']
+
+  'edu:food_service:start_date_column': program_enroll_begin_date
+  'edu:food_service:exit_date_column': program_enroll_end_date
+  'edu:food_service:exclude_programs': Null
+  'edu:food_service:agg_types': ['annual', 'active']
+
+  'edu:migrant_education:start_date_column': program_enroll_begin_date
+  'edu:migrant_education:exit_date_column': program_enroll_end_date
+  'edu:migrant_education:exclude_programs': Null
+  'edu:migrant_education:agg_types': ['annual', 'active']
+
+  'edu:section_504:start_date_column': program_enroll_begin_date
+  'edu:section_504:exit_date_column': program_enroll_end_date
+  'edu:section_504:exclude_programs': Null
+  'edu:section_504:agg_types': ['annual', 'active']
+
+  'edu:neglected_or_delinquent:start_date_column': program_enroll_begin_date
+  'edu:neglected_or_delinquent:exit_date_column': program_enroll_end_date
+  'edu:neglected_or_delinquent:exclude_programs': Null
+  'edu:neglected_or_delinquent:agg_types': ['annual', 'active']
 
   # label for 'Present' days generated from negative attendance
   'edu:attendance:in_attendance_code': In Attendance
   # threshold and minimum enrolled days for chronic absence definition
   'edu:attendance:chronic_absence_threshold': 90
   'edu:attendance:chronic_absence_min_days': 20
-
-  # withdraw codes that should exclude students from enrollment altogether
-  'edu:enroll:exclude_withdraw_codes': ['No show', 'Invalid enrollment']
-  
-  # inclusiveness of enrollment exit withdraw date
-  'edu:enroll:exit_withdraw_date_inclusive': False
 
   # student discipline participation codes that map to non-offenders
   'edu:discipline:non_offender_codes': ['Victim', 'Witness', 'Reporter']
@@ -133,12 +159,20 @@ vars:
       replace_with: "concat(code_value,': ',short_description)"
   
   # Enable optional domains and programs
-  'src:domain:assessment:enabled': True
+  'src:domain:assessment:enabled': False
+  'src:domain:cohort:enabled': True
   'src:domain:discipline:enabled': True
-  'src:program:special_ed:enabled': True
+  'src:ed_orgs:esc:enabled': True
+  'src:program:cte:enabled': False
   'src:program:homeless:enabled': True
   'src:program:language_instruction:enabled': True
+  'src:program:migrant_education:enabled': False
+  'src:program:neglected_or_delinquent:enabled': False
+  'src:program:food_service:enabled': False
+  'src:program:section_504:enabled': False
+  'src:program:special_ed:enabled': True
   'src:program:title_i:enabled': False
+  'src:domain:survey:enabled': False
   
   # custom data sources  
   'tdoe:school_grade_levels:custom_data_sources':
@@ -384,7 +418,6 @@ vars:
       cds_additional_cols:
         stateStudentId: { as: state_student_id, default: 'Null' }
         dateenteredus: { as: date_entered_us, default: 'Null' }
-        student_name_suffix: { as: generation_code_suffix, default: 'Null' }
     cds_student_statuses:
       joins: 
         - cds_student_statuses.k_student = stg_student.k_student
@@ -619,9 +652,9 @@ vars:
   'edu:student_school_association:custom_data_sources':
     cds_student_school_assoc_statuses:
       joins:
-        - cds_student_school_assoc_statuses.k_student = stg_stu_school.k_student
-        - cds_student_school_assoc_statuses.k_school = stg_stu_school.k_school
-        - cds_student_school_assoc_statuses.k_school_calendar = stg_stu_school.k_school_calendar
+        - cds_student_school_assoc_statuses.k_student = bld_stu_sch_assoc_flags.k_student
+        - cds_student_school_assoc_statuses.k_school = bld_stu_sch_assoc_flags.k_school
+        - cds_student_school_assoc_statuses.k_school_calendar = bld_stu_sch_assoc_flags.k_school_calendar
       cds_additional_cols:
         tdoe_severity_code: { as: tdoe_severity_code, default: 0 }
         tdoe_severity: { as: tdoe_severity, default: "'good'" }
@@ -686,17 +719,9 @@ vars:
     cds_fct_student_disability_statuses:
       joins: 
         - cds_fct_student_disability_statuses.k_student = f.k_student
-        - cds_fct_student_disability_statuses.k_program = f.k_program
-      cds_additional_cols:
-        tdoe_severity_code: { as: tdoe_severity_code, default: 0 }
-        tdoe_severity: { as: tdoe_severity, default: "'good'" }
-  
-  'edu:student_migrant_education_program_association:custom_data_sources':
-    cds_fct_student_migrant_education_program_assoc_statuses:
-      joins: 
-        - cds_fct_student_migrant_education_program_assoc_statuses.k_student = stage.k_student
-        - cds_fct_student_migrant_education_program_assoc_statuses.k_program = stage.k_program
-        - cds_fct_student_migrant_education_program_assoc_statuses.k_student_program = stage.k_student_program
+        - equal_null(cds_fct_student_disability_statuses.k_student, f.k_lea)
+        - equal_null(cds_fct_student_disability_statuses.k_student, f.k_school)
+        - equal_null(cds_fct_student_disability_statuses.k_program, f.k_program)
       cds_additional_cols:
         tdoe_severity_code: { as: tdoe_severity_code, default: 0 }
         tdoe_severity: { as: tdoe_severity, default: "'good'" }
@@ -710,16 +735,7 @@ vars:
       cds_additional_cols:
         tdoe_severity_code: { as: tdoe_severity_code, default: 0 }
         tdoe_severity: { as: tdoe_severity, default: "'good'" }
-  
-  'edu:student_school_food_service_program_association:custom_data_sources':
-    cds_fct_student_school_food_service_program_associations:
-      joins: 
-        - cds_fct_student_school_food_service_program_associations.k_student = stage.k_student
-        - cds_fct_student_school_food_service_program_associations.k_program = stage.k_program
-        - cds_fct_student_school_food_service_program_associations.k_student_program = stage.k_student_program
-      cds_additional_cols:
-        tdoe_severity_code: { as: tdoe_severity_code, default: 0 }
-        tdoe_severity: { as: tdoe_severity, default: "'good'" }
+
 seeds:
   +schema: seed
   +quote_columns: false

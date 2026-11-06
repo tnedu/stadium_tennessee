@@ -20,7 +20,7 @@ stu_immutable_demos as (
     select * from {{ ref('bld_ef3__immutable_stu_demos_by_district') }}
 ),
 stu_ids as (
-    select * from {{ ref('edu_wh', 'bld_ef3__wide_ids_student') }}
+    select * from {{ ref('bld_ef3__wide_ids_student') }}
 ),
 stu_chars as (
     select * from {{ ref('edu_wh', 'bld_ef3__student_characteristics') }}

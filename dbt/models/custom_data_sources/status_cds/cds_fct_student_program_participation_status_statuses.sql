@@ -62,12 +62,6 @@ homeless_errors as (
 program_association_errors as (
   select k_student, ed_org_id, k_program, k_student_program, tdoe_severity_code, tdoe_severity
   from homeless_errors
-  union all
-  select k_student, ed_org_id, k_program, k_student_program, tdoe_severity_code, tdoe_severity
-  from {{ ref('cds_fct_student_migrant_education_program_assoc_statuses') }} migrant_errors
-  union all
-  select k_student, ed_org_id, k_program, k_student_program, tdoe_severity_code, tdoe_severity
-  from {{ ref('cds_fct_student_school_food_service_program_associations') }} food_service_errors
   --other dependent staging tables  will be added here if new business rules and errors are added in future
 ),
 unioned_errors as (

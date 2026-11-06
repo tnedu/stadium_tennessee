@@ -1,3 +1,10 @@
+{{
+  config(
+    materialized="table",
+    schema="build"
+  )
+}}
+
 with student_cohort_years as (
     select * 
     from {{ ref('stg_ef3__stu_ed_org__cohort_years') }}

@@ -17,20 +17,13 @@ with brule as (
         and rule_model = '{{ this.identifier }}'
 ),
 sped_disabilities as (
-    select c.*, speds.k_student_program,
+    select c.*, 
         brule.tdoe_error_code as potential_tdoe_error_code,
         brule.tdoe_severity as potential_tdoe_severity
     from {{ ref('stg_ef3__stu_spec_ed__disabilities') }} c
     join brule brule
         on cast(c.school_year as int) between brule.error_school_year_start and brule.error_school_year_end
-    join {{ ref('stg_ef3__student_special_education_program_associations') }} speds
-        on speds.tenant_code = c.tenant_code
-        and speds.school_year = c.school_year
-        and speds.k_student = c.k_student
-        and speds.k_program = c.k_program
-        and coalesce(speds.k_lea, 'ZZZ') = coalesce(c.k_lea, 'ZZZ')
-        and coalesce(speds.k_school, 'ZZZ') = coalesce(c.k_school, 'ZZZ')
-        and speds.program_enroll_begin_date = c.program_enroll_begin_date
+        
 ),
 order_of_disability_counts as (
     select k_student_program, tenant_code, k_student, k_program, 

@@ -49,29 +49,29 @@ sources:
       This entity represents the academic weeks for a school year, optionally captured to support analyses.
     enabled: true
     columns: *column_defaults
-  - name: accounts
-    description: >
-      This financial entity represents a funding source combined with its purpose and type of transaction. It provides a formal record of the debits and credits relating to the specific account.
-    enabled: true
-    columns: *column_defaults
   - name: accountability_ratings
     description: >
       An accountability rating for a school or district.
     enabled: true
     columns: *column_defaults
-  - name: account_codes
-    description: >
-      The set of account codes defined by an education organization for a fiscal year.
-    enabled: true
-    columns: *column_defaults
-  - name: actuals
-    description: >
-      This financial entity represents the sum of the financial transactions to date relating to a specific account.
-    enabled: true
-    columns: *column_defaults
   - name: assessments
     description: >
       This entity represents a tool, instrument, process, or exhibition composed of a systematic sampling of behavior for measuring a student's competence, knowledge, skills, or behavior. An assessment can be used to measure differences in individuals or groups and changes in performance from one occasion to the next.
+    enabled: true
+    columns: *column_defaults
+  - name: assessment_administrations
+    description: >
+      The anticipated administration of an assessment under the purview of an education organization.
+    enabled: true
+    columns: *column_defaults
+  - name: assessment_administration_participations
+    description: >
+      Identifies the point of contact for the administration of an assessment under the purview of an education organization.
+    enabled: true
+    columns: *column_defaults
+  - name: assessment_battery_parts
+    description: >
+      The parts organized for administering an assessessment which together provide a comprehensive assessment of the students.
     enabled: true
     columns: *column_defaults
   - name: assessment_items
@@ -84,14 +84,14 @@ sources:
       Score ranges of an assessment associated with one or more learning standards.
     enabled: true
     columns: *column_defaults
+  - name: balance_sheet_dimensions
+    description: >
+      The NCES balance sheet accounting dimension, used to track financial transactions for each fund. These financial statements only report assets, deferred outflows of resources, liabilities, deferred inflows of resources, and equity accounts. The statements are considered snapshots of how these accounts stand as of a certain point in time.
+    enabled: true
+    columns: *column_defaults
   - name: bell_schedules
     description: >
       This entity represents the schedule of class period meeting times.
-    enabled: true
-    columns: *column_defaults
-  - name: budgets
-    description: >
-      This financial entity represents the amount of monies allocated to be spent or received by an education organization as related to a specific account.
     enabled: true
     columns: *column_defaults
   - name: calendars
@@ -102,6 +102,11 @@ sources:
   - name: calendar_dates
     description: >
       The type of scheduled or unscheduled event for the day.
+    enabled: true
+    columns: *column_defaults
+  - name: chart_of_accounts
+    description: >
+      A valid combination of account dimensions under which financials are reported. This financial entity represents a funding source combined with its purpose and type of transaction. It provides a formal record of the debits and credits relating to the specific account.
     enabled: true
     columns: *column_defaults
   - name: class_periods
@@ -126,7 +131,7 @@ sources:
     columns: *column_defaults
   - name: community_provider_licenses
     description: >
-      The legal document held by the CommunityProvider that authorizes the holder to perform certain functions and or services.
+      The legal document held by the community provider that authorizes the holder to perform certain functions and or services.
     enabled: true
     columns: *column_defaults
   - name: competency_objectives
@@ -134,9 +139,9 @@ sources:
       This entity holds additional competencies for student achievement that are not associated with specific learning objectives (e.g., paying attention in class).
     enabled: true
     columns: *column_defaults
-  - name: contracted_staffs
+  - name: contacts
     description: >
-      This financial entity represents the sum of the financial transactions to date for contracted staff. ContractedStaff includes "contractors" or "consultants" who perform services for an agreed upon fee, or an employee of a management service contracted to work on site.
+      This entity represents a contact of a student, such as a parent, guardian or caretaker.
     enabled: true
     columns: *column_defaults
   - name: courses
@@ -157,6 +162,16 @@ sources:
   - name: credentials
     description: >
       The legal document giving authorization to perform teaching assignment services.
+    enabled: true
+    columns: *column_defaults
+  - name: crisis_events
+    description: >
+      A natural or man-made event that causes the disruption of school-level activities and the temporary or permanent displacement of students.
+    enabled: true
+    columns: *column_defaults
+  - name: descriptor_mappings
+    description: >
+      A mapping of a descriptor value in one namespace to a descriptor value in another namespace. This can be used to exchange known contextual mappings of enumeration values.
     enabled: true
     columns: *column_defaults
   - name: discipline_actions
@@ -186,7 +201,7 @@ sources:
     columns: *column_defaults
   - name: education_organization_network_associations
     description: >
-      Properties of the association between the EducationOrganization and its network(s).
+      Properties of the association between the education organization and its network(s).
     enabled: true
     columns: *column_defaults
   - name: education_organization_peer_associations
@@ -199,9 +214,24 @@ sources:
       This entity represents a regional, multi-services public agency authorized by state law to develop, manage and provide services, programs, or other support options (e.g., construction, food services, and technology services) to LEAs.
     enabled: true
     columns: *column_defaults
+  - name: evaluation_rubric_dimensions
+    description: >
+      The cells of a rubric, consisting of a qualitative decription, definition, or exemplar with the associated rubric evaluation level.
+    enabled: true
+    columns: *column_defaults
   - name: feeder_school_associations
     description: >
       The association from feeder school to the receiving school.
+    enabled: true
+    columns: *column_defaults
+  - name: function_dimensions
+    description: >
+      The NCES function accounting dimension representing an expenditure. The function describes the activity for which a service or material object is acquired. The functions of a school district are generally classified into five broad areas, including instruction, support services, operation of non-instructional services, facilities acquisition and construction, and debt service.
+    enabled: true
+    columns: *column_defaults
+  - name: fund_dimensions
+    description: >
+      The NCES fund accounting dimension. A fund is a fiscal and accounting entity with a self-balancing set of accounts recording cash and other financial resources, together with all related liabilities and residual equities or balances, and changes therein, which are segregated for the purpose of carrying on specific activities or attaining certain objectives in accordance with special regulations, restrictions, or limitations.
     enabled: true
     columns: *column_defaults
   - name: grades
@@ -239,11 +269,6 @@ sources:
       An experimental or quasi-experimental study of an intervention technique.
     enabled: true
     columns: *column_defaults
-  - name: learning_objectives
-    description: >
-      Deprecated: Users of this element are advised to use LearningStandard instead. Expect removal of this element in a future release. This entity represents identified learning objectives for courses in specific grades.
-    enabled: true
-    columns: *column_defaults
   - name: learning_standards
     description: >
       A statement that describes a specific competency or academic standard.
@@ -254,14 +279,49 @@ sources:
       Indicates a directional association of equivalence from a source to a target learning standard.
     enabled: true
     columns: *column_defaults
+  - name: local_accounts
+    description: >
+      The set of account codes defined by an education organization for a fiscal year. It provides a formal record of the debits and credits relating to the specific account.
+    enabled: true
+    columns: *column_defaults
+  - name: local_actuals
+    description: >
+      The set of local education agency or charter management organization expense or revenue amounts.
+    enabled: true
+    columns: *column_defaults
+  - name: local_budgets
+    description: >
+      The set of local education agency or charter management organization budget amounts.
+    enabled: true
+    columns: *column_defaults
+  - name: local_contracted_staffs
+    description: >
+      The set of local education agency or charter management organization contracted staff amounts.
+    enabled: true
+    columns: *column_defaults
   - name: local_education_agencies
     description: >
       This entity represents an administrative unit at the local level which exists primarily to operate schools or to contract for educational services. It includes school districts, charter schools, charter management organizations, or other local administrative organizations.
     enabled: true
     columns: *column_defaults
+  - name: local_encumbrances
+    description: >
+      The set of local education agency or charter management organization encumbrance amounts.
+    enabled: true
+    columns: *column_defaults
+  - name: local_payrolls
+    description: >
+      The set of local education agency or charter management organization payroll amounts.
+    enabled: true
+    columns: *column_defaults
   - name: locations
     description: >
-      This entity represents the physical space where students gather for a particular class/section. The Location may be an indoor or outdoor area designated for the purpose of meeting the educational needs of students.
+      This entity represents the physical space where students gather for a particular class/section. The location may be an indoor or outdoor area designated for the purpose of meeting the educational needs of students.
+    enabled: true
+    columns: *column_defaults
+  - name: object_dimensions
+    description: >
+      The NCES object accounting dimension representing an expenditure. Per the NCES definition, this classification is used to describe the service or commodity obtained as the result of a specific expenditure, such as salaries, benefits, tuition reimbursement, and so forth.
     enabled: true
     columns: *column_defaults
   - name: objective_assessments
@@ -274,6 +334,11 @@ sources:
       This entity represents an open staff position that the education organization is seeking to fill.
     enabled: true
     columns: *column_defaults
+  - name: operational_unit_dimensions
+    description: >
+      The NCES operational unit accounting dimension. This dimension is used to segregate costs by school and operational unit such as physical location, department, or other method.
+    enabled: true
+    columns: *column_defaults
   - name: organization_departments
     description: >
       An organizational unit of another education organization, often devoted to a particular academic discipline, area of study, or organization function.
@@ -282,11 +347,6 @@ sources:
   - name: parents
     description: >
       This entity represents a parent or guardian of a student, such as mother, father, or caretaker.
-    enabled: true
-    columns: *column_defaults
-  - name: payrolls
-    description: >
-      This financial entity represents the sum of the financial transactions to date for employee compensation. An "employee" who performs services under the direction of the employing institution or agency, is compensated for such services by the employer and is eligible for employee benefits and wage or salary tax withholdings.
     enabled: true
     columns: *column_defaults
   - name: people
@@ -309,9 +369,29 @@ sources:
       This entity represents any program designed to work in conjunction with, or as a supplement to, the main academic program. Programs may provide instruction, training, services, or benefits through federal, state, or local agencies. Programs may also include organized extracurricular activities for students.
     enabled: true
     columns: *column_defaults
+  - name: program_dimensions
+    description: >
+      The NCES program accounting dimension. A program is defined by the NCES as a plan of activities and procedures designed to accomplish a predetermined objective or set of objectives. These are often categorized into broad program areas such as regular education, special education, vocational education, other PK-12 instructional, nonpublic school, adult and continuing education, community and junior college education, community services, and co-curricular or extracurricular activities.
+    enabled: true
+    columns: *column_defaults
   - name: program_evaluations
     description: >
       An evaluation instrument applied to evaluate a student in the context of a program. Student evaluations are typically applied by a staff member based upon a rubric.
+    enabled: true
+    columns: *column_defaults
+  - name: program_evaluation_elements
+    description: >
+      The lowest level elements or criterion of a students's performance that is being evaluated, typically by a rubric.
+    enabled: true
+    columns: *column_defaults
+  - name: program_evaluation_objectives
+    description: >
+      A subcomponent of a ProgramEvaluation, a specific student objective or domain of performance that is being evaluated.
+    enabled: true
+    columns: *column_defaults
+  - name: project_dimensions
+    description: >
+      The NCES project accounting dimension. The project dimension reporting code permits school districts to accumulate expenditures to meet a variety of specialized reporting requirements at the local, state, and federal levels.
     enabled: true
     columns: *column_defaults
   - name: report_cards
@@ -346,12 +426,17 @@ sources:
     columns: *column_defaults
   - name: sessions
     description: >
-      A term in the school year, generally a unit of time into which courses are scheduled, instruction occurs and by which credits are awarded. Sessions may be interrupted by vacations or other events.
+      A specific designated unit of time during which instruction is provided, grades are reported and academic credits are awarded to students (whenever applicable). Sessions serve as organized segments of the academic year and can be interrupted by vacations or other events.
+    enabled: true
+    columns: *column_defaults
+  - name: source_dimensions
+    description: >
+      The NCES source dimension. This dimension is used to segregate costs by school and operational unit such as physical location, department, or other method.
     enabled: true
     columns: *column_defaults
   - name: staffs
     description: >
-      This entity represents an individual who performs specified activities for any public or private education institution or agency that provides instructional and/or support services to students or staff at the early childhood level through high school completion. For example, this includes:    1. An "employee" who performs services under the direction of the employing institution or agency is compensated for such services by the employer and is eligible for employee benefits and wage or salary tax withholdings    2. A "contractor" or "consultant" who performs services for an agreed upon fee or an employee of a management service contracted to work on site    3. A "volunteer" who performs services on a voluntary and uncompensated basis    4. An in-kind service provider    5. An independent contractor or businessperson working at a school site.
+      This entity represents an individual who performs specified activities for any public or private education institution or agency that provides instructional and/or support services to students or staff at the early childhood level through high school completion.
     enabled: true
     columns: *column_defaults
   - name: staff_absence_events
@@ -361,7 +446,7 @@ sources:
     columns: *column_defaults
   - name: staff_cohort_associations
     description: >
-      This association indicates the Staff associated with a cohort of students.
+      This association indicates the staff associated with a cohort of students.
     enabled: true
     columns: *column_defaults
   - name: staff_discipline_incident_associations
@@ -381,7 +466,7 @@ sources:
     columns: *column_defaults
   - name: staff_education_organization_employment_associations
     description: >
-      This association indicates the EducationOrganization an employee, contractor, volunteer, or other service provider is formally associated with typically indicated by which organization the staff member has a services contract with or receives compensation from.
+      This association indicates the education organization an employee, contractor, volunteer, or other service provider is formally associated with typically indicated by which organization the staff member has a services contract with or receives compensation from.
     enabled: true
     columns: *column_defaults
   - name: staff_leaves
@@ -391,12 +476,12 @@ sources:
     columns: *column_defaults
   - name: staff_program_associations
     description: >
-      This association indicates the Staff associated with a program.
+      This association indicates the staff associated with a program.
     enabled: true
     columns: *column_defaults
   - name: staff_school_associations
     description: >
-      This association indicates the School(s) to which a staff member provides instructional services.
+      This association indicates the school(s) to which a staff member provides instructional services.
     enabled: true
     columns: *column_defaults
   - name: staff_section_associations
@@ -424,9 +509,24 @@ sources:
       This entity represents the analysis or scoring of a student's response on an assessment. The analysis results in a value that represents a student's performance on a set of items on a test.
     enabled: true
     columns: *column_defaults
+  - name: student_assessment_education_organization_associations
+    description: >
+      The association of individual StudentAssessments with EducationOrganizations indicating administration, enrollment, or attribution.
+    enabled: true
+    columns: *column_defaults
+  - name: student_assessment_registrations
+    description: >
+      Identifies an assessment registration that a student is expected to participate in including the testing organization, reporting organization and assessment delivery details.
+    enabled: true
+    columns: *column_defaults
+  - name: student_assessment_registration_battery_part_associations
+    description: >
+      The association to the part(s) of the assessment battery that the student is to be tested for this administration of the assessment.
+    enabled: true
+    columns: *column_defaults
   - name: student_cohort_associations
     description: >
-      This association represents the Cohort(s) for which a student is designated.
+      This association represents the cohort(s) for which a student is designated.
     enabled: true
     columns: *column_defaults
   - name: student_competency_objectives
@@ -434,9 +534,14 @@ sources:
       This entity represents the competency assessed or evaluated for the student against a specific competency objective.
     enabled: true
     columns: *column_defaults
+  - name: student_contact_associations
+    description: >
+      This association relates students to their parents, guardians, or caretakers.
+    enabled: true
+    columns: *column_defaults
   - name: student_cte_program_associations
     description: >
-      This association represents the career and technical education (CTE) program that a student participates in. The association is an extension of the StudentProgramAssociation particular for CTE programs.
+      This association represents the career and technical education (CTE) program that a student participates in. The association is a subclass of the GeneralStudentProgramAssociation specifically designed for CTE programs.
     enabled: true
     columns: *column_defaults
   - name: student_discipline_incident_associations
@@ -454,9 +559,14 @@ sources:
       This association indicates those students who were involved and not perpetrators for a discipline incident.
     enabled: true
     columns: *column_defaults
+  - name: student_education_organization_assessment_accommodations
+    description: >
+      The accommodation(s) required or expected for administering assessments as determined by the education organization.
+    enabled: true
+    columns: *column_defaults
   - name: student_education_organization_associations
     description: >
-      This association represents student information as reported in the context of the student's relationship to the Education Organization. Enrollment relationship semantics are covered by StudentSchoolAssociation.
+      This association represents student information as reported in the context of the student's relationship to the education organization. Enrollment relationship semantics are covered by StudentSchoolAssociation.
     enabled: true
     columns: *column_defaults
   - name: student_education_organization_responsibility_associations
@@ -469,9 +579,14 @@ sources:
       This entity holds a student's grade or competency level for a gradebook entry.
     enabled: true
     columns: *column_defaults
+  - name: student_healths
+    description: >
+      This entity stores the student health records.
+    enabled: true
+    columns: *column_defaults
   - name: student_homeless_program_associations
     description: >
-      This association represents the McKinney-Vento Homeless Program program(s) that a student participates in or from which the Student receives services.
+      This association represents the McKinney-Vento Homeless Program program(s) that a student participates in or from which the student receives services. The association is a subclass of the GeneralStudentProgramAssociation specifically designed for homeless programs.
     enabled: true
     columns: *column_defaults
   - name: student_intervention_associations
@@ -486,17 +601,12 @@ sources:
     columns: *column_defaults
   - name: student_language_instruction_program_associations
     description: >
-      This association represents the Title III Language Instruction for Limited English Proficient and Immigrant Students program(s) that a student participates in or from which the Student receives services.
-    enabled: true
-    columns: *column_defaults
-  - name: student_learning_objectives
-    description: >
-      Deprecated: Users of this element are advised to use Grade.LearningStandardGrade instead. Expect removal of this element in a future release. This entity represents the competency assessed or evaluated for the student against a specific LearningObjective.
+      This association represents the Title III Language Instruction for Limited English Proficient and Immigrant Students program(s) that a student participates in or from which the student receives services. The association is a subclass of the GeneralStudentProgramAssociation specifically designed for language instruction programs.
     enabled: true
     columns: *column_defaults
   - name: student_migrant_education_program_associations
     description: >
-      This association represents the migrant education program(s) that a student participates in or receives services from. The association is an extension of the StudentProgramAssociation with added elements particular to migrant education programs.
+      This association represents the migrant education program(s) that a student participates in or receives services from. The association is a subclass of the GeneralStudentProgramAssociation specifically designed for migrant education programs.
     enabled: true
     columns: *column_defaults
   - name: student_neglected_or_delinquent_program_associations
@@ -511,7 +621,7 @@ sources:
     columns: *column_defaults
   - name: student_program_associations
     description: >
-      This association represents the Program(s) that a student participates in or is served by.
+      This association represents the program(s) that a student participates in or is served by.
     enabled: true
     columns: *column_defaults
   - name: student_program_attendance_events
@@ -526,7 +636,7 @@ sources:
     columns: *column_defaults
   - name: student_school_associations
     description: >
-      This association represents the School in which a student is enrolled. The semantics of enrollment may differ slightly by state. Non-enrollment relationships between a student and an education organization may be described using the StudentEducationOrganizationAssociation.
+      This association represents the school in which a student is enrolled. The semantics of enrollment may differ slightly by state. Non-enrollment relationships between a student and an education organization may be described using the StudentEducationOrganizationAssociation.
     enabled: true
     columns: *column_defaults
   - name: student_school_attendance_events
@@ -536,7 +646,12 @@ sources:
     columns: *column_defaults
   - name: student_school_food_service_program_associations
     description: >
-      This association represents the school food services program(s), such as the Free or Reduced Lunch Program, that a student participates in or from which the Student receives services.
+      This association represents the school food services program(s), such as the Free or Reduced Lunch program, that a student participates in or from which the student receives services. The association is a subclass of the GeneralStudentProgramAssociation specifically designed for school food service programs.
+    enabled: true
+    columns: *column_defaults
+  - name: student_section504_program_associations
+    description: >
+      This association identifies student that qualifies for the Section 504 of the Rehabilitation Act of 1973.
     enabled: true
     columns: *column_defaults
   - name: student_section_associations
@@ -551,7 +666,7 @@ sources:
     columns: *column_defaults
   - name: student_special_education_program_associations
     description: >
-      This association represents the special education program(s) that a student participates in or receives services from. The association is an extension of the StudentProgramAssociation particular for special education programs.
+      This association represents the special education program(s) that a student participates in or receives services from. The association is a subclass of the GeneralStudentProgramAssociation specifically designed for special education programs.
     enabled: true
     columns: *column_defaults
   - name: student_special_education_program_eligibility_associations
@@ -561,7 +676,12 @@ sources:
     columns: *column_defaults
   - name: student_title_i_part_a_program_associations
     description: >
-      This association represents the Title I Part A program(s) that a student participates in or from which the Student receives services. The association is an extension of the StudentProgramAssociation particular for Title I Part A programs.
+      This association represents the Title I Part A program(s) that a student participates in or from which the student receives services. The association is a subclass of the GeneralStudentProgramAssociation specifically designed for Title I Part A programs.
+    enabled: true
+    columns: *column_defaults
+  - name: student_transportations
+    description: >
+      This entity captures a student's specific transportation arrangement.
     enabled: true
     columns: *column_defaults
   - name: surveys
@@ -621,21 +741,11 @@ sources:
     columns: *column_defaults
   - name: survey_section_response_education_organization_target_associations
     description: >
-      This association provides information about the survey section and the Education Organization the survey section is about.
+      This association provides information about the survey section and the education organization the survey section is about.
     enabled: true
     columns: *column_defaults
   - name: survey_section_response_staff_target_associations
     description: >
       This association provides information about the survey section and the staff the survey section is about.
-    enabled: true
-    columns: *column_defaults
-  - name: contacts
-    description: >
-      Something about contacts.
-    enabled: true
-    columns: *column_defaults
-  - name: student_contact_associations
-    description: >
-      Something about contacts.
     enabled: true
     columns: *column_defaults
