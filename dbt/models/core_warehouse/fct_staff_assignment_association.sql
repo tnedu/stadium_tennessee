@@ -12,7 +12,7 @@
   )
 }}
 
-{{ edu_wh.cds_depends_on('tdoe:staff_assignment_association:custom_data_sources') }}
+{{ cds_depends_on('tdoe:staff_assignment_association:custom_data_sources') }}
 {% set custom_data_sources = var('tdoe:staff_assignment_association:custom_data_sources', []) %}
 
 with stg_staff_edorg_assignments as (
@@ -56,13 +56,13 @@ formatted as (
         stg_staff_edorg_assignments.credential_state
 
         -- custom data sources columns
-        {{ edu_wh.add_cds_columns(custom_data_sources=custom_data_sources) }}
+        {{ add_cds_columns(custom_data_sources=custom_data_sources) }}
     from stg_staff_edorg_assignments stg_staff_edorg_assignments
     join dim_staff dim_staff
         on stg_staff_edorg_assignments.k_staff = dim_staff.k_staff
 
     -- custom data sources
-    {{ edu_wh.add_cds_joins_v2(custom_data_sources=custom_data_sources) }}
+    {{ add_cds_joins_v2(custom_data_sources=custom_data_sources) }}
 )
 select * from formatted
 

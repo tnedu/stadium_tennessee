@@ -15,9 +15,7 @@
 select fteada.k_lea,
     fteada.report_period, 
     fteada.fteada_program,
-    cast((floor(sum(fteada.normalized_fteada) * cast(fteada.fteada_weight as decimal(38,5)) * 100000) / 100000) as decimal(38,5)) as wfteada,
-    max(tdoe_severity_code) as tdoe_severity_code,
-    {{ severity_code_to_severity_case_clause('max(tdoe_severity_code)') }}
+    cast((floor(sum(fteada.normalized_fteada) * cast(fteada.fteada_weight as decimal(38,5)) * 100000) / 100000) as decimal(38,5)) as wfteada
 from {{ ref('fct_student_fte_ada') }} fteada
 where fteada.is_primary_school = true
     and fteada.fteada_program is not null

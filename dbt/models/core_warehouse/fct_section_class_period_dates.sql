@@ -15,7 +15,7 @@
   )
 }}
 
-{{ edu_wh.cds_depends_on('tdoe:section_class_period_dates:custom_data_sources') }}
+{{ cds_depends_on('tdoe:section_class_period_dates:custom_data_sources') }}
 {% set custom_data_sources = var('tdoe:section_class_period_dates:custom_data_sources', []) %}
 
 with bell_schedule_periods_dates as (
@@ -41,7 +41,7 @@ section_cps_dates as (
         bs.bell_schedule_name, bs.alternate_day_name, bs.calendar_date
 
         -- custom data sources
-        {{ edu_wh.add_cds_columns(custom_data_sources=custom_data_sources) }}
+        {{ add_cds_columns(custom_data_sources=custom_data_sources) }}
         
     from {{ ref('dim_course_section') }} sec
     join {{ ref('dim_session')}} sess
@@ -57,7 +57,7 @@ section_cps_dates as (
         and bs.k_class_period = cp.k_class_period
 
     -- custom data sources
-    {{ edu_wh.add_cds_joins_v2(custom_data_sources=custom_data_sources) }}
+    {{ add_cds_joins_v2(custom_data_sources=custom_data_sources) }}
 
     where bs.calendar_date >= sess.session_begin_date
         and (sess.session_end_date is null or bs.calendar_date <= sess.session_end_date)

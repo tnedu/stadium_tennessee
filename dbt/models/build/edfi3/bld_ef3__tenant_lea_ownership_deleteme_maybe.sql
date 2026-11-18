@@ -1,8 +1,7 @@
 {{
   config(
     materialized="table",
-    schema="wh",
-    alias="bld_ef3__tenant_lea_ownership"
+    schema="build"
   )
 }}
 -- we are not a multi-tenant configuration, so our tenant owns all our leas

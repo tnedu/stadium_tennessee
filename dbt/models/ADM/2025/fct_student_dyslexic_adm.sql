@@ -55,9 +55,7 @@ with raw_adm as (
                                 cast(least(sm.school_days_in_report_period,20) as decimal(38,8)), 1.0)
                 end) * 100000) / 100000)
             as decimal(38,5)
-        ) as normalized_dys_adm,
-        max(sm.tdoe_severity_code) as tdoe_severity_code,
-        {{ severity_code_to_severity_case_clause('max(sm.tdoe_severity_code)') }}
+        ) as normalized_dys_adm
     from {{ ref('student_membership') }} sm
     join {{ ref('dim_student') }} s
         on s.k_student = sm.k_student

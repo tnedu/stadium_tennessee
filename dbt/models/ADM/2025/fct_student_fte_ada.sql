@@ -44,8 +44,7 @@ with aggregate_before_explosion as (
         sum(ssd_duration) over (
             partition by k_student, k_school, k_school_calendar, is_primary_school, entry_date, report_period
         ) as sum_ssd_duration,
-        courses,
-        tdoe_severity_code
+        courses
     from {{ ref('student_day_sections') }}
     where grade_level_adm in ('K', '01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12')
 ),
@@ -58,8 +57,7 @@ student_fteada as (
         sds.early_grad_days, sds.member_days, sds.funding_ineligible_days, sds.absent_days, sds.suspended_days, sds.sum_ssd_duration, 
         sds.report_period, sds.report_period_begin_date, 
         sds.report_period_end_date, sds.school_days_in_report_period,
-        course.course_duration, course.fteada_program, course.fteada_weight,
-        tdoe_severity_code
+        course.course_duration, course.fteada_program, course.fteada_weight
     from aggregate_before_explosion sds
     lateral view outer explode(sds.courses) as course
     where sds.grade_level_adm in ('K', '01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12')
@@ -74,8 +72,7 @@ grouped_by_program as (
         report_period, report_period_begin_date, 
         report_period_end_date, school_days_in_report_period,
         sum(course_duration) as program_duration, 
-        fteada_program, fteada_weight,
-        max(tdoe_severity_code) as tdoe_severity_code
+        fteada_program, fteada_weight
     from student_fteada
     group by all
 ),
@@ -102,8 +99,7 @@ daily_attendance as (
         end as daily_attendance_ifa_member,
         program_duration, 
         fteada_program, fteada_weight,
-        date_format(calendar_date, 'E') as day_of_week,
-        tdoe_severity_code
+        date_format(calendar_date, 'E') as day_of_week
     from grouped_by_program
 ),
 fake_schedule_by_dow as (
@@ -112,8 +108,7 @@ fake_schedule_by_dow as (
     select k_student, k_school, k_lea, k_school_calendar, school_year, is_primary_school, entry_date, 
         exit_withdraw_date, day_of_week, 
         daily_attendance_ifa_member as daily_attendance,
-        program_duration, fteada_program, fteada_weight, calendar_date,
-        tdoe_severity_code
+        program_duration, fteada_program, fteada_weight, calendar_date
     from daily_attendance
     where is_early_grad_date = 0
         and isa_member = 1
@@ -132,8 +127,7 @@ unioned_eg_schedule as (
         early_grad_days, member_days, funding_ineligible_days, absent_days, suspended_days, sum_ssd_duration, 
         report_period, report_period_begin_date, 
         report_period_end_date, school_days_in_report_period, daily_attendance,
-        program_duration, fteada_program, fteada_weight,
-        tdoe_severity_code
+        program_duration, fteada_program, fteada_weight
     from daily_attendance
     where is_early_grad_date = 0
     union all
@@ -146,8 +140,7 @@ unioned_eg_schedule as (
         da.early_grad_days, da.member_days, da.funding_ineligible_days, da.absent_days, da.suspended_days, da.sum_ssd_duration, 
         da.report_period, da.report_period_begin_date, 
         da.report_period_end_date, da.school_days_in_report_period, fs.daily_attendance,
-        fs.program_duration, fs.fteada_program, fs.fteada_weight,
-        greatest(da.tdoe_severity_code, fs.tdoe_severity_code) as tdoe_severity_code
+        fs.program_duration, fs.fteada_program, fs.fteada_weight
     from daily_attendance da
     left outer join fake_schedule_by_dow fs
         on fs.k_student = da.k_student
@@ -185,13 +178,11 @@ fteada as (
                 end) * 100000) / 100000)
             as decimal(38,5)
         ) as normalized_fteada,
-        fteada_program, fteada_weight,
-        max(tdoe_severity_code) as tdoe_severity_code
+        fteada_program, fteada_weight
     from unioned_eg_schedule
     group by all
 )
 select *,
-    {{ severity_code_to_severity_case_clause('tdoe_severity_code') }},
     cast((floor(normalized_fteada * fteada_weight * 100000) / 100000) as decimal(38,5)) as normalized_fteada_weighted
 from fteada
 order by k_lea, k_school, is_primary_school, k_student, report_period, fteada_program

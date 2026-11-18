@@ -10,7 +10,7 @@
   )
 }}
 
-{{ edu_wh.cds_depends_on('tdoe:student_district:custom_data_sources') }}
+{{ cds_depends_on('tdoe:student_district:custom_data_sources') }}
 {% set custom_data_sources = var('tdoe:student_district:custom_data_sources', []) %}
 
 with stg_student as (
@@ -99,7 +99,7 @@ formatted as (
         stu_languages.calc_home_language
 
         -- custom data sources columns
-        {{ edu_wh.add_cds_columns(custom_data_sources=custom_data_sources) }}
+        {{ add_cds_columns(custom_data_sources=custom_data_sources) }}
     from stg_student
     join stu_immutable_demos
         on stu_immutable_demos.k_student = stg_student.k_student
@@ -125,7 +125,7 @@ formatted as (
 
 
     -- custom data sources
-    {{ edu_wh.add_cds_joins_v2(custom_data_sources=custom_data_sources) }}
+    {{ add_cds_joins_v2(custom_data_sources=custom_data_sources) }}
 )
 
 select * from formatted

@@ -14,7 +14,7 @@
   )
 }}
 
-{{ edu_wh.cds_depends_on('tdoe:student_standard_day:custom_data_sources') }}
+{{ cds_depends_on('tdoe:student_standard_day:custom_data_sources') }}
 {% set custom_data_sources = var('tdoe:student_standard_day:custom_data_sources', []) %}
 
 /*sae student standard day for prior years*/
@@ -64,7 +64,7 @@ all_ssds as (
 select 
     ssd.*
     -- custom data sources
-    {{ edu_wh.add_cds_columns(custom_data_sources=custom_data_sources) }}
+    {{ add_cds_columns(custom_data_sources=custom_data_sources) }}
 from all_ssds ssd
 -- custom data sources
-{{ edu_wh.add_cds_joins_v2(custom_data_sources=custom_data_sources) }}
+{{ add_cds_joins_v2(custom_data_sources=custom_data_sources) }}

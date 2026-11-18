@@ -12,7 +12,7 @@
   )
 }}
 
-{{ edu_wh.cds_depends_on('tdoe:staff_contact_association:custom_data_sources') }}
+{{ cds_depends_on('tdoe:staff_contact_association:custom_data_sources') }}
 {% set custom_data_sources = var('tdoe:staff_contact_association:custom_data_sources', []) %}
 
 with stg_staff_edorg_contacts as (
@@ -34,12 +34,12 @@ formatted as (
         stg_staff_edorg_contacts.email_address
 
         -- custom data sources columns
-        {{ edu_wh.add_cds_columns(custom_data_sources=custom_data_sources) }}
+        {{ add_cds_columns(custom_data_sources=custom_data_sources) }}
     from stg_staff_edorg_contacts stg_staff_edorg_contacts
     join dim_staff dim_staff
         on stg_staff_edorg_contacts.k_staff = dim_staff.k_staff
 
     -- custom data sources
-    {{ edu_wh.add_cds_joins_v2(custom_data_sources=custom_data_sources) }}
+    {{ add_cds_joins_v2(custom_data_sources=custom_data_sources) }}
 )
 select * from formatted

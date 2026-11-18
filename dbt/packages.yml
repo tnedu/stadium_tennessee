@@ -1,6 +1,4 @@
 packages:
-  - git: https://github.com/tnedu/edu_wh.git
-    revision: tdoe_0.7.3
+  - local: C:\Users\ca21034\VSCodeProjects\edu_wh
   - package: brooklyn-data/dbt_artifacts
     version: [">=2.2.2", "<3.0.0"]
-

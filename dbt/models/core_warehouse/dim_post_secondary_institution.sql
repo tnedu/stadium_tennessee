@@ -9,7 +9,7 @@
   )
 }}
 
-{{ edu_wh.cds_depends_on('edu:post_secondary_institution:custom_data_sources') }}
+{{ cds_depends_on('edu:post_secondary_institution:custom_data_sources') }}
 {% set custom_data_sources = var('edu:post_secondary_institution:custom_data_sources', []) %}
 
 with stg_psi as (
@@ -47,14 +47,14 @@ formatted as (
         choose_address.longitude
 
         -- custom data sources columns
-        {{ edu_wh.add_cds_columns(custom_data_sources=custom_data_sources) }}
+        {{ add_cds_columns(custom_data_sources=custom_data_sources) }}
     from stg_psi
     left join choose_address 
         on stg_psi.k_post_secondary_institution = choose_address.k_post_secondary_institution
 
     -- custom data sources
-    {{ edu_wh.add_cds_joins_v1(custom_data_sources=custom_data_sources, driving_alias='stg_psi', join_cols=['k_post_secondary_institution']) }}
-    {{ edu_wh.add_cds_joins_v2(custom_data_sources=custom_data_sources) }}
+    {{ add_cds_joins_v1(custom_data_sources=custom_data_sources, driving_alias='stg_psi', join_cols=['k_post_secondary_institution']) }}
+    {{ add_cds_joins_v2(custom_data_sources=custom_data_sources) }}
 )
 select * from formatted
 order by tenant_code, k_post_secondary_institution

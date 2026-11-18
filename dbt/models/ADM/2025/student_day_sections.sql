@@ -26,8 +26,7 @@ student_classes as (
         si.course_code, fssa.k_course_section, fssa.begin_date as fssa_begin_date, si.class_period_name, si.bell_schedule_name, si.start_time, si.end_time, coalesce(si.period_duration,0) as period_duration,
         si.is_cte, si.CTE_Cluster,  
         max_by(fteada.statutory_program, fteada.weight) as fteada_program,
-        max(fteada.weight) as fteada_weight,
-        greatest(coalesce(sm.tdoe_severity_code,0), coalesce(fssa.tdoe_severity_code,0), coalesce(si.tdoe_severity_code,0)) as tdoe_severity_code
+        max(fteada.weight) as fteada_weight
     from {{ ref('student_days') }} sm
     join {{ ref('fct_student_section_association') }} fssa
         on fssa.school_year = sm.school_year
@@ -71,8 +70,7 @@ student_classes as (
         sm.report_period, sm.report_period_begin_date, sm.report_period_end_date,
         sm.school_days_in_report_period,
         si.course_code, fssa.k_course_section, fssa.begin_date, si.class_period_name, si.bell_schedule_name, si.start_time, si.end_time, coalesce(si.period_duration,0),
-        si.is_cte, si.CTE_Cluster,
-        greatest(coalesce(sm.tdoe_severity_code,0), coalesce(fssa.tdoe_severity_code,0), coalesce(si.tdoe_severity_code,0))
+        si.is_cte, si.CTE_Cluster
 ),
 detect_overlaps as (
     select k_student, k_lea, k_school, k_school_calendar, school_year,
@@ -92,8 +90,7 @@ detect_overlaps as (
                     order by start_time, end_time)
                 then 1
             else 0
-        end as has_overlapping_period,
-        tdoe_severity_code
+        end as has_overlapping_period
     from student_classes
 ),
 student_courses_aggregated as (
@@ -125,8 +122,7 @@ student_courses_aggregated as (
             max(fteada_program) as fteada_program,
             max(fteada_weight) as fteada_weight,
             sort_array(collect_list(concat(start_time,'-',end_time))) as meeting_times
-        ) AS course_info,
-        max(tdoe_severity_code) as tdoe_severity_code
+        ) AS course_info
     from detect_overlaps
     group by k_student, k_lea, k_school, k_school_calendar, school_year,
         is_primary_school, entry_date, exit_withdraw_date, grade_level, grade_level_adm,
@@ -174,9 +170,7 @@ student_daily_schedule as (
                 c.fteada_weight,
                 c.meeting_times
             )
-        ) as courses,
-        max(tdoe_severity_code) as tdoe_severity_code,
-        {{ severity_code_to_severity_case_clause('max(tdoe_severity_code)') }}
+        ) as courses
     from student_courses_aggregated
     group by k_student, k_lea, k_school, k_school_calendar, school_year,
         is_primary_school, entry_date, exit_withdraw_date, grade_level, grade_level_adm,
@@ -198,9 +192,7 @@ select sm.k_student, sm.k_lea, sm.k_school, sm.k_school_calendar, sm.school_year
     sm.school_days_in_report_period,
     null as total_duration, null as cte_duration, 
     0 as has_overlapping_periods, 0 as has_duplicate_course_scheduled,
-    null as courses,
-    tdoe_severity_code,
-    tdoe_severity
+    null as courses
 from {{ ref('student_days') }} sm
 where sm.is_early_grad_date = 1
 union all

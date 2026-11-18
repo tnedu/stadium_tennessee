@@ -86,7 +86,5 @@ select k_student, k_lea, k_school, k_school_calendar, school_year, is_primary_sc
             end) * 100000.0) / 100000.0)
         as decimal(38,5)
     ) as dyslexic_membership,
-    courses,
-    tdoe_severity_code,
-    tdoe_severity
+    courses
 from {{ ref('student_day_sections') }}

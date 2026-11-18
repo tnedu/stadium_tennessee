@@ -55,9 +55,7 @@ with q as (
         case
             when attendance.calendar_date is not null then attendance.is_absent
             else 0.0
-        end as is_absent,
-        greatest(coalesce(fssa.tdoe_severity_code, 0), coalesce(dcd.tdoe_severity_code, 0), coalesce(ssd.tdoe_severity_code, 0), coalesce(attendance.tdoe_severity_code, 0)) as tdoe_severity_code,
-        {{ severity_code_to_severity_case_clause('greatest(coalesce(fssa.tdoe_severity_code, 0), coalesce(dcd.tdoe_severity_code, 0), coalesce(ssd.tdoe_severity_code, 0), coalesce(attendance.tdoe_severity_code, 0))') }}
+        end as is_absent
     from {{ ref('fct_student_school_association') }} fssa
     join {{ ref('xwalk_grade_levels') }} gl
         on upper(gl.grade_level) = upper(fssa.entry_grade_level)
@@ -172,9 +170,7 @@ with q as (
         end as is_EconDis,
         0 as is_EL,
         0 as is_Dyslexic,
-        0 as is_absent,
-        greatest(coalesce(fssa.tdoe_severity_code, 0), coalesce(dcd.tdoe_severity_code, 0)) as tdoe_severity_code,
-        {{ severity_code_to_severity_case_clause('greatest(coalesce(fssa.tdoe_severity_code, 0), coalesce(dcd.tdoe_severity_code, 0))') }}
+        0 as is_absent
     from {{ ref('fct_student_school_association') }} fssa
     join {{ ref('xwalk_grade_levels') }} gl
         on upper(gl.grade_level) = upper(fssa.entry_grade_level)
@@ -235,8 +231,6 @@ select k_student, k_lea, k_school, k_school_calendar,
             end
         /* Calendar date is outside of the enrollment window, so no membership. */
         else 0
-    end as isa_member,
-    tdoe_severity_code,
-    tdoe_severity
+    end as isa_member
 from q
 order by k_school, k_student, calendar_date

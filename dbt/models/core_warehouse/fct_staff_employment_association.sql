@@ -12,7 +12,7 @@
   )
 }}
 
-{{ edu_wh.cds_depends_on('tdoe:staff_employment_association:custom_data_sources') }}
+{{ cds_depends_on('tdoe:staff_employment_association:custom_data_sources') }}
 {% set custom_data_sources = var('tdoe:staff_employment_association:custom_data_sources', []) %}
 
 with stg_staff_edorg_employment as (
@@ -57,7 +57,7 @@ formatted as (
         staff_edorg_employment.separation_reason
 
         -- custom data sources columns
-        {{ edu_wh.add_cds_columns(custom_data_sources=custom_data_sources) }}
+        {{ add_cds_columns(custom_data_sources=custom_data_sources) }}
     from stg_staff_edorg_employment staff_edorg_employment
     left join dim_school school
         on staff_edorg_employment.k_school = school.k_school
@@ -65,6 +65,6 @@ formatted as (
         on staff_edorg_employment.k_staff = dim_staff.k_staff
 
     -- custom data sources
-    {{ edu_wh.add_cds_joins_v2(custom_data_sources=custom_data_sources) }}
+    {{ add_cds_joins_v2(custom_data_sources=custom_data_sources) }}
 )
 select * from formatted

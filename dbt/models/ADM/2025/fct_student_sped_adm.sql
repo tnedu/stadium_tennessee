@@ -59,9 +59,7 @@ with raw_el_adm as (
         sped.option,
         sped.service_begin_date,
         sped.service_end_date as service_end_date,
-        sped.service_eligibility_date,
-        max(sm.tdoe_severity_code) as tdoe_severity_code,
-        {{ severity_code_to_severity_case_clause('max(sm.tdoe_severity_code)') }}
+        sped.service_eligibility_date
     from {{ ref('student_membership') }} sm
     left outer join {{ ref('bld_sped_safe_ranges') }} sped
         on sped.k_lea = sm.k_lea

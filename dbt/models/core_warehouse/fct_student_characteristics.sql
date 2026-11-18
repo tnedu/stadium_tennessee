@@ -12,7 +12,7 @@
   )
 }}
 
-{{ edu_wh.cds_depends_on('tdoe:student_characteristics:custom_data_sources') }}
+{{ cds_depends_on('tdoe:student_characteristics:custom_data_sources') }}
 {% set custom_data_sources = var('tdoe:student_characteristics:custom_data_sources', []) %}
 
 select c.tenant_code, c.api_year as school_year, c.k_student, c.k_student_xyear, c.ed_org_id, c.k_lea,
@@ -26,10 +26,10 @@ select c.tenant_code, c.api_year as school_year, c.k_student, c.k_student_xyear,
         )}} as k_student_characteristic,
     c.student_characteristic, c.begin_date, c.end_date
     -- custom data sources
-    {{ edu_wh.add_cds_columns(custom_data_sources=custom_data_sources) }}
+    {{ add_cds_columns(custom_data_sources=custom_data_sources) }}
 from {{ ref('stg_ef3__stu_ed_org__characteristics') }} c
 -- custom data sources
-{{ edu_wh.add_cds_joins_v2(custom_data_sources=custom_data_sources) }}
+{{ add_cds_joins_v2(custom_data_sources=custom_data_sources) }}
 where c.k_lea is not null
     and c.student_characteristic is not null
     and exists (
