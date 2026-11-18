@@ -32,3 +32,25 @@ sources:
         description: The timestamp this record was created.
       - name: ModifiedDateUTC
         description: The timestamp this record was last updated.
+  - name: identities
+    description: >
+      This entity contains the Identity record for students and staff.
+    columns:
+      - name: Id
+        description: A sequence for the row of data.
+      - name: Role
+        description: The person's role. 0 = Student. 1 = Staff
+      - name: UniqueId
+        description: The person's Ed-Fi unique ID 
+      - name: FirstName
+        description: The person's first name.
+      - name: MiddleName
+        description: The person's middle name.
+      - name: LastName
+        description: The person's last name.
+      - name: DateOfBirth
+        description: The person's date of birth.
+      - name: CreatedDateUTC
+        description: The timestamp this record was created.
+      - name: ModifiedDateUTC
+        description: The timestamp this record was last updated.

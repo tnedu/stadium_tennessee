@@ -31,3 +31,6 @@ from {{ ref('3302_missing_ssa_ssd_coverage') }}
 union
 select *
 from {{ ref('3303_bad_ssa_ssd_durations') }}
+union
+select *
+from {{ ref('3111_student_vs_identity') }}
