@@ -11,7 +11,7 @@ The purpose of this table is to un-overlap Funding Ineligible records that exist
 
 with funding_ineligible as (
     select distinct stu_chars.tenant_code, stu_chars.school_year, stu_chars.k_student, stu_chars.k_lea, 
-        stu_chars.begin_date, 
+        coalesce(stu_chars.begin_date, to_date(concat((cast(school_year as int)-1), '-07-01'), 'yyyy-MM-dd')) as begin_date, 
         coalesce(stu_chars.end_date, to_date(concat(school_year, '-06-30'), 'yyyy-MM-dd')) as end_date
     from {{ ref('fct_student_characteristics') }} stu_chars
     where exists (

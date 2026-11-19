@@ -32,6 +32,9 @@ models:
     +materialized: table
     build:
       +schema: build
+      edfi_3:
+        bld_ef3__tenant_lea_ownership:
+          +enabled: false
     core_warehouse:
       +schema: wh
   dbt_artifacts:

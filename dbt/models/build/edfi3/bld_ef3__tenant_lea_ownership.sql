@@ -1,7 +1,7 @@
 {{
   config(
     materialized="table",
-    schema="wh",
+    schema="build",
     alias="bld_ef3__tenant_lea_ownership"
   )
 }}
