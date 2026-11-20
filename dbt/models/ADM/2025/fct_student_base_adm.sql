@@ -56,12 +56,13 @@ select sm.k_student, sm.k_lea, sm.k_school, sm.k_school_calendar, sm.school_year
             end) * 100000) / 100000)
         as decimal(38,5)
     ) as normalized_adm
-from {{ ref('student_membership') }} sm
-join {{ ref('dim_student') }} s
+    {{ edu_wh.combine_validations(['l', 'school'], aggregate=true) }}
+from {{ edu_wh.validated_ref('student_membership') }} sm
+join {{ edu_wh.validated_ref('dim_student') }} s
     on s.k_student = sm.k_student
-join {{ ref('dim_lea') }} l
+join {{ edu_wh.validated_ref('dim_lea') }} l
     on l.k_lea = sm.k_lea
-join {{ ref('dim_school') }} school
+join {{ edu_wh.validated_ref('dim_school') }} school
     on school.k_school = sm.k_school
 group by sm.k_student, sm.k_lea, sm.k_school, sm.k_school_calendar, sm.school_year,  
     l.lea_id, l.lea_name, cast(right(cast(school.school_id as string), 4) as int), school.school_name,
