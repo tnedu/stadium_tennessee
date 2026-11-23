@@ -38,9 +38,9 @@ errors as (
         s.state_student_id as legacy_state_student_id,
         ssa.tdoe_error_code as error_code,
         concat('Student ', ssa.student_unique_id, ' (', coalesce(s.state_student_id, '[no value]'), ') ',
-            'demographic data submitted by District ', coalesce(cast(ssa.lea_id as string), '[no value]'), ' does not match Identity.\n',
-            'Student resource: First: ', coalesce(s.first_name, '[no value]'), ', Middle: ', coalesce(s.middle_name, '[no value]'), ', Last: ', coalesce(s.last_name, '[no value]'), ', DOB: ', coalesce(cast(s.birth_date as string), '[no value]'), '\n',
-            'Identity: First: ', coalesce(i.first_name, '[no value]'), ', Middle: ', coalesce(i.middle_name, '[no value]'), ', Last: ', coalesce(i.last_name, '[no value]'), ', DOB: ', coalesce(cast(i.birth_date as string), '[no value]')) as error,
+            'demographic data submitted by District ', coalesce(cast(ssa.lea_id as string), '[no value]'), ' does not match Identity. ',
+            'Ed-Fi: { First: ', coalesce(s.first_name, '[no value]'), ', Middle: ', coalesce(s.middle_name, '[no value]'), ', Last: ', coalesce(s.last_name, '[no value]'), ', DOB: ', coalesce(cast(s.birth_date as string), '[no value]'), ' }, ',
+            'Identity: { First: ', coalesce(i.first_name, '[no value]'), ', Middle: ', coalesce(i.middle_name, '[no value]'), ', Last: ', coalesce(i.last_name, '[no value]'), ', DOB: ', coalesce(cast(i.birth_date as string), '[no value]'), ' }') as error,
         {{ severity_to_severity_code_case_clause('ssa.tdoe_severity') }},
         ssa.tdoe_severity
     from stg_student_school_associations ssa
