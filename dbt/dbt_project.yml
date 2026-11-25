@@ -34,6 +34,10 @@ models:
       +schema: build
     core_warehouse:
       +schema: wh
+      dim_class_period:
+        +enabled: false
+      fct_student_school_association:
+        +enabled: false
   dbt_artifacts:
     +schema: dbt_run__audit
     +tags: ['bypass_rls']

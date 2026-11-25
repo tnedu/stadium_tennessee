@@ -1,0 +1,8 @@
+models:
+  - name: fct_course_section_daily_schedule
+    data_tests:
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns:
+              - k_course_section
+              - calendar_date

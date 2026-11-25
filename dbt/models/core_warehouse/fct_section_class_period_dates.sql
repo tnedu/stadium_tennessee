@@ -8,9 +8,9 @@
         "alter table {{ this }} alter column k_bell_schedule set not null",
         "alter table {{ this }} alter column calendar_date set not null",
         "alter table {{ this }} add primary key (k_course_section, k_class_period, k_bell_schedule, calendar_date)",
-        "alter table {{ this }} add constraint fk_{{ this.name }}_course_section foreign key (k_course_section) references {{ ref('edu_wh', 'dim_course_section') }}",
-        "alter table {{ this }} add constraint fk_{{ this.name }}_class_period foreign key (k_class_period) references {{ ref('edu_wh', 'dim_class_period') }}",
-        "alter table {{ this }} add constraint fk_{{ this.name }}_school foreign key (k_school) references {{ ref('edu_wh', 'dim_school') }}",
+        "alter table {{ this }} add constraint fk_{{ this.name }}_course_section foreign key (k_course_section) references {{ ref('dim_course_section') }}",
+        "alter table {{ this }} add constraint fk_{{ this.name }}_class_period foreign key (k_class_period) references {{ ref('dim_class_period') }}",
+        "alter table {{ this }} add constraint fk_{{ this.name }}_school foreign key (k_school) references {{ ref('dim_school') }}",
     ]
   )
 }}
@@ -48,7 +48,7 @@ section_cps_dates as (
         on sess.k_session = sec.k_session
     join {{ ref('stg_ef3__sections__class_periods') }} scp
         on scp.k_course_section = sec.k_course_section
-    join {{ ref('edu_wh', 'dim_class_period') }} cp
+    join {{ ref('dim_class_period') }} cp
         on cp.k_class_period = scp.k_class_period
     join bell_schedule_periods_dates bs
         on bs.tenant_code = cp.tenant_code
