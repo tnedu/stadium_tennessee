@@ -1,184 +1,291 @@
 {{
   config(
     materialized="table",
-    schema="wh",
-    post_hook=[ 
-        "alter table {{ this }} alter column k_school set not null",
-        "alter table {{ this }} alter column k_student set not null",
-    ]
+    schema="wh"
   )
 }}
 
-with student_school_associations as (
+with student_course_section_periods as (
+
     select
+        k_student_course_section_period,
         k_student_school_association,
-        k_student,
-        k_school,
-        tenant_code,
-        school_year,
-        entry_date,
-        exit_withdraw_date
-    from {{ ref('fct_student_school_association') }}
-),
-student_section_associations as (
-    select
+
         k_student,
         k_school,
         k_course_section,
+
         tenant_code,
         school_year,
+
         begin_date,
-        end_date
-    from {{ ref('fct_student_section_association') }}
+        effective_begin_date,
+        effective_end_date
+
+    from {{ ref('bld_ef3__student_course_section_period') }}
+
 ),
+
 course_section_daily_schedules as (
-    select *
-    from {{ ref('fct_course_section_daily_schedule') }}
-    where has_students
-),
-student_course_sections as (
-    /* Grain: One student-school enrollment x StudentSectionAssociation. */
+
     select
-        enrollments.k_student_school_association,
-        enrollments.k_student,
-        enrollments.k_school,
-        enrollments.tenant_code,
-        enrollments.school_year,
-        sections.k_course_section,
-        greatest(
-            enrollments.entry_date,
-            sections.begin_date
-        ) as effective_begin_date,
-        case
-            when enrollments.exit_withdraw_date is null
-                and sections.end_date is null
-                then null
-            when enrollments.exit_withdraw_date is null
-                then sections.end_date
-            when sections.end_date is null
-                then enrollments.exit_withdraw_date
-            else least(
-                enrollments.exit_withdraw_date,
-                sections.end_date
-            )
-        end as effective_end_date
-    from student_school_associations enrollments
-    join student_section_associations sections
-        on sections.k_student = enrollments.k_student
-        and sections.k_school = enrollments.k_school
-        and sections.tenant_code = enrollments.tenant_code
-        and sections.school_year = enrollments.school_year
-        and sections.begin_date <= coalesce(
-            enrollments.exit_withdraw_date,
-            date('9999-12-31')
-        )
-        and coalesce(
-            sections.end_date,
-            date('9999-12-31')
-        ) >= enrollments.entry_date
-),
-student_daily_course_sections as (
-    select
-        students.tenant_code,
-        students.school_year,
-        students.k_school,
-        students.k_student_school_association,
-        students.k_student,
-        schedule.calendar_date,
+        schedule.tenant_code,
+        schedule.school_year,
+
+        schedule.k_school,
         schedule.k_course_section,
         schedule.k_course,
+
+        schedule.calendar_date,
+
         schedule.section_id,
         schedule.local_course_code,
         schedule.course_code,
         schedule.session_name,
+        schedule.is_schedule_exempt,
+
+        {{ schedule_object_select_fields(
+            'course_section',
+            'schedule'
+        ) }}
+
         schedule.is_school_day,
         schedule.is_missing_calendar_date,
+
         schedule.first_start_time,
         schedule.class_periods,
+
         schedule.scheduled_minutes,
         schedule.scheduled_minutes_without_overlap,
+
         schedule.has_section_schedule_issue
-    from student_course_sections students
+
+    from {{ ref('fct_course_section_daily_schedule') }} schedule
+
+    where schedule.has_students
+
+),
+
+student_daily_course_sections as (
+
+    /*
+     * Grain:
+     * One student-school enrollment x StudentSectionAssociation
+     * x calendar date x course section.
+     *
+     * Multiple StudentSectionAssociations for the same section remain
+     * separate here. They are not silently deduplicated.
+     */
+    select
+        periods.k_student_course_section_period,
+        periods.k_student_school_association,
+
+        periods.k_student,
+        periods.k_school,
+
+        periods.tenant_code,
+        periods.school_year,
+
+        periods.begin_date,
+
+        schedule.calendar_date,
+
+        schedule.k_course_section,
+        schedule.k_course,
+
+        schedule.section_id,
+        schedule.local_course_code,
+        schedule.course_code,
+        schedule.session_name,
+        schedule.is_schedule_exempt,
+
+        {{ schedule_object_select_fields(
+            'course_section',
+            'schedule'
+        ) }}
+
+        schedule.is_school_day,
+        schedule.is_missing_calendar_date,
+
+        schedule.first_start_time,
+        schedule.class_periods,
+
+        schedule.scheduled_minutes,
+        schedule.scheduled_minutes_without_overlap,
+
+        schedule.has_section_schedule_issue
+
+    from student_course_section_periods periods
     join course_section_daily_schedules schedule
-        on schedule.k_course_section = students.k_course_section
-        and schedule.k_school = students.k_school
-        and schedule.tenant_code = students.tenant_code
-        and schedule.school_year = students.school_year
-        and schedule.calendar_date >= students.effective_begin_date
+        on schedule.k_course_section = periods.k_course_section
+        and schedule.calendar_date >= periods.effective_begin_date
         and (
-            students.effective_end_date is null
-            or schedule.calendar_date <= students.effective_end_date
+            periods.effective_end_date is null
+            or schedule.calendar_date <= periods.effective_end_date
         )
 ),
 student_daily_course_section_values as (
+
     /*
-     * Build the section value only after all joins have reduced the data
-     * to the exact student/enrollment/date/section grain.
+     * Build the full reporting object and the smaller overlap-check
+     * object after the section/date applicability join.
      */
     select
         tenant_code,
         school_year,
+
         k_school,
         k_student_school_association,
         k_student,
+
         calendar_date,
+
         is_school_day,
+        is_missing_calendar_date,
+
         first_start_time,
         course_code,
         section_id,
+
         scheduled_minutes,
         scheduled_minutes_without_overlap,
-        is_missing_calendar_date,
+
         has_section_schedule_issue,
-        {{ edu_edfi_source.json_object_construct([
+
+        {% set section_fields = [
             ['k_course_section', 'k_course_section'],
             ['k_course', 'k_course'],
             ['section_id', 'section_id'],
             ['local_course_code', 'local_course_code'],
             ['course_code', 'course_code'],
             ['session_name', 'session_name'],
-            ['first_start_time', 'first_start_time'],
-            ['class_periods', 'class_periods'],
-            ['scheduled_minutes', 'scheduled_minutes'],
-            ['scheduled_minutes_without_overlap', 'scheduled_minutes_without_overlap'],
+            ['is_schedule_exempt', 'is_schedule_exempt']
+        ] %}
+
+        {% set section_fields =
+            section_fields
+            + schedule_object_json_fields(
+                'course_section',
+                'student_daily_course_sections'
+            )
+        %}
+
+        {% do section_fields.append(
+            ['first_start_time', 'first_start_time']
+        ) %}
+
+        {% do section_fields.append(
+            ['scheduled_minutes', 'scheduled_minutes']
+        ) %}
+
+        {% do section_fields.append(
+            ['scheduled_minutes_without_overlap', 'scheduled_minutes_without_overlap']
+        ) %}
+
+        {% do section_fields.append(
+            ['class_periods', 'class_periods']
+        ) %}
+
+        {% do section_fields.append(
             ['has_section_schedule_issue', 'has_section_schedule_issue']
-        ]) }} as course_section
+        ) %}
+
+        {{ edu_edfi_source.json_object_construct(
+            section_fields
+        ) }} as course_section,
+
+        /*
+         * Compact object used only for student-level overlap detection.
+         *
+         * Meeting times are flattened in place across class periods,
+         * avoiding repeated traversal of class_periods[] during every
+         * section-pair comparison.
+         */
+        named_struct(
+            'k_course_section',
+                k_course_section,
+
+            'course_code',
+                course_code,
+
+            'section_id',
+                section_id,
+
+            'is_schedule_exempt',
+                coalesce(
+                    is_schedule_exempt,
+                    false
+                ),
+
+            'meeting_times',
+                flatten(
+                    transform(
+                        class_periods,
+                        class_period ->
+                            class_period.meeting_times
+                    )
+                )
+        ) as course_section_overlap_check
+
     from student_daily_course_sections
 ),
 student_daily_schedule_rollup as (
-    /* Grain: One student-school enrollment x calendar date. */
+    /*
+     * Grain:
+     * One student-school enrollment x calendar date.
+     */
     select
         k_student,
         k_school,
         k_student_school_association,
+
         tenant_code,
         school_year,
+
         calendar_date,
+
         max(is_school_day) as is_school_day,
+
         max(
             case
                 when is_missing_calendar_date then 1
                 else 0
             end
         ) = 1 as is_missing_calendar_date,
+
         {{ edu_edfi_source.json_array_agg(
             'course_section',
             order_by='first_start_time, course_code, section_id'
         ) }} as course_sections,
+
+        {{ edu_edfi_source.json_array_agg(
+            'course_section_overlap_check',
+            order_by='first_start_time, course_code, section_id'
+        ) }} as course_section_overlap_checks,
+
         count(*) as course_section_count,
-        sum(scheduled_minutes) as total_scheduled_minutes,
+
+        sum(
+            scheduled_minutes
+        ) as total_scheduled_minutes,
+
         /*
          * Overlap has been removed within each section, but not between
          * different sections assigned to the student.
          */
-        sum(scheduled_minutes_without_overlap) as total_scheduled_minutes_without_section_overlap,
+        sum(
+            scheduled_minutes_without_overlap
+        ) as total_scheduled_minutes_without_section_overlap,
+
         max(
             case
                 when has_section_schedule_issue then 1
                 else 0
             end
         ) = 1 as has_section_schedule_issue
+
     from student_daily_course_section_values
+
     group by
         tenant_code,
         school_year,
@@ -186,39 +293,58 @@ student_daily_schedule_rollup as (
         k_student_school_association,
         k_student,
         calendar_date
+
 ),
-student_daily_schedule_issues as (
+student_daily_schedule_overlap_candidates as (
+    /*
+     * Remove schedule-exempt sections once, before performing any
+     * pairwise meeting-time comparisons.
+     */
     select
         *,
+        filter(
+            course_section_overlap_checks,
+            section ->
+                not coalesce(
+                    section.is_schedule_exempt,
+                    false
+                )
+        ) as overlap_candidate_sections
+    from student_daily_schedule_rollup
+),
+student_daily_schedule_issues as (
+
+    select
+        * except (
+            course_section_overlap_checks,
+            overlap_candidate_sections
+        ),
+
+        /*
+         * Compare each section pair once. An empty or single-element
+         * candidate array naturally produces an empty result.
+         *
+         * For now, pair ordering uses k_course_section. We still need to
+         * change this to StudentSectionAssociation identity so repeated
+         * assignments to the same section can be compared.
+         */
         flatten(
             transform(
-                /* Does there exist Section A */
-                course_sections,
+                overlap_candidate_sections,
                 section_a ->
                     transform(
                         filter(
-                            /* where there exists Section B > A */
-                            course_sections,
+                            overlap_candidate_sections,
                             section_b ->
                                 section_a.k_course_section < section_b.k_course_section
                                 and exists(
-                                    section_a.class_periods,
-                                    period_a ->
+                                    section_a.meeting_times,
+                                    time_a ->
                                         exists(
-                                            /* where there exists a meeting time in Section A */
-                                            period_a.meeting_times,
-                                            time_a ->
-                                                exists(
-                                                    section_b.class_periods,
-                                                    period_b ->
-                                                        exists(
-                                                            /* that overlaps with a meeting time in Section B? */
-                                                            period_b.meeting_times,
-                                                            time_b ->
-                                                                time_a.start_time < time_b.end_time
-                                                                and time_b.start_time < time_a.end_time
-                                                        )
-                                                )
+                                            section_b.meeting_times,
+                                            time_b ->
+                                                time_a.start_time < time_b.end_time
+                                                and time_b.start_time < time_a.end_time
                                         )
                                 )
                         ),
@@ -226,16 +352,21 @@ student_daily_schedule_issues as (
                             named_struct(
                                 'k_course_section',
                                     section_a.k_course_section,
+
                                 'course_code',
                                     section_a.course_code,
+
                                 'section_id',
                                     section_a.section_id,
+
                                 'overlaps_with',
                                     named_struct(
                                         'k_course_section',
                                             section_b.k_course_section,
+
                                         'course_code',
                                             section_b.course_code,
+
                                         'section_id',
                                             section_b.section_id
                                     )
@@ -244,25 +375,40 @@ student_daily_schedule_issues as (
             )
         ) as overlapping_course_sections
 
-    from student_daily_schedule_rollup
+    from student_daily_schedule_overlap_candidates
+
 ),
+
 formatted as (
+
     select
         k_student,
         k_school,
         k_student_school_association,
+
         tenant_code,
         school_year,
+
         calendar_date,
+
         is_school_day,
         is_missing_calendar_date,
+
         course_sections,
         course_section_count,
+
         total_scheduled_minutes,
         total_scheduled_minutes_without_section_overlap,
+
         has_section_schedule_issue,
+
         size(overlapping_course_sections) > 0 as has_course_section_overlap,
+
         overlapping_course_sections
+
     from student_daily_schedule_issues
+
 )
-select * from formatted
+
+select *
+from formatted

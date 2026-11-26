@@ -2,6 +2,7 @@
   config(
     materialized="table",
     schema="wh",
+    liquid_clustered_by=["k_course_section"],
     post_hook=[ 
         "alter table {{ this }} alter column k_school set not null",
         "alter table {{ this }} alter column k_course_section set not null"
@@ -9,87 +10,25 @@
   )
 }}
 
-with student_section_associations as (
+with student_course_section_periods as (
+
     select
+        k_student_course_section_period,
+        k_student_school_association,
+
         k_student,
         k_school,
         k_course_section,
+
         tenant_code,
         school_year,
+
         begin_date,
-        end_date
-    from {{ ref('fct_student_section_association') }}
-),
-student_school_associations as (
-    select
-        k_student_school_association,
-        k_student,
-        k_school,
-        tenant_code,
-        school_year,
-        entry_date,
-        exit_withdraw_date
-    from {{ ref('fct_student_school_association') }}
-),
-student_schedule_periods as (
-    /*
-     * Grain: One student-school enrollment episode x one student-section association.
-     *
-     * schedule_begin_date and schedule_end_date represent the intersection
-     * of the two source intervals:
-     *
-     *   StudentSectionAssociation begin_date/end_date
-     *   StudentSchoolAssociation entry_date/exit_withdraw_date
-     */
-    select
-        school_enrollments.k_student_school_association,
-        student_sections.k_student,
-        student_sections.k_school,
-        student_sections.k_course_section,
-        student_sections.tenant_code,
-        student_sections.school_year,
+        effective_begin_date,
+        effective_end_date
 
-        /* Retain begin_date because it is part of the natural key of the
-         * StudentSectionAssociation. */
-        student_sections.begin_date,
+    from {{ ref('bld_ef3__student_course_section_period') }}
 
-        greatest(
-            student_sections.begin_date,
-            school_enrollments.entry_date
-        ) as effective_begin_date,
-
-        case
-            when student_sections.end_date is null
-                and school_enrollments.exit_withdraw_date is null
-            then null
-            when school_enrollments.exit_withdraw_date is null
-                then student_sections.end_date
-            when student_sections.end_date is null
-                then school_enrollments.exit_withdraw_date
-            else least(
-                student_sections.end_date,
-                school_enrollments.exit_withdraw_date
-            )
-        end as effective_end_date
-    from student_section_associations student_sections
-    join student_school_associations school_enrollments
-        on school_enrollments.k_student = student_sections.k_student
-        and school_enrollments.k_school = student_sections.k_school
-        and school_enrollments.tenant_code = student_sections.tenant_code
-        and school_enrollments.school_year = student_sections.school_year
-
-        /*
-         * Require the StudentSchoolAssociation and
-         * StudentSectionAssociation intervals to intersect.
-         */
-        and school_enrollments.entry_date <= coalesce(
-            student_sections.end_date,
-            date('9999-12-31')
-        )
-        and coalesce(
-            school_enrollments.exit_withdraw_date,
-            date('9999-12-31')
-        ) >= student_sections.begin_date
 ),
 course_section_schedules as (
     select
@@ -101,11 +40,13 @@ course_section_schedules as (
         local_course_code,
         course_code,
         session_name,
+        is_schedule_exempt,
+        {{ schedule_object_select_fields('course_section', 'course_section_schedule' ) }}
         daily_schedule,
         has_overlapping_meeting_times,
         has_class_period_duplicate_dates,
         has_class_period_overlap
-    from {{ ref('fct_course_section_schedule') }}
+    from {{ ref('fct_course_section_schedule') }} course_section_schedule
 ),
 student_schedules as (
     select
@@ -120,6 +61,8 @@ student_schedules as (
         section_schedules.local_course_code,
         section_schedules.course_code,
         section_schedules.session_name,
+        section_schedules.is_schedule_exempt,
+        {{ schedule_object_select_fields('course_section', 'section_schedules' ) }}
         schedule_periods.effective_begin_date,
         schedule_periods.effective_end_date,
         filter(
@@ -127,7 +70,6 @@ student_schedules as (
             schedule_day ->
                 schedule_day.calendar_date >=
                     schedule_periods.effective_begin_date
-
                 and (
                     schedule_periods.effective_end_date is null
                     or schedule_day.calendar_date <=
@@ -157,7 +99,7 @@ student_schedules as (
             )
         ) as has_section_schedule_issue
 
-    from student_schedule_periods schedule_periods
+    from student_course_section_periods  schedule_periods
     join course_section_schedules section_schedules
         on section_schedules.k_course_section = schedule_periods.k_course_section
         and section_schedules.k_school = schedule_periods.k_school
@@ -168,8 +110,7 @@ student_schedules as (
      * but retaining the condition documents and protects the final grain.
      */
     where schedule_periods.effective_end_date is null
-        or schedule_periods.effective_begin_date
-            <= schedule_periods.effective_end_date
+        or schedule_periods.effective_begin_date <= schedule_periods.effective_end_date
 ),
 student_schedule_measures as (
     select
@@ -222,6 +163,8 @@ formatted as (
         local_course_code,
         course_code,
         session_name,
+        is_schedule_exempt,
+        {{ schedule_object_select_fields('course_section', 'student_schedule_measures' ) }}
 
         effective_begin_date,
         effective_end_date,

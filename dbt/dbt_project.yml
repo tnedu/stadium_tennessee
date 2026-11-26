@@ -38,6 +38,8 @@ models:
         +enabled: false
       fct_student_school_association:
         +enabled: false
+      dim_course_section:
+        +enabled: false
   dbt_artifacts:
     +schema: dbt_run__audit
     +tags: ['bypass_rls']
@@ -97,6 +99,23 @@ vars:
 
   # custom intersections of other demographic groupings
   'edu:stu_demos:intersection_groups': Null
+
+  # boolean expressions used to determine whether a section is schedule exempt
+  # evaluated using macro course_section_is_schedule_exempt() and added to dim_course_section
+  'edu:section:schedule_exempt_conditions':
+    - educational_environment_type <=> 'P'
+  
+  # additional fields to be added to the various grains within the schedule objects
+  'edu:schedule:object_fields':
+    course_section:
+      - is_cte
+      - cte_cluster
+
+    class_period:
+      - tdoe_severity
+
+    bell_schedule:
+      - grade_levels
 
   #tdoe business rule vars
   'tdoe:status_columns_config':

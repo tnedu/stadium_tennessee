@@ -1,0 +1,107 @@
+-- SPDX-FileCopyrightText: 2022 Education Analytics
+-- SPDX-License-Identifier: MPL-2.0
+
+{{
+  config(
+    materialized="table",
+    schema="wh",
+    post_hook=[
+        "alter table {{ this }} alter column k_course_section set not null",
+        "alter table {{ this }} add primary key (k_course_section)",
+        "alter table {{ this }} add constraint fk_{{ this.name }}_course foreign key (k_course) references {{ ref('dim_course') }}",
+        "alter table {{ this }} add constraint fk_{{ this.name }}_school foreign key (k_school) references {{ ref('dim_school') }}",
+        "alter table {{ this }} add constraint fk_{{ this.name }}_session foreign key (k_session) references {{ ref('dim_session') }}",
+    ]
+  )
+}}
+
+{{ edu_wh.cds_depends_on('edu:course_section:custom_data_sources') }}
+{% set custom_data_sources = var('edu:course_section:custom_data_sources', []) %}
+  
+with offering as (
+    select * from {{ ref('stg_ef3__course_offerings') }}
+),
+stg_ef3__sections as (
+    select * from {{ ref('stg_ef3__sections') }}
+),
+dim_course as (
+    select * from {{ ref('dim_course') }}
+),
+course_level_chars as (
+    select * from {{ ref('bld_ef3__course_char__combined_wide') }}
+),
+section_chars as (
+    select * from {{ ref('bld_ef3__section__wide_section_characteristics') }}
+),
+joined as (
+    select 
+        stg_ef3__sections.k_course_section,
+        dim_course.k_course,
+        offering.k_school,
+        offering.k_session,
+        stg_ef3__sections.k_location as k_classroom,
+        stg_ef3__sections.tenant_code,
+        stg_ef3__sections.section_id,
+        stg_ef3__sections.section_name,
+        offering.local_course_code,
+        offering.local_course_title,
+        dim_course.course_code,
+        dim_course.course_title,
+        offering.school_year,
+        offering.session_name,
+        dim_course.academic_subject,
+        dim_course.career_pathway,
+        offering.instructional_time_planned,
+        stg_ef3__sections.is_official_attendance_period,
+        stg_ef3__sections.sequence_of_course,
+
+        -- course level characteristics
+        {{ edu_wh.accordion_columns(
+            source_table='bld_ef3__course_char__combined_wide',
+            exclude_columns=['tenant_code', 'api_year', 'k_course', 'k_course_offering', 'k_course_section', 'course_level_characteristics_array'],
+            source_alias='course_level_chars',
+            coalesce_value = 'FALSE'
+        ) }}
+        course_level_chars.course_level_characteristics_array,
+
+        -- section characteristics
+        {{ edu_wh.accordion_columns(
+            source_table='bld_ef3__section__wide_section_characteristics',
+            exclude_columns=['tenant_code', 'api_year', 'k_course_section', 'section_characteristics_array'],
+            source_alias='section_chars',
+            coalesce_value = 'FALSE'
+        ) }}
+        section_chars.section_characteristics_array,
+
+        stg_ef3__sections.educational_environment_type,
+        stg_ef3__sections.instruction_language,
+        stg_ef3__sections.medium_of_instruction,
+        stg_ef3__sections.population_served,
+        stg_ef3__sections.section_type,
+        stg_ef3__sections.available_credits,
+        stg_ef3__sections.available_credit_type,
+        stg_ef3__sections.available_credit_conversion
+        
+        -- custom data sources_columns
+        {{ edu_wh.add_cds_columns(custom_data_sources=custom_data_sources) }}
+    from stg_ef3__sections
+    join offering
+        on stg_ef3__sections.k_course_offering = offering.k_course_offering
+    join dim_course 
+        on offering.k_course = dim_course.k_course
+    left join course_level_chars 
+        on stg_ef3__sections.k_course_section = course_level_chars.k_course_section
+    left join section_chars 
+        on stg_ef3__sections.k_course_section = section_chars.k_course_section
+
+    -- custom data sources
+    {{ edu_wh.add_cds_joins_v1(custom_data_sources=custom_data_sources, driving_alias='stg_ef3__sections', join_cols=['k_course_section']) }}
+    {{ edu_wh.add_cds_joins_v2(custom_data_sources=custom_data_sources) }}
+), 
+schedule_exempt as (
+    select *,
+        {{ course_section_is_schedule_exempt() }} as is_schedule_exempt
+    from joined
+)
+select * from schedule_exempt
+order by tenant_code, k_school, k_course_section

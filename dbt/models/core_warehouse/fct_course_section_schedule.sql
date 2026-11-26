@@ -27,6 +27,8 @@ sections as (
         local_course_code,
         course_code,
         session_name,
+        is_schedule_exempt,
+        {{ schedule_object_select_fields('course_section', 'section_class_period_schedules' ) }}
         has_students
     from section_class_period_schedules
 ),
@@ -38,8 +40,10 @@ daily_schedule_rows as (
         schedules.class_period_name,
         schedules.period_duration,
         schedules.period_duration_without_overlap,
+        {{ schedule_object_select_fields('class_period', 'schedules') }}
         schedules.k_bell_schedule,
         schedules.bell_schedule_name,
+        {{ schedule_object_select_fields('bell_schedule', 'schedules') }}
         {{ array_explode_value('schedule_date') }}::date as calendar_date
     from section_class_period_schedules schedules
         {{ array_explode(
@@ -58,6 +62,7 @@ daily_meeting_time_rows as (
         schedules.class_period_name,
         schedules.period_duration,
         schedules.period_duration_without_overlap,
+        {{ schedule_object_select_fields('class_period', 'schedules') }}
         meeting_times.k_class_period_meeting_time,
         meeting_times.start_time,
         meeting_times.end_time,
@@ -90,6 +95,7 @@ daily_class_period_meeting_time_rows as (
 
         period_duration,
         period_duration_without_overlap,
+        {{ schedule_object_select_fields('class_period', 'daily_meeting_time_rows') }}
 
         k_class_period_meeting_time,
 
@@ -117,6 +123,7 @@ daily_meeting_time_rollup as (
 
         period_duration,
         period_duration_without_overlap,
+        {{ schedule_object_select_fields('class_period', 'meeting_time_values') }}
 
         {{ edu_edfi_source.json_array_agg(
             'meeting_time',
@@ -133,6 +140,7 @@ daily_meeting_time_rollup as (
 
             period_duration,
             period_duration_without_overlap,
+            {{ schedule_object_select_fields('class_period', 'daily_class_period_meeting_time_rows') }}
 
             military_start_time,
 
@@ -153,6 +161,7 @@ daily_meeting_time_rollup as (
         class_period_name,
         period_duration,
         period_duration_without_overlap
+        {{ schedule_object_group_by_fields('class_period', 'meeting_time_values') }}
 ),
 daily_class_period_time_bounds as (
     /* Grain: One course section x date x class period. */
@@ -182,10 +191,17 @@ daily_class_period_bell_schedule_values as (
 
         bell_schedule_name,
 
-        {{ edu_edfi_source.json_object_construct([
+        {% set bell_schedule_fields = [
             ['k_bell_schedule', 'k_bell_schedule'],
             ['bell_schedule_name', 'bell_schedule_name']
-        ]) }} as bell_schedule
+        ] %}
+
+        {% set bell_schedule_fields =
+            bell_schedule_fields
+            + schedule_object_json_fields('bell_schedule')
+        %}
+
+        {{ edu_edfi_source.json_object_construct(bell_schedule_fields) }} as bell_schedule
 
     from daily_schedule_rows
 ),
@@ -220,14 +236,27 @@ daily_class_period_values as (
         time_bounds.first_start_time,
         meeting_times.class_period_name,
 
-        {{ edu_edfi_source.json_object_construct([
+        {% set class_period_fields = [
             ['k_class_period', 'meeting_times.k_class_period'],
             ['class_period_name', 'meeting_times.class_period_name'],
             ['period_duration', 'meeting_times.period_duration'],
-            ['period_duration_without_overlap', 'meeting_times.period_duration_without_overlap'],
-            ['meeting_times', 'meeting_times.meeting_times'],
+            ['period_duration_without_overlap', 'meeting_times.period_duration_without_overlap']
+        ] %}
+
+        {% set class_period_fields =
+            class_period_fields
+            + schedule_object_json_fields('class_period', 'meeting_times')
+        %}
+
+        {% do class_period_fields.append(
+            ['meeting_times', 'meeting_times.meeting_times']
+        ) %}
+
+        {% do class_period_fields.append(
             ['bell_schedules', 'bell_schedules.bell_schedules']
-        ]) }} as class_period
+        ) %}
+
+        {{ edu_edfi_source.json_object_construct(class_period_fields) }} as class_period
 
     from daily_meeting_time_rollup meeting_times
 
@@ -662,6 +691,8 @@ formatted as (
         sections.local_course_code,
         sections.course_code,
         sections.session_name,
+        sections.is_schedule_exempt,
+        {{ schedule_object_select_fields('course_section', 'sections' ) }}
         sections.has_students,
         section_daily_schedule_rollup.daily_schedule,
         section_daily_schedule_rollup.first_date,

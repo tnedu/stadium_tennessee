@@ -51,6 +51,8 @@ schedule_rows as (
         course_sections.local_course_code,
         course_sections.course_code,
         course_sections.session_name,
+        course_sections.is_schedule_exempt,
+        {{ schedule_object_select_fields(object_name='course_section', source_alias='course_sections') }}
         coalesce(
             course_section_students.has_students,
             false
@@ -60,12 +62,14 @@ schedule_rows as (
         class_periods.period_duration_without_overlap,
         class_periods.meeting_times,
         class_periods.meeting_time_count,
+        {{ schedule_object_select_fields(object_name='class_period', source_alias='class_periods') }}
         bell_schedules.bell_schedule_name,
         bell_schedules.dates,
         bell_schedules.inferred_weekdays,
         bell_schedules.first_date,
         bell_schedules.last_date,
         bell_schedules.date_count,
+        {{ schedule_object_select_fields(object_name='bell_schedule', source_alias='bell_schedules') }}
         ( class_periods.period_duration * bell_schedules.date_count ) as scheduled_minutes,
         ( class_periods.period_duration_without_overlap * bell_schedules.date_count ) as scheduled_minutes_without_overlap,
         class_periods.has_overlapping_meeting_times,

@@ -54,7 +54,39 @@ bell_schedule_date_status as (
         on calendar_dates.k_school = dim_school.k_school
         and calendar_dates.calendar_date = bell_schedule_dates.calendar_date
 ),
-dates as (
+non_school_dates as (
+    select
+        k_bell_schedule,
+
+        {{ edu_edfi_source.json_array_agg(
+            'calendar_date',
+            order_by='calendar_date'
+        ) }} as non_school_dates
+
+    from bell_schedule_date_status
+
+    where k_calendar_date is not null
+        and is_school_day = false
+
+    group by k_bell_schedule
+),
+
+missing_calendar_dates as (
+    select
+        k_bell_schedule,
+
+        {{ edu_edfi_source.json_array_agg(
+            'calendar_date',
+            order_by='calendar_date'
+        ) }} as missing_calendar_dates
+
+    from bell_schedule_date_status
+
+    where k_calendar_date is null
+
+    group by k_bell_schedule
+),
+bell_schedule_date_rollup as (
     select
         k_bell_schedule,
         {{ edu_edfi_source.json_array_agg(
@@ -125,49 +157,7 @@ dates as (
                 ) = 1
                 then 'U' else ''
             end
-        ) as inferred_weekdays,
-        /*
-         * These dates exist in dim_calendar_date, but the calendar
-         * explicitly identifies them as non-school days.
-         */
-        case
-            when max(
-                case
-                    when k_calendar_date is not null
-                        and is_school_day = false
-                    then 1
-                    else 0
-                end
-            ) = 1
-            then {{ edu_edfi_source.json_array_agg(
-                "case
-                    when k_calendar_date is not null
-                        and is_school_day = false
-                    then calendar_date
-                end",
-                order_by='calendar_date'
-            ) }}
-        end as non_school_dates,
-        /*
-         * These dates are configured on the bell schedule but have no
-         * corresponding school/date row in dim_calendar_date.
-         */
-        case
-            when max(
-                case
-                    when k_calendar_date is null
-                    then 1
-                    else 0
-                end
-            ) = 1
-            then {{ edu_edfi_source.json_array_agg(
-                "case
-                    when k_calendar_date is null
-                    then calendar_date
-                end",
-                order_by='calendar_date'
-            ) }}
-        end as missing_calendar_dates
+        ) as inferred_weekdays
     from bell_schedule_date_status
     group by k_bell_schedule
 ),
@@ -183,13 +173,13 @@ formatted as (
         bell_schedules.end_time,
         bell_schedules.total_instructional_time,
         grade_levels.grade_levels,
-        dates.dates,
-        dates.inferred_weekdays,
-        array_min(dates.dates)::date as first_date,
-        array_max(dates.dates)::date as last_date,
-        size(dates.dates) as date_count,
-        dates.non_school_dates,
-        dates.missing_calendar_dates
+        bell_schedule_date_rollup.dates,
+        bell_schedule_date_rollup.inferred_weekdays,
+        array_min(bell_schedule_date_rollup.dates)::date as first_date,
+        array_max(bell_schedule_date_rollup.dates)::date as last_date,
+        size(bell_schedule_date_rollup.dates) as date_count,
+        non_school_dates.non_school_dates,
+        missing_calendar_dates.missing_calendar_dates
 
         {#- add any extension columns configured from stg_ef3__bell_schedules #}
         {{ edu_edfi_source.extract_extension(
@@ -200,10 +190,14 @@ formatted as (
     from bell_schedules
     left join grade_levels
         on grade_levels.k_bell_schedule = bell_schedules.k_bell_schedule
-    left join dates
-        on dates.k_bell_schedule = bell_schedules.k_bell_schedule
+    left join bell_schedule_date_rollup
+        on bell_schedule_date_rollup.k_bell_schedule = bell_schedules.k_bell_schedule
     join dim_school
         on bell_schedules.k_school = dim_school.k_school
+    left join non_school_dates
+        on non_school_dates.k_bell_schedule = bell_schedules.k_bell_schedule
+    left join missing_calendar_dates
+        on missing_calendar_dates.k_bell_schedule = bell_schedules.k_bell_schedule
 )
 select *
 from formatted
